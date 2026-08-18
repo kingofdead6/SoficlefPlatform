@@ -7,6 +7,18 @@
 // The authentication, RBAC and audit tables land in Part 3. This first migration proves
 // the pipeline end to end and creates the settings table that the password policy and
 // other administrable parameters will use (ADR-012, CDC v0.1 §11).
+//
+// Everything below "Part 6+ — content domains" replaces the generic `SeedContent` JSON
+// blob with real relational tables, one per prototype page (ADR-001: v0.1 is a superset
+// of v1, every v1 module maps onto a v0.1 entity — SCOPE.md §4). `SeedContent` is kept
+// only as a legacy fallback for domains not yet migrated off it; new pages should read
+// their own table, not the JSON blob.
+//
+// Modelling follows §16.1's principles, consistent with Part 3's tables: a uuid surrogate
+// key on every row, the prototype's own business code or slug kept as a separate unique
+// column where the source data carries one, ordering preserved with an explicit `order`
+// column (array order is not guaranteed by a database), and `archivedAt` rather than
+// deletion wherever a client edit must not erase history.
 
 generator client {
   provider = "prisma-client"
@@ -59,8 +71,19 @@ enum ScopeType {
   SELF
 }
 
+/// Whether a post is filled, per prototype pages "structures" and "recrutements".
+/// `VACANT` is stated by the prototype, never inferred (seed/schemas/organization.ts).
+enum Occupancy {
+  VACANT
+  TO_FILL
+  OCCUPIED
+}
+
 /// Structure / department / service. The scope anchor for MANAGER rights, and the
-/// foundation the organization module (Part 7) builds on.
+/// foundation the organization module (Part 7) builds on. The descriptive columns below
+/// (icon…staffingFr) are Part 7's addition: the same row that anchors RBAC scope also
+/// carries what the "structures" page displays about it, so the org chart is a query
+/// over this table rather than a duplicate of it.
 model OrganizationUnit {
   id       String  @id @default(uuid()) @db.Uuid
   /// Stable business code, e.g. "DPR" or "DPR-FAB".
@@ -74,13 +97,27 @@ model OrganizationUnit {
   parent   OrganizationUnit?  @relation("OrganizationUnitTree", fields: [parentId], references: [id], onDelete: Restrict)
   children OrganizationUnit[] @relation("OrganizationUnitTree")
 
+  /// Decorative glyph the prototype prefixes to the name; kept out of the label itself.
+  icon           String?
+  descriptionFr  String?
+  /// Whether the unit's head post is filled. Null for units that display no head status
+  /// (functional cells use `staffingFr` free text instead).
+  headOccupancy  Occupancy?
+  headLabelFr    String?
+  criticalNoteFr String?
+  /// Free-form staffing note, used by functional cells instead of a head/occupancy pair.
+  staffingFr     String?
+
   /// Archival rather than deletion: history must survive a reorganization
   /// (CDC v0.1 §16.1).
   archivedAt DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  scopes Scope[]
+  scopes             Scope[]
+  jobs                Job[]
+  managementMembers   ManagementMember[]
+  orgChartNodes       OrgChartNode[]
 
   @@index([parentId])
   @@index([archivedAt])
@@ -104,9 +141,13 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
-  sessions   Session[]
-  userRoles  UserRole[]
-  auditTrail AuditLog[] @relation("AuditActor")
+  sessions           Session[]
+  userRoles          UserRole[]
+  auditTrail         AuditLog[]              @relation("AuditActor")
+  onboardingInstances OnboardingInstance[]
+  assessments        Assessment[]
+  remarks            Remark[]
+  welcome            Welcome?
 
   @@index([status])
   @@map("user")
@@ -231,10 +272,9 @@ model AuditLog {
   @@map("audit_log")
 }
 
-// Generic storage for extracted seed data used by the prototype UI. Each row
-// holds a domain key (e.g. "welcome", "management-team") and the extracted
-// payload as JSON so the frontend can render prototype content without bespoke
-// tables for every domain.
+/// Legacy generic storage for extracted seed data, from before each domain got its own
+/// table. Kept so `prisma/seed.ts` and any page not yet migrated keep working; new work
+/// should read the domain's own model below instead of writing here.
 model SeedContent {
   id        String   @id @default(uuid()) @db.Uuid
   domain    String   @unique
@@ -243,4 +283,781 @@ model SeedContent {
   updatedAt DateTime @updatedAt
 
   @@map("seed_content")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 6 — Company & institutional pages: /company, /strategy.
+//
+// "entreprise" and "strategie" in the prototype (seed/schemas/company.ts, strategy.ts,
+// values.ts). One row each, in practice — there is one company — but modelled as a
+// normal table rather than a hardcoded singleton so a second tenant costs configuration,
+// not a migration (ADR-001).
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Company {
+  id             String   @id @default(uuid()) @db.Uuid
+  /// The prototype's own slug, e.g. "soficlef".
+  slug           String   @unique
+  legalName      String
+  legalForm      String
+  foundedYear    Int
+  foundedCity    String
+  headquarters   String
+  generalManager String
+  certification  String
+  status         String
+  website        String
+  visionFr       String
+  missionFr      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  activities CompanyActivity[]
+
+  @@map("company")
+}
+
+model CompanyActivity {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique
+  companyId String   @db.Uuid
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  labelFr   String
+  contentFr String   @db.Text
+  order     Int
+
+  @@index([companyId])
+  @@map("company_activity")
+}
+
+/// The four pillars of the Charte de Management — prototype page "entreprise".
+/// Arabic strings are taken from the prototype (good copy) rather than CDC v1's PDF,
+/// which has a font-encoding fault (ADR-026, OQ-21); pending client confirmation.
+model CompanyValue {
+  id     String  @id @default(uuid()) @db.Uuid
+  slug   String  @unique
+  rank   Int
+  nameFr String
+  nameAr String
+  nameEn String?
+
+  @@map("company_value")
+}
+
+model Strategy {
+  id                String   @id @default(uuid()) @db.Uuid
+  slug              String   @unique
+  planFr            String
+  globalObjectiveFr String   @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  markets       MarketObjective[]
+  projects      StrategicProject[]
+  contributions StrategyContribution[]
+
+  @@map("strategy")
+}
+
+/// One row of the 2024–2026 market objectives table.
+model MarketObjective {
+  id                  String   @id @default(uuid()) @db.Uuid
+  slug                String   @unique
+  strategyId          String   @db.Uuid
+  strategy            Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  marketFr            String
+  strategyFr          String   @db.Text
+  marketShareTargetFr String
+  revenueTargetFr     String
+  order               Int
+
+  @@index([strategyId])
+  @@map("market_objective")
+}
+
+/// A strategic project PS-01 … PS-04.
+model StrategicProject {
+  id            String   @id @default(uuid()) @db.Uuid
+  /// Business code, e.g. "PS-01".
+  code          String   @unique
+  strategyId    String   @db.Uuid
+  strategy      Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  titleFr       String
+  descriptionFr String   @db.Text
+  order         Int
+
+  @@index([strategyId])
+  @@map("strategic_project")
+}
+
+/// A progress row of the "Contribution DPR aux objectifs" block.
+model StrategyContribution {
+  id              String   @id @default(uuid()) @db.Uuid
+  slug            String   @unique
+  strategyId      String   @db.Uuid
+  strategy        Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  labelFr         String
+  targetFr        String
+  progressPercent Int
+  order           Int
+
+  @@index([strategyId])
+  @@map("strategy_contribution")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 6/11 — Jobs, job descriptions & competencies: /job-description, /competencies.
+//
+// `Job` is the post/position (resource "job"); `JobDescription` is the formal document
+// bound to one job (resource "job_description", currently only EN-012-DRH exists).
+// `Competency` and `JobCompetency` are Part 11's job–competency matrix (CDC v0.1 §7);
+// `Assessment` is a manager's evaluation of an employee against one competency
+// (resource "assessment", action "assess" — held by MANAGER only).
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Job {
+  id                 String            @id @default(uuid()) @db.Uuid
+  /// Business code where the client has one, a slug otherwise.
+  code               String            @unique
+  titleFr            String
+  organizationUnitId String?           @db.Uuid
+  organizationUnit   OrganizationUnit? @relation(fields: [organizationUnitId], references: [id], onDelete: SetNull)
+  isVacant           Boolean           @default(false)
+  archivedAt         DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  jobDescription      JobDescription?
+  jobCompetencies      JobCompetency[]
+  onboardingTemplates  OnboardingTemplate[]
+
+  @@index([organizationUnitId])
+  @@map("job")
+}
+
+/// The official job description of the Directeur de Production — prototype page "poste".
+/// Document code EN-012-DRH, application date 19.08.2018. `positioning*` and
+/// `requirement*` are the zod schema's nested objects, flattened into columns so the
+/// document stays queryable rather than living in a JSON blob (§16.1).
+model JobDescription {
+  id                       String    @id @default(uuid()) @db.Uuid
+  /// Document code, e.g. "EN-012-DRH".
+  code                     String    @unique
+  jobId                    String?   @unique @db.Uuid
+  job                      Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  jobTitleFr               String
+  applicationDate          DateTime  @db.Date
+  applicationDateSourceFr  String
+  positioningStructureFr    String
+  positioningProcessFr      String
+  positioningReportsToFr    String
+  positioningSubordinatesFr String
+  requirementEducationFr           String
+  requirementAdditionalEducationFr String
+  requirementExperienceFr          String
+  requirementWorkPatternFr         String
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  missions         JobDescriptionMission[]
+  permanentTasks   JobDescriptionTask[]
+  responsibilities JobDescriptionResponsibility[]
+
+  @@map("job_description")
+}
+
+model JobDescriptionMission {
+  id               String         @id @default(uuid()) @db.Uuid
+  slug             String         @unique
+  jobDescriptionId String         @db.Uuid
+  jobDescription   JobDescription @relation(fields: [jobDescriptionId], references: [id], onDelete: Cascade)
+  textFr           String         @db.Text
+  order            Int
+
+  @@index([jobDescriptionId])
+  @@map("job_description_mission")
+}
+
+model JobDescriptionTask {
+  id               String         @id @default(uuid()) @db.Uuid
+  slug             String         @unique
+  jobDescriptionId String         @db.Uuid
+  jobDescription   JobDescription @relation(fields: [jobDescriptionId], references: [id], onDelete: Cascade)
+  textFr           String         @db.Text
+  order            Int
+
+  @@index([jobDescriptionId])
+  @@map("job_description_task")
+}
+
+model JobDescriptionResponsibility {
+  id               String         @id @default(uuid()) @db.Uuid
+  slug             String         @unique
+  jobDescriptionId String         @db.Uuid
+  jobDescription   JobDescription @relation(fields: [jobDescriptionId], references: [id], onDelete: Cascade)
+  textFr           String         @db.Text
+  order            Int
+
+  @@index([jobDescriptionId])
+  @@map("job_description_responsibility")
+}
+
+model Competency {
+  id            String    @id @default(uuid()) @db.Uuid
+  /// Business code, when the client provides one.
+  code          String?   @unique
+  nameFr        String
+  categoryFr    String?
+  descriptionFr String?   @db.Text
+  archivedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  jobCompetencies JobCompetency[]
+  assessments     Assessment[]
+
+  @@map("competency")
+}
+
+/// The job–competency matrix (CDC v0.1 §7.1). One row per (job, competency) pair.
+model JobCompetency {
+  jobId         String     @db.Uuid
+  competencyId  String     @db.Uuid
+  job           Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  competency    Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  /// Target proficiency level, on whatever scale the client's matrix defines.
+  requiredLevel Int
+  notesFr       String?
+
+  @@id([jobId, competencyId])
+  @@index([competencyId])
+  @@map("job_competency")
+}
+
+/// A manager's evaluation of an employee against one competency.
+model Assessment {
+  id           String     @id @default(uuid()) @db.Uuid
+  userId       String     @db.Uuid
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  competencyId String     @db.Uuid
+  competency   Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  level        Int
+  /// Kept as a plain id, like UserRole.grantedBy: the assessor's account may later be
+  /// deleted, and the audit trail is the authoritative record of who assessed whom.
+  assessedBy   String     @db.Uuid
+  assessedAt   DateTime   @default(now())
+  notesFr      String?    @db.Text
+
+  @@index([userId])
+  @@index([competencyId])
+  @@map("assessment")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 7 — Organization & dynamic org chart: /organization, /management.
+//
+// The org chart is a separate rendering-tree from `OrganizationUnit.parentId`: the
+// prototype's "structures" page draws nodes (with their own role/occupancy) that do not
+// always coincide 1:1 with the RBAC scope tree, so it gets its own self-relation.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// A structure head or other named manager — prototype page "encadrement".
+model ManagementMember {
+  id                 String            @id @default(uuid()) @db.Uuid
+  slug               String            @unique
+  organizationUnitId String?           @db.Uuid
+  organizationUnit   OrganizationUnit? @relation(fields: [organizationUnitId], references: [id], onDelete: SetNull)
+  initials           String
+  nameFr             String
+  roleFr             String
+  scopeFr            String
+  tagFr              String
+  perimeterFr        String            @db.Text
+  priorityJ30Fr      String            @db.Text
+  order              Int
+
+  @@index([organizationUnitId])
+  @@map("management_member")
+}
+
+/// A recommended first-contact action, keyed by its onboarding day offset. Independent
+/// of any one member — it is the general "who to see when" list on the same page.
+model ManagementRecommendedAction {
+  id         String @id @default(uuid()) @db.Uuid
+  slug       String @unique
+  dayOffset  Int
+  dayLabelFr String
+  textFr     String @db.Text
+  order      Int
+
+  @@map("management_recommended_action")
+}
+
+/// A node of the org chart rendered on the "structures" page. Self-referencing tree,
+/// independent of `OrganizationUnit.parentId` (see note above); `organizationUnitId`
+/// links back to the RBAC/scope row when the node represents a real unit.
+model OrgChartNode {
+  id                 String            @id @default(uuid()) @db.Uuid
+  slug               String            @unique
+  labelFr            String
+  roleFr             String
+  occupancy          Occupancy?
+  parentId           String?           @db.Uuid
+  parent             OrgChartNode?     @relation("OrgChartTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children           OrgChartNode[]    @relation("OrgChartTree")
+  organizationUnitId String?           @db.Uuid
+  organizationUnit   OrganizationUnit? @relation(fields: [organizationUnitId], references: [id], onDelete: SetNull)
+  order              Int
+
+  @@index([parentId])
+  @@index([organizationUnitId])
+  @@map("org_chart_node")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 8 — Kaizen & operational excellence: /kaizen.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The Kaizen programme itself — one row, in practice. Owns the missions and the
+/// cross-mission "priority actions, first 30 days" list.
+model KaizenProgramme {
+  id             String   @id @default(uuid()) @db.Uuid
+  slug           String   @unique
+  programmeFr    String
+  internalLeadFr String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  missions           KaizenMission[]
+  priorityActionsJ30 KaizenPriorityActionJ30[]
+
+  @@map("kaizen_programme")
+}
+
+model KaizenMission {
+  id             String          @id @default(uuid()) @db.Uuid
+  slug           String          @unique
+  programmeId    String          @db.Uuid
+  programme      KaizenProgramme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  number         Int
+  /// Decorative glyph; kept out of the title itself.
+  icon           String?
+  titleFr        String
+  periodFr       String
+  referenceFr    String?
+  internalLeadFr String
+  contextFr      String          @db.Text
+
+  results KaizenMissionResult[]
+  journal KaizenJournalEntry[]
+  gaps    KaizenGap[]
+  actions KaizenAction[]
+
+  @@index([programmeId])
+  @@map("kaizen_mission")
+}
+
+model KaizenMissionResult {
+  id        String        @id @default(uuid()) @db.Uuid
+  slug      String        @unique
+  missionId String        @db.Uuid
+  mission   KaizenMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  textFr    String        @db.Text
+  order     Int
+
+  @@index([missionId])
+  @@map("kaizen_mission_result")
+}
+
+model KaizenJournalEntry {
+  id           String        @id @default(uuid()) @db.Uuid
+  slug         String        @unique
+  missionId    String        @db.Uuid
+  mission      KaizenMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  dayFr        String
+  activitiesFr String        @db.Text
+  outcomeFr    String        @db.Text
+  order        Int
+
+  @@index([missionId])
+  @@map("kaizen_journal_entry")
+}
+
+model KaizenGap {
+  id         String        @id @default(uuid()) @db.Uuid
+  slug       String        @unique
+  missionId  String        @db.Uuid
+  mission    KaizenMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  domainFr   String
+  observedFr String        @db.Text
+  targetFr   String        @db.Text
+  order      Int
+
+  @@index([missionId])
+  @@map("kaizen_gap")
+}
+
+/// A tracked action with owner, deadline and status, exactly as written (free-text
+/// deadline/status — the prototype does not use structured dates or an enum here).
+model KaizenAction {
+  id         String        @id @default(uuid()) @db.Uuid
+  slug       String        @unique
+  missionId  String        @db.Uuid
+  mission    KaizenMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  actionFr   String        @db.Text
+  ownerFr    String
+  deadlineFr String
+  statusFr   String
+  order      Int
+
+  @@index([missionId])
+  @@map("kaizen_action")
+}
+
+model KaizenPriorityActionJ30 {
+  id          String          @id @default(uuid()) @db.Uuid
+  slug        String          @unique
+  programmeId String          @db.Uuid
+  programme   KaizenProgramme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  dayLabelFr  String
+  textFr      String          @db.Text
+  order       Int
+
+  @@index([programmeId])
+  @@map("kaizen_priority_action_j30")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 6 — QMS ISO 9001 & HSE: /qms, /hse.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Qms {
+  id                   String   @id @default(uuid()) @db.Uuid
+  slug                 String   @unique
+  standardFr           String
+  certificationBodyFr  String
+  certifiedSinceFr     String
+  certificationScopeFr String   @db.Text
+  /// Business code of the process this job owns, e.g. "PR02".
+  ownedProcessCode     String
+  ownedProcessNoteFr   String   @db.Text
+  /// Business code of the process map document, e.g. "ID-03-DG".
+  processMapCode       String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  responsibilities QmsResponsibility[]
+  processes        QmsProcess[]
+
+  @@map("qms")
+}
+
+model QmsResponsibility {
+  id     String @id @default(uuid()) @db.Uuid
+  slug   String @unique
+  qmsId  String @db.Uuid
+  qms    Qms    @relation(fields: [qmsId], references: [id], onDelete: Cascade)
+  textFr String @db.Text
+  order  Int
+
+  @@index([qmsId])
+  @@map("qms_responsibility")
+}
+
+enum QmsProcessCategory {
+  MANAGEMENT
+  REALISATION
+  SUPPORT
+}
+
+/// A process of the ISO 9001 process map — e.g. "PM01", "PR02", "PS03".
+model QmsProcess {
+  id                          String             @id @default(uuid()) @db.Uuid
+  /// Business code, e.g. "PR02".
+  code                        String             @unique
+  qmsId                       String             @db.Uuid
+  qms                         Qms                @relation(fields: [qmsId], references: [id], onDelete: Cascade)
+  category                    QmsProcessCategory
+  categoryLabelFr             String
+  nameFr                      String
+  isOwnedByProductionDirector Boolean
+  order                       Int
+
+  @@index([qmsId])
+  @@map("qms_process")
+}
+
+/// Site safety rules for Si Mustapha — prototype page "hse". One row in practice; the
+/// two rule lists (traffic rules, mandatory PPE) share one child table distinguished by
+/// `kind`, since both are just an ordered list of short French sentences.
+model Hse {
+  id                    String   @id @default(uuid()) @db.Uuid
+  slug                  String   @unique
+  siteFr                String
+  contactFr             String
+  zonesFr               String   @db.Text
+  riskAreaFr            String   @db.Text
+  circulationPlanNoteFr String   @db.Text
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  rules HseRule[]
+
+  @@map("hse")
+}
+
+enum HseRuleKind {
+  TRAFFIC
+  PPE
+}
+
+model HseRule {
+  id     String      @id @default(uuid()) @db.Uuid
+  slug   String      @unique
+  hseId  String      @db.Uuid
+  hse    Hse         @relation(fields: [hseId], references: [id], onDelete: Cascade)
+  kind   HseRuleKind
+  textFr String
+  order  Int
+
+  @@index([hseId])
+  @@map("hse_rule")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 6 — Directory & document library: /contacts, /documents.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ContactPriority {
+  S1
+  S2
+}
+
+/// Internal directory entry — prototype page "interlocuteurs". The extension number is
+/// the prototype's own business key.
+model Contact {
+  id           String          @id @default(uuid()) @db.Uuid
+  /// Three-digit phone extension, e.g. "042".
+  extension    String          @unique
+  initials     String
+  nameFr       String
+  roleFr       String
+  priorityFr   String
+  priorityRank ContactPriority
+  order        Int
+
+  @@map("contact")
+}
+
+enum DocumentAvailability {
+  AVAILABLE
+  PENDING
+}
+
+/// A reference document, available or still pending from the business — prototype page
+/// "docs". `fileName` and `detailFr` are only ever set once `availability` is
+/// AVAILABLE (see seed/schemas/documents.ts); a PENDING row has neither yet.
+model Document {
+  id           String               @id @default(uuid()) @db.Uuid
+  slug         String               @unique
+  fileName     String?
+  titleFr      String
+  detailFr     String?              @db.Text
+  availability DocumentAvailability
+  order        Int
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([availability])
+  @@map("document")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 6 — Recruitment: /recruitment.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Recruitment {
+  id                     String   @id @default(uuid()) @db.Uuid
+  slug                   String   @unique
+  internalMobilityNoteFr String   @db.Text
+  recommendedActionFr    String   @db.Text
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  positions OpenPosition[]
+
+  @@map("recruitment")
+}
+
+/// An open post under the Direction de Production.
+model OpenPosition {
+  id            String      @id @default(uuid()) @db.Uuid
+  slug          String      @unique
+  recruitmentId String      @db.Uuid
+  recruitment   Recruitment @relation(fields: [recruitmentId], references: [id], onDelete: Cascade)
+  titleFr       String
+  attachmentFr  String
+  statusFr      String
+  order         Int
+
+  @@index([recruitmentId])
+  @@map("open_position")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 6/9 — Welcome & onboarding: /welcome, /onboarding.
+//
+// `Welcome` is display content for one recipient's landing page. `OnboardingTemplate` /
+// `OnboardingMilestone` are the reusable 30-day checklist (resource "onboarding_template");
+// `OnboardingInstance` is one person's run through a template (resource
+// "onboarding_instance" — what /welcome and the layout's permission check gate on);
+// `OnboardingTaskCompletion` is that person's per-milestone progress (resource
+// "onboarding_task"). This is ADR-001's example made concrete: M. Djaoudi's onboarding
+// becomes the first instance of a reusable template attached to job EN-012-DRH, not a
+// hardcoded page.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Welcome/landing content for one onboarding recipient — prototype page "bienvenue".
+model Welcome {
+  id                 String    @id @default(uuid()) @db.Uuid
+  slug               String    @unique
+  userId             String?   @unique @db.Uuid
+  user               User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  recipientFr        String
+  recipientRoleFr    String
+  startDate          DateTime  @db.Date
+  startDateSourceFr  String
+  greetingFr         String
+  /// Rich text, rendered with dangerouslySetInnerHTML by the page — sanitize on write,
+  /// not just on read.
+  messageFr          String    @db.Text
+  signatureFr        String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  stats  WelcomeStat[]
+  agenda WelcomeAgendaItem[]
+
+  @@map("welcome")
+}
+
+model WelcomeStat {
+  id        String  @id @default(uuid()) @db.Uuid
+  slug      String  @unique
+  welcomeId String  @db.Uuid
+  welcome   Welcome @relation(fields: [welcomeId], references: [id], onDelete: Cascade)
+  valueFr   String
+  labelFr   String
+  order     Int
+
+  @@index([welcomeId])
+  @@map("welcome_stat")
+}
+
+model WelcomeAgendaItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  slug      String  @unique
+  welcomeId String  @db.Uuid
+  welcome   Welcome @relation(fields: [welcomeId], references: [id], onDelete: Cascade)
+  titleFr   String
+  detailFr  String  @db.Text
+  order     Int
+
+  @@index([welcomeId])
+  @@map("welcome_agenda_item")
+}
+
+/// A reusable 30-day checklist, optionally attached to the job it onboards someone into.
+model OnboardingTemplate {
+  id      String   @id @default(uuid()) @db.Uuid
+  slug    String   @unique
+  jobId   String?  @db.Uuid
+  job     Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  titleFr String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  milestones OnboardingMilestone[]
+  instances  OnboardingInstance[]
+
+  @@index([jobId])
+  @@map("onboarding_template")
+}
+
+/// A milestone of the 30-day checklist. `order` preserves the prototype's sequence;
+/// several milestones share a day.
+model OnboardingMilestone {
+  id            String              @id @default(uuid()) @db.Uuid
+  slug          String              @unique
+  templateId    String              @db.Uuid
+  template      OnboardingTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  order         Int
+  /// e.g. "J+1".
+  dayLabelFr    String
+  dayOffset     Int
+  titleFr       String
+  detailFr      String              @db.Text
+  isRecommended Boolean
+
+  completions OnboardingTaskCompletion[]
+
+  @@index([templateId])
+  @@map("onboarding_milestone")
+}
+
+/// One person's run through a template — the thing /welcome and the app layout's
+/// permission check are actually gating on (resource "onboarding_instance").
+model OnboardingInstance {
+  id         String             @id @default(uuid()) @db.Uuid
+  userId     String             @db.Uuid
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId String             @db.Uuid
+  template   OnboardingTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  startDate  DateTime           @db.Date
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  taskCompletions OnboardingTaskCompletion[]
+
+  @@index([userId])
+  @@index([templateId])
+  @@map("onboarding_instance")
+}
+
+/// Per-milestone progress for one instance (resource "onboarding_task"). A null
+/// `completedAt` means still open; the checklist page's badge counts those.
+model OnboardingTaskCompletion {
+  id          String              @id @default(uuid()) @db.Uuid
+  instanceId  String              @db.Uuid
+  instance    OnboardingInstance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  milestoneId String              @db.Uuid
+  milestone   OnboardingMilestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  completedAt DateTime?
+  /// Kept as a plain id, like UserRole.grantedBy — see that field's note.
+  completedBy String?             @db.Uuid
+  noteFr      String?             @db.Text
+
+  @@unique([instanceId, milestoneId])
+  @@index([milestoneId])
+  @@map("onboarding_task_completion")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 10 — Integration tools: /remarks.
+//
+// The remarks journal is the collaborator's own observations to HR and the DG. Per
+// OQ-12's working default, visibility is confined to the author, the HR chain and
+// HEAD_CE — enforced by `can()` and `scopeFilterFor()`, not by a column here.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Remark {
+  id        String   @id @default(uuid()) @db.Uuid
+  authorId  String   @db.Uuid
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  contentFr String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@map("remark")
 }
