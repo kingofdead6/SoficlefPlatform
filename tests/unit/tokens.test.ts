@@ -43,12 +43,18 @@ describe('design tokens', () => {
   }
 
   it('declares the Arabic display and UI families, which Playfair cannot cover', () => {
-    expect(tokens).toMatch(/--font-display-arabic:/);
-    expect(tokens).toMatch(/--font-ui-arabic:/);
+    expect(tokens).toMatch(/--type-display-arabic:/);
+    expect(tokens).toMatch(/--type-ui-arabic:/);
   });
 
   it('re-points the type families for the Arabic locale', () => {
-    expect(tokens).toMatch(/\[lang='ar'\][\s\S]*--font-display: var\(--font-display-arabic\)/);
+    expect(tokens).toMatch(/\[lang='ar'\][\s\S]*--type-display: var\(--type-display-arabic\)/);
+  });
+
+  it('keeps the type tokens out of the --font-* namespace Tailwind owns', () => {
+    // A theme key mapping --font-display onto a token of the same name is circular and
+    // silently resolves to nothing, which shows up as a system serif on screen.
+    expect(tokens).not.toMatch(/^\s*--font-(display|ui|mono):/m);
   });
 
   it('respects prefers-reduced-motion', () => {

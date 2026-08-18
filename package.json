@@ -22,7 +22,10 @@
     "db:seed": "tsx prisma/seed.ts",
     "test:security": "vitest run tests/security",
     "test:api": "vitest run --config vitest.api.config.ts",
-    "test:api:build": "next build && vitest run --config vitest.api.config.ts"
+    "test:api:build": "next build && vitest run --config vitest.api.config.ts",
+    "i18n:check": "tsx scripts/check-messages.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:build": "next build && playwright test"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.1.0",

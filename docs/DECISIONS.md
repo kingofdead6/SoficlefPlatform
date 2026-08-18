@@ -673,3 +673,63 @@ for both cases, so a handler cannot leak the difference by accident. Asserted in
 security suite.
 
 **Status.** ACCEPTED.
+
+<a id="adr-036"></a>
+
+## ADR-036 — Authentication is not performed in the proxy layer
+
+**Context.** Next.js 16 renamed `middleware.ts` to `proxy.ts`, and the obvious place to
+put a session check is there: one file, every route covered. Next's own guidance is that
+proxy code runs separately from rendering, may be deployed to a CDN, and must not rely on
+shared server modules — which is exactly what a database-backed session check does.
+
+**Decision.** The proxy handles locale negotiation only. Authentication and authorization
+happen where the data is: the layout resolves the session, and every route handler and
+server action calls `can()` (ADR-020).
+
+**Consequences.** No route is protected by a check that a CDN deployment would skip, and
+there is no second authorization path to keep in step with the first. The cost is that a
+new route must be written against `getCurrentSession()` — which the security suite
+verifies by calling routes directly.
+
+**Status.** ACCEPTED.
+
+<a id="adr-037"></a>
+
+## ADR-037 — Type tokens are named `--type-*`, outside Tailwind's `--font-*` namespace
+
+**Context.** The design tokens originally declared `--font-display`, `--font-ui` and
+`--font-mono`, and the Tailwind theme mapped `--font-display: var(--font-display)` to
+generate the `font-display` utility. That is a circular reference: the variable resolves
+to nothing, and every heading silently fell back to a system serif. The Arabic pages
+looked wrong in a way that reads as a font-loading problem rather than a CSS one.
+
+**Decision.** The tokens are `--type-display`, `--type-ui`, `--type-mono`; the Tailwind
+theme maps `--font-display: var(--type-display)`. Tailwind owns `--font-*`; the design
+system owns `--type-*`.
+
+**Consequences.** Utilities and raw declarations agree again. A unit test asserts that no
+`--font-*` token is declared in `tokens.css`, so the collision cannot come back quietly,
+and an end-to-end test asserts the resolved family per locale — which is how this was
+caught in the first place.
+
+**Status.** ACCEPTED.
+
+<a id="adr-038"></a>
+
+## ADR-038 — Development-only pages are gated by configuration, not by build mode
+
+**Context.** `/dev/tokens` (and `/dev/components` in Part 5) are part of the toolkit, not
+the product. Gating them on `NODE_ENV === 'production'` hides them correctly — and also
+hides them from the end-to-end suite, which runs against a production build, and from a
+staging environment where the client might want to review the design system.
+
+**Decision.** They render when `NODE_ENV` is not production, or when `ENABLE_DEV_PAGES=true`
+is set deliberately. The pages are `force-dynamic`, since a prerendered snapshot would
+freeze the answer at build time.
+
+**Consequences.** Production stays clean by default, the client can be given the design
+system on staging by setting one variable, and the screenshots in the E2E suite are taken
+from the same build that is deployed rather than from a development server.
+
+**Status.** ACCEPTED.

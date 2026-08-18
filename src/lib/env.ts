@@ -19,6 +19,16 @@ const serverSchema = z.object({
       (value) => /^postgres(ql)?:\/\//.test(value),
       'DATABASE_URL must start with postgres:// or postgresql://',
     ),
+  /**
+   * Exposes the development-only surfaces (`/dev/tokens`, `/dev/components`). Off in
+   * production unless deliberately switched on — a staging environment that wants the
+   * design-system pages, or an end-to-end run that screenshots them.
+   */
+  ENABLE_DEV_PAGES: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((value) => value === 'true'),
+
   APP_URL: z
     .string()
     .url()

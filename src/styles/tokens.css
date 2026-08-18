@@ -47,21 +47,23 @@
 
   /* ── Typography ────────────────────────────────────────────────────────── */
   /*
-   * The --font-*-active families are re-pointed per locale on <html> (ADR-018).
+   * Named --type-* rather than --font-*: Tailwind owns the --font-* namespace, and a
+   * theme key that maps a variable onto itself resolves to nothing at all.
+   * These families are re-pointed per locale on <html> (ADR-018).
    * Playfair Display has no Arabic coverage, so Arabic gets Noto Kufi Arabic for
    * display and Noto Sans Arabic for UI. Digits stay monospaced in every locale
    * because codes and extensions are shared across them (ADR-032).
    */
-  --font-display-latin: var(--font-playfair), 'Playfair Display', Georgia, serif;
-  --font-ui-latin: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display-arabic:
+  --type-display-latin: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  --type-ui-latin: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  --type-display-arabic:
     var(--font-noto-kufi), 'Noto Kufi Arabic', 'Tajawal', system-ui, sans-serif;
-  --font-ui-arabic:
+  --type-ui-arabic:
     var(--font-noto-sans-arabic), 'Noto Sans Arabic', 'Cairo', system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --type-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
-  --font-display: var(--font-display-latin);
-  --font-ui: var(--font-ui-latin);
+  --type-display: var(--type-display-latin);
+  --type-ui: var(--type-ui-latin);
 
   /* ── Motion ────────────────────────────────────────────────────────────── */
   --transition: 180ms ease;
@@ -70,8 +72,8 @@
 /* Arabic swaps the type families; nothing else about the palette changes. */
 :root:lang(ar),
 [lang='ar'] {
-  --font-display: var(--font-display-arabic);
-  --font-ui: var(--font-ui-arabic);
+  --type-display: var(--type-display-arabic);
+  --type-ui: var(--type-ui-arabic);
 }
 
 /* Quality floor: honour a reader who asked for less movement. */

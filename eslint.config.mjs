@@ -88,8 +88,21 @@ const config = [
   },
   {
     // Scripts, not application code: they report to a terminal.
-    files: ['seed/**/*.ts', 'prisma/seed.ts', 'tests/**/*.ts', '*.config.ts', '*.config.mjs'],
+    files: [
+      'seed/**/*.ts',
+      'prisma/seed.ts',
+      'scripts/**/*.ts',
+      'tests/**/*.ts',
+      '*.config.ts',
+      '*.config.mjs',
+    ],
     rules: { 'no-console': 'off' },
+  },
+  {
+    // End-to-end tests read *computed* styles, where a mirrored layout legitimately shows
+    // up as borderRightWidth. Asserting that is the point of the RTL suite.
+    files: ['tests/e2e/**/*.ts'],
+    rules: { 'no-restricted-syntax': 'off' },
   },
 ];
 

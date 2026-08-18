@@ -27,9 +27,9 @@
   --radius-token: var(--radius);
   --shadow-token: var(--shadow);
 
-  --font-display: var(--font-display);
-  --font-ui: var(--font-ui);
-  --font-mono: var(--font-mono);
+  --font-display: var(--type-display);
+  --font-ui: var(--type-ui);
+  --font-mono: var(--type-mono);
 }
 
 @layer base {
@@ -40,7 +40,7 @@
   html {
     background: var(--bg);
     color: var(--text);
-    font-family: var(--font-ui);
+    font-family: var(--type-ui);
     -webkit-text-size-adjust: 100%;
   }
 
@@ -65,7 +65,7 @@
   h1,
   h2,
   h3 {
-    font-family: var(--font-display);
+    font-family: var(--type-display);
     font-weight: 700;
     line-height: 1.25;
   }
@@ -75,7 +75,7 @@
   kbd,
   samp,
   .data {
-    font-family: var(--font-mono);
+    font-family: var(--type-mono);
     font-variant-numeric: tabular-nums;
   }
 

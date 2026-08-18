@@ -61,6 +61,9 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+      - name: Message catalogue parity — fr / ar / en must not drift
+        run: npm run i18n:check
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -85,6 +88,14 @@ jobs:
       - name: Migration check — schema and migrations must not diverge
         # Fails on the classic "edited schema.prisma, forgot the migration" defect.
         run: npm run db:check
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests — locales, RTL, navigation
+        run: npm run test:e2e
+        env:
+          AUTH_SESSION_SECRET: ci-session-secret-at-least-32-characters-long
 
       - name: API security tests — RBAC, scope, sessions, audit, CSRF over the wire
         # Runs against the built server: "a manager cannot reach another structure by

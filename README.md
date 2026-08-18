@@ -87,6 +87,24 @@ Two further rules are enforced rather than remembered:
 - Business content is never machine-translated. Untranslated fields fall back to French
   with a visible "translation pending" affordance (ADR-025).
 
+## Languages
+
+French is the design and content language, Arabic adds RTL, English carries the
+international industrial vocabulary. Routes are locale-prefixed: `/fr/…`, `/ar/…`,
+`/en/…`.
+
+- `messages/fr.json` is the source of truth; `ar.json` and `en.json` mirror its key
+  structure, and `npm run i18n:check` fails CI on a missing key, an orphaned key or a
+  dropped ICU placeholder.
+- `lang` and `dir` come from the URL, so a link states its own language.
+- Physical CSS direction properties are banned by lint; layouts mirror on their own.
+- Arabic uses Noto Kufi Arabic and Noto Sans Arabic — Playfair Display has no Arabic
+  glyphs — and Western Arabic digits, so a document code or a phone extension reads
+  identically in all three languages.
+- **Business content is never machine-translated.** Extracted French stays French until
+  the client supplies reviewed translations; the UI falls back to French with a visible
+  "traduction en attente" marker.
+
 ## Security model
 
 Rights are **role + scope**, never role alone. The seven profiles of CDC v0.1 §3 are

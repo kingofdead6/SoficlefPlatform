@@ -1,0 +1,146 @@
+{
+  "app": {
+    "name": "SOFICLEF",
+    "tagline": "Compétences & Emplois",
+    "company": "SOFICLEF SARL"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "of": "sur",
+    "yes": "Oui",
+    "no": "Non",
+    "none": "Aucun",
+    "notAvailable": "Non renseigné",
+    "translationPending": "Traduction en attente",
+    "translationPendingHint": "Ce contenu n'est disponible qu'en français. La traduction doit être fournie et validée par la DRH.",
+    "skipToContent": "Aller au contenu principal"
+  },
+  "status": {
+    "vacant": "Poste vacant",
+    "toFill": "Poste à pourvoir",
+    "occupied": "Poste pourvu",
+    "draft": "Brouillon",
+    "inReview": "En revue",
+    "validated": "Validée",
+    "archived": "Archivée",
+    "inProgress": "En cours",
+    "closed": "Clôturée",
+    "planned": "Planifiée",
+    "overdue": "En retard",
+    "recommended": "Recommandé"
+  },
+  "auth": {
+    "signInTitle": "Connexion",
+    "signInLead": "Accédez à la plateforme Compétences & Emplois de SOFICLEF.",
+    "email": "Adresse e-mail professionnelle",
+    "password": "Mot de passe",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "signingIn": "Connexion en cours…",
+    "invalidCredentials": "Adresse e-mail ou mot de passe incorrect.",
+    "rateLimited": "Trop de tentatives. Réessayez dans quelques minutes.",
+    "unexpectedError": "La connexion a échoué. Réessayez.",
+    "sessionExpired": "Votre session a expiré. Reconnectez-vous.",
+    "userMenu": "Menu utilisateur",
+    "signedInAs": "Connecté en tant que"
+  },
+  "roles": {
+    "TECH_ADMIN": "Administrateur technique",
+    "BIZ_ADMIN_CE": "Administrateur métier C&E",
+    "HEAD_CE": "Responsable Compétences & Emplois",
+    "HR": "Direction des Ressources Humaines",
+    "MANAGER": "Responsable de structure",
+    "EMPLOYEE": "Collaborateur",
+    "VIEWER": "Lecteur"
+  },
+  "nav": {
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "mainNavigation": "Navigation principale",
+    "groups": {
+      "onboarding": "Onboarding",
+      "direction": "Direction",
+      "references": "Référentiels",
+      "tools": "Outils"
+    },
+    "items": {
+      "welcome": "Bienvenue",
+      "company": "Entreprise",
+      "strategy": "Plan Stratégique",
+      "jobDescription": "Fiche de Poste",
+      "organization": "Structures & Organisation",
+      "management": "Équipe Encadrement",
+      "recruitment": "Recrutements en cours",
+      "kaizen": "Projet Kaizen",
+      "qms": "SMQ · ISO 9001",
+      "hse": "HSE",
+      "contacts": "Interlocuteurs",
+      "documents": "Documents",
+      "onboardingChecklist": "Checklist 30 jours",
+      "competencies": "Bilan Compétences",
+      "remarks": "Remarques"
+    }
+  },
+  "shell": {
+    "onboardingContext": "Prise de poste",
+    "dayBadge": "J+{days}",
+    "dayBadgeBefore": "J-{days}",
+    "dayBadgeStart": "J+0",
+    "noOnboarding": "Aucun parcours d'intégration en cours",
+    "localeSwitcher": "Choisir la langue",
+    "localeSwitcherCurrent": "Langue actuelle : {locale}",
+    "breadcrumb": "Fil d'Ariane"
+  },
+  "empty": {
+    "welcome": "Votre page d'accueil affichera le mot de bienvenue de la Direction Générale, vos indicateurs clés et l'agenda de votre première journée. Elle sera activée avec la mise en service du module Onboarding.",
+    "company": "La présentation de SOFICLEF — identité, vision, mission, valeurs et activités — sera affichée ici dès l'activation du module Contenu.",
+    "strategy": "Le Plan Stratégique 2024–2026, ses objectifs par marché et les projets PS-01 à PS-04 seront affichés ici dès l'activation du module Contenu.",
+    "jobDescription": "La fiche de poste EN-012-DRH sera affichée ici après validation de sa version courante par la Direction des Ressources Humaines.",
+    "organization": "L'organigramme de la Direction de Production sera disponible après validation de la cartographie des structures par la DRH.",
+    "management": "L'équipe d'encadrement et ses périmètres seront affichés ici dès l'activation du module Contenu.",
+    "recruitment": "Les recrutements en cours de la Direction de Production seront affichés ici dès leur transmission par la DRH.",
+    "kaizen": "Les missions Kaizen, leurs écarts et leurs plans d'actions seront disponibles après reprise des comptes rendus de mission.",
+    "qms": "Le référentiel SMQ — processus PR02, cartographie ID-03-DG et responsabilités — sera affiché ici dès l'activation du module Contenu.",
+    "hse": "Les consignes HSE du site de Si Mustapha seront affichées ici dès l'activation du module Contenu.",
+    "contacts": "L'annuaire interne sera disponible après validation de la liste des postes téléphoniques par les Moyens Généraux.",
+    "documents": "La bibliothèque documentaire sera disponible après dépôt des documents de référence et définition de leurs droits d'accès.",
+    "onboardingChecklist": "Votre checklist d'intégration sur 30 jours sera activée lorsque la DRH aura instancié votre parcours.",
+    "competencies": "Le référentiel de compétences sera disponible après validation de la grille par la DRH.",
+    "remarks": "Votre journal de remarques et recommandations sera activé avec la mise en service du module Onboarding.",
+    "genericTitle": "Bientôt disponible",
+    "unblockedBy": "Ce qui débloque cette page"
+  },
+  "components": {
+    "dataTable": {
+      "empty": "Aucune donnée à afficher",
+      "sortAscending": "Trier par ordre croissant",
+      "sortDescending": "Trier par ordre décroissant",
+      "rowCount": "{count, plural, =0 {Aucune ligne} one {# ligne} other {# lignes}}"
+    },
+    "stepper": { "step": "Étape {current} sur {total}", "completed": "Terminée" },
+    "timeline": { "label": "Chronologie" },
+    "modal": { "close": "Fermer la fenêtre" },
+    "drawer": { "close": "Fermer le panneau" },
+    "tabs": { "label": "Onglets" }
+  },
+  "errors": {
+    "notFound": "Page introuvable",
+    "notFoundLead": "Cette page n'existe pas ou a été déplacée.",
+    "forbidden": "Accès refusé",
+    "forbiddenLead": "Vous n'avez pas les droits nécessaires pour consulter cette page.",
+    "serverError": "Erreur inattendue",
+    "serverErrorLead": "Une erreur est survenue. L'incident a été enregistré.",
+    "backToHome": "Retour à l'accueil"
+  }
+}

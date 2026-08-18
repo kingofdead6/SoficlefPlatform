@@ -1,4 +1,7 @@
 import { notFound } from 'next/navigation';
+import { setRequestLocale } from 'next-intl/server';
+
+import { devPagesEnabled } from '@/lib/dev-pages';
 
 /**
  * Design-token showcase — development only.
@@ -60,9 +63,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export default function TokensPage() {
-  // Dev-only surface: absent from production builds rather than merely unlinked.
-  if (process.env.NODE_ENV === 'production') notFound();
+/**
+ * Rendered per request rather than prerendered: whether these pages exist is a runtime
+ * decision (ENABLE_DEV_PAGES), and a build-time snapshot would freeze the answer.
+ */
+export const dynamic = 'force-dynamic';
+
+export default async function TokensPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  // Part of the toolkit, not the product: absent from production unless deliberately
+  // switched on with ENABLE_DEV_PAGES.
+  if (!devPagesEnabled()) notFound();
 
   return (
     <main className="mx-auto max-w-4xl p-8">
@@ -158,6 +171,7 @@ export default function TokensPage() {
           {(['ltr', 'rtl'] as const).map((dir) => (
             <div
               key={dir}
+              data-testid={`dir-demo-${dir}`}
               dir={dir}
               lang={dir === 'rtl' ? 'ar' : 'fr'}
               className="rounded-(--radius) border border-(--border) bg-(--surface) p-4"
