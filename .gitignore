@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# build output
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# test artefacts
+coverage/
+playwright-report/
+test-results/
+blob-report/
+tests/e2e/screenshots/*.png
+
+# environment — never commit real values (ADR-023)
+.env
+.env.*
+!.env.example
+
+# runtime
+*.log
+npm-debug.log*
+.DS_Store
