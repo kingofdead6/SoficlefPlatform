@@ -9,6 +9,7 @@
  */
 @theme inline {
   --color-gold: var(--gold);
+  --color-gold-strong: var(--gold-strong);
   --color-gold-light: var(--gold-light);
   --color-gold-accent: var(--gold-accent);
   --color-gold-dim: var(--gold-dim);

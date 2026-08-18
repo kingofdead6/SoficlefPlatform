@@ -733,3 +733,50 @@ system on staging by setting one variable, and the screenshots in the E2E suite 
 from the same build that is deployed rather than from a development server.
 
 **Status.** ACCEPTED.
+
+<a id="adr-039"></a>
+
+## ADR-039 — Two palette values corrected for WCAG AA contrast
+
+**Context.** The prototype's palette is client-approved (ADR-004), and CDC v0.1 §18
+requires WCAG 2.1 AA. Two combinations fail it, both on the small labels this product uses
+constantly:
+
+| Combination                                                                  | Measured | Required |
+| ---------------------------------------------------------------------------- | -------- | -------- |
+| `--text-dim` `#999090` on the sand background                                | 2.83:1   | 4.5:1    |
+| Brand gold `#8b6914` on a `--gold-dim` surface (nav active state, day badge) | 4.08:1   | 4.5:1    |
+
+**Decision.** `--text-dim` becomes `#6f6a68` (4.85:1 on the background, 4.57:1 on the
+secondary surface). A new `--gold-strong` `#755810` (5.33:1 on gold-dim) is used for small
+gold text on tinted surfaces. Brand gold itself is unchanged, including on white where it
+measures 5.09:1, so the identity is intact.
+
+**Consequences.** The interface is legible to readers with low vision and in the monochrome
+print a production director may pin to a wall. The tokens differ from the prototype in two
+values, which is a visible change the client should be told about rather than discover.
+A unit test pins both values, and Lighthouse's accessibility audit scores 100 on the shell
+in French and Arabic and on the sign-in form.
+
+**Status.** ASSUMPTION — the correction is required by the stated accessibility target, but
+the client owns the palette and should confirm.
+
+<a id="adr-040"></a>
+
+## ADR-040 — The request path is forwarded to the layout so a refused route answers 404
+
+**Context.** A route the signed-in user may not open must be refused. Calling `notFound()`
+inside the page works — the 404 page renders and no data is disclosed — but the shell
+layout has already begun streaming, so the HTTP status is 200. A monitoring system, a
+crawler or an API client sees success where the user saw a refusal.
+
+**Decision.** The proxy adds the request path as a header; the authenticated layout reads
+it, resolves the navigation entry and calls `notFound()` _before_ rendering the shell. The
+page keeps its own check as well.
+
+**Consequences.** A refused route answers a real 404, and the permission is still enforced
+twice — the layout for the status code, the page as the boundary if the layout is ever
+bypassed. The proxy gains no knowledge of sessions or permissions: it forwards a path,
+nothing more (ADR-036).
+
+**Status.** ACCEPTED.

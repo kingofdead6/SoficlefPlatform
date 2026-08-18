@@ -96,6 +96,10 @@ model User {
   /// Preferred interface locale; falls back to the platform default (fr).
   locale       String     @default("fr")
   status       UserStatus @default(ACTIVE)
+  /// Start date of this person's onboarding journey, when they have one. The shell's day
+  /// badge counts from it — forward once the journey has started, down before it (OQ-26).
+  /// Part 9's onboarding engine reads the same field.
+  onboardingStartDate DateTime?
   lastLoginAt  DateTime?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt

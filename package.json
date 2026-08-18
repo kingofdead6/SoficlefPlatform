@@ -2,7 +2,7 @@
   "name": "soficlef-platform",
   "version": "0.1.0",
   "private": true,
-  "description": "SOFICLEF SARL \u2014 plateforme structures, emplois, comp\u00e9tences et parcours d'int\u00e9gration",
+  "description": "SOFICLEF SARL — plateforme structures, emplois, compétences et parcours d'intégration",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -31,6 +31,11 @@
     "@node-rs/argon2": "^2.1.0",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@radix-ui/react-dropdown-menu": "^2.1.24",
+    "@radix-ui/react-tabs": "^1.1.21",
+    "@radix-ui/react-visually-hidden": "^1.2.11",
+    "clsx": "^2.1.1",
     "next": "^16.3.1",
     "next-intl": "^4.13.7",
     "pg": "^8.23.0",
@@ -40,6 +45,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^22.20.1",

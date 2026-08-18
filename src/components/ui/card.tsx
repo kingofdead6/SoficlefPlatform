@@ -1,0 +1,71 @@
+import { cn } from '@/lib/cn';
+
+/**
+ * A quiet, bordered surface. The prototype's cards are not shadowed and floating; they
+ * sit on the sand background and are separated by a hairline border.
+ */
+export function Card({
+  children,
+  className,
+  accent,
+  as: Component = 'div',
+}: {
+  children: React.ReactNode;
+  className?: string;
+  /** A start-edge accent bar, for callouts. Mirrors in RTL on its own. */
+  accent?: 'gold' | 'blue' | 'green' | 'red';
+  as?: 'div' | 'section' | 'article' | 'li';
+}) {
+  const accentClass = accent
+    ? {
+        gold: 'border-s-4 border-s-(--gold)',
+        blue: 'border-s-4 border-s-(--blue)',
+        green: 'border-s-4 border-s-(--green)',
+        red: 'border-s-4 border-s-(--red)',
+      }[accent]
+    : undefined;
+
+  return (
+    <Component
+      className={cn(
+        'rounded-(--radius) border border-(--border) bg-(--surface) p-5 shadow-(--shadow)',
+        accentClass,
+        className,
+      )}
+    >
+      {children}
+    </Component>
+  );
+}
+
+/** The small uppercase gold label the prototype puts at the top of a card. */
+export function CardTitle({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <h3
+      className={cn(
+        'text-gold mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase',
+        className,
+      )}
+    >
+      {children}
+    </h3>
+  );
+}
+
+export function CardBody({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn('text-text-muted text-[13px] leading-[1.72]', className)}>{children}</div>
+  );
+}

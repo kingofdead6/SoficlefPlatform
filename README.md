@@ -122,6 +122,26 @@ Rights are **role + scope**, never role alone. The seven profiles of CDC v0.1 §
 `npm run test:api` asserts these over the wire, including the direct-URL and
 direct-API-call cases, because a hidden link is not a security boundary.
 
+## Application shell
+
+A fixed 268px sidebar, a 52px top bar and a scrolling content area — the prototype's
+structure, rebuilt with logical properties so it mirrors in Arabic. Below tablet width the
+sidebar becomes a drawer.
+
+- Fifteen routes in four groups. Each declares the permission it needs, so the menu and the
+  route agree by construction: entries a user cannot open are never sent to the browser,
+  and typing the URL answers 404.
+- Every route is a real page with an empty state that names what will live there and what
+  unblocks it — never "coming soon".
+- Shared components (`Card`, `SectionTitle`, `DataTable`, `StatusBadge`, `Tabs`, `Timeline`,
+  `Stepper`, `Modal`, `Drawer`, `EmptyState`, `KpiTile`) are documented on `/dev/components`,
+  built on the tokens, RTL-safe and keyboard-navigable.
+- Lighthouse accessibility scores 100 on the shell in French and Arabic and on the sign-in
+  form; the E2E suite also runs axe with the WCAG 2.1 AA rule set.
+
+The AI assistant is deliberately absent from the navigation: it is phase 2, and the
+prototype's browser-side implementation could not have worked outside a sandbox (ADR-003).
+
 ## Data seeded from the prototype
 
 `seed/data/` holds 14 validated JSON files extracted from the client's HTML prototype:

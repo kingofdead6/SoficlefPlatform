@@ -34,6 +34,9 @@ export default defineConfig({
 
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 
+  // Applies migrations and seeds the demo accounts the suite signs in as.
+  globalSetup: './tests/e2e/global-setup.ts',
+
   webServer: {
     command: `npx next start --port ${PORT}`,
     url: `${baseURL}/fr`,
@@ -48,6 +51,8 @@ export default defineConfig({
       // The suite screenshots the design-system pages, which are off by default in a
       // production build.
       ENABLE_DEV_PAGES: 'true',
+      // The suite signs in as the seeded demo accounts.
+      SEED_DEMO_PASSWORD: process.env.E2E_DEMO_PASSWORD ?? 'Soficlef-Test-2026!',
     },
   },
 });

@@ -39,6 +39,8 @@ export interface AuthenticatedUser {
   displayName: string;
   locale: string;
   status: UserStatus;
+  /** Start of this person's onboarding journey, when they have one. */
+  onboardingStartDate: Date | null;
   assignments: RoleAssignment[];
 }
 

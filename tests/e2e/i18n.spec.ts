@@ -16,12 +16,14 @@ const LOCALES = [
 test.describe('locale routing', () => {
   test('negotiates a locale at the root and redirects', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveURL(/\/(fr|ar|en)$/);
+    // The locale root is itself a router: anonymous visitors land on the sign-in form,
+    // in the negotiated language.
+    await expect(page).toHaveURL(/\/(fr|ar|en)\/login$/);
   });
 
   for (const { code, dir } of LOCALES) {
     test(`/${code} sets lang and dir`, async ({ page }) => {
-      await page.goto(`/${code}`);
+      await page.goto(`/${code}/login`);
       const html = page.locator('html');
       await expect(html).toHaveAttribute('lang', code);
       await expect(html).toHaveAttribute('dir', dir);

@@ -22,8 +22,13 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { ALL_PERMISSIONS, ROLE_PERMISSIONS, parsePermission } from '../src/domain/auth/permissions';
 import { ROLES, type RoleCode } from '../src/domain/auth/roles';
 import { OrganizationFile } from '../seed/schemas/organization';
+import { WelcomeFile } from '../seed/schemas/welcome';
 
 const ARGON2ID = 2;
+
+const WELCOME = WelcomeFile.parse(
+  JSON.parse(readFileSync(new URL('../seed/data/welcome.json', import.meta.url), 'utf8')),
+).data;
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is required to seed');
@@ -150,6 +155,8 @@ interface DemoUser {
   displayName: string;
   locale: string;
   roles: { code: RoleCode; unitCode?: string }[];
+  /** ISO date, for the people who have an onboarding journey. */
+  onboardingStartDate?: string;
 }
 
 /**
@@ -189,6 +196,8 @@ const DEMO_USERS: DemoUser[] = [
     displayName: 'DJAOUDI Farid — Directeur de Production',
     locale: 'fr',
     roles: [{ code: 'EMPLOYEE' }, { code: 'MANAGER', unitCode: 'DPR' }],
+    // Taken from the extracted prototype data, not retyped.
+    onboardingStartDate: WELCOME.startDate,
   },
   {
     // A collaborator with no managerial breadth: their rights end at their own records,
@@ -228,8 +237,13 @@ async function seedDemoUsers(unitIds: Map<string, string>, password: string): Pr
         displayName: demo.displayName,
         locale: demo.locale,
         passwordHash,
+        onboardingStartDate: demo.onboardingStartDate ? new Date(demo.onboardingStartDate) : null,
       },
-      update: { displayName: demo.displayName, passwordHash },
+      update: {
+        displayName: demo.displayName,
+        passwordHash,
+        onboardingStartDate: demo.onboardingStartDate ? new Date(demo.onboardingStartDate) : null,
+      },
       select: { id: true },
     });
 

@@ -173,7 +173,9 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'kaizen_action:read',
     'kaizen_action:update',
     'document:read',
-    'remark:read',
+    // Deliberately no `remark:read`: the remarks journal is the collaborator's own
+    // observations to HR and the DG. OQ-12's working default confines it to the author,
+    // the HR chain and HEAD_CE — a structure head is not on that list.
     'report:read',
     'dashboard:read',
   ],

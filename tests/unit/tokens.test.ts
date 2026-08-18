@@ -26,13 +26,28 @@ const EXPECTED: Record<string, string> = {
   '--red': '#c0392b',
   '--text': '#1a1a1a',
   '--text-muted': '#555050',
-  '--text-dim': '#999090',
+  '--text-dim': '#6f6a68',
   '--radius': '10px',
   '--sidebar-w': '268px',
   '--topbar-h': '52px',
 };
 
+/**
+ * Two values deliberately diverge from the prototype, both for WCAG 2.1 AA (ADR-039):
+ * --text-dim was 2.83:1 on the sand background, and small brand-gold text on a gold-dim
+ * background was 4.08:1. Everything else is the prototype's palette, unchanged.
+ */
+const CONTRAST_CORRECTED: Record<string, string> = {
+  '--gold-strong': '#755810',
+};
+
 describe('design tokens', () => {
+  for (const [token, value] of Object.entries(CONTRAST_CORRECTED)) {
+    it(`${token} is declared for small text on tinted surfaces`, () => {
+      expect(tokens).toContain(`${token}: ${value};`);
+    });
+  }
+
   for (const [token, value] of Object.entries(EXPECTED)) {
     it(`${token} keeps the client-approved value ${value}`, () => {
       const declaration = new RegExp(

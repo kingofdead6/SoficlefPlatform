@@ -14,6 +14,13 @@
 :root {
   /* ── Brand ─────────────────────────────────────────────────────────────── */
   --gold: #8b6914; /* brand, primary buttons, active states, card titles */
+  /*
+   * Brand gold on a gold-dim background measures 4.08:1 — just under WCAG AA for small
+   * text. This darker gold is used for small text on tinted surfaces (nav active state,
+   * day badge, locale switcher); the brand gold is unchanged everywhere else, including
+   * on white where it measures 5.09:1.
+   */
+  --gold-strong: #755810;
   --gold-light: #b8890f;
   --gold-accent: #c9a84c; /* hover, progress bars, callout backgrounds */
   --gold-dim: rgba(139, 105, 20, 0.1);
@@ -34,7 +41,12 @@
   /* ── Text ──────────────────────────────────────────────────────────────── */
   --text: #1a1a1a;
   --text-muted: #555050;
-  --text-dim: #999090;
+  /*
+   * The prototype's #999090 measures 2.83:1 on the sand background — below AA for the
+   * 9–11px labels it is used on. Darkened to 4.85:1; the role of the token is unchanged
+   * (ADR-039).
+   */
+  --text-dim: #6f6a68;
 
   /* ── Geometry ──────────────────────────────────────────────────────────── */
   --radius: 10px;

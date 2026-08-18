@@ -21,6 +21,7 @@ export async function loadAuthenticatedUser(userId: string): Promise<Authenticat
       displayName: true,
       locale: true,
       status: true,
+      onboardingStartDate: true,
       userRoles: {
         select: {
           role: { select: { code: true } },
@@ -90,6 +91,7 @@ export async function loadAuthenticatedUser(userId: string): Promise<Authenticat
     displayName: user.displayName,
     locale: user.locale,
     status: user.status,
+    onboardingStartDate: user.onboardingStartDate,
     assignments,
   };
 }

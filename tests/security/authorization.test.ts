@@ -26,6 +26,7 @@ function user(role: RoleCode, overrides: Partial<AuthenticatedUser> = {}): Authe
     displayName: 'Test User',
     locale: 'fr',
     status: 'ACTIVE',
+    onboardingStartDate: null,
     assignments: [{ role, scope: { kind: 'GLOBAL' } }],
     ...overrides,
   };
