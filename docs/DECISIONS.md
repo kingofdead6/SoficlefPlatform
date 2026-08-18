@@ -609,3 +609,67 @@ which is what a directory is for. If the client prefers Eastern Arabic numerals,
 formatter configuration change, not a content change.
 
 **Status.** ASSUMPTION — flagged as OQ-24.
+
+<a id="adr-033"></a>
+
+## ADR-033 — Login rate limiting: per-account attempts, per-address failures
+
+**Context.** CDC v0.1 §15 requires rate limiting on sensitive endpoints. The obvious
+implementation — n attempts per IP per window — misbehaves in exactly SOFICLEF's setting:
+an industrial site behind one VPN egress presents every employee under a single address,
+so a handful of mistyped passwords would lock out the whole plant. Counting successful
+sign-ins toward the same budget makes it worse.
+
+**Decision.** Two counters with different jobs.
+_Per account_ (`login:email:…`): every attempt counts, default 5 per 15 minutes, reset on a
+successful sign-in. This is what stops a spray against one person.
+_Per source address_ (`login:ip:…`): only **failures** count, default 50 per 15 minutes.
+This is what stops automated abuse without punishing colleagues who share an egress.
+Both limits are configuration, not constants.
+
+**Consequences.** A legitimate user is never blocked by someone else's typo. An attacker
+spraying many accounts from one address still hits the address counter, because their
+attempts fail. A distributed attack across many addresses is bounded by the per-account
+counter. The limiter is in-memory and therefore per instance; the interface is a store, so
+Redis drops in when the deployment becomes multi-instance (CDC v0.1 §14).
+
+**Status.** ACCEPTED.
+
+<a id="adr-034"></a>
+
+## ADR-034 — An assignment with no scope takes its role's natural breadth
+
+**Context.** `UserRole.scopeId` is nullable: an administrative role needs no organizational
+anchor. The tempting reading of "no scope" is "no restriction", and it is wrong — it hands
+an employee the whole reference frame, which is precisely what CDC v0.1 §3 forbids.
+
+**Decision.** A scopeless assignment resolves to the role's _natural_ breadth, declared
+once per role: `GLOBAL` for the administrative and read-only profiles, `SELF` for
+`EMPLOYEE`, `ORGANIZATION_UNIT` for `MANAGER`. A `MANAGER` with no unit attached covers
+nothing until one is.
+
+**Consequences.** An incomplete assignment fails closed rather than open. Adding a role
+means declaring its natural breadth in the same place as its name, so the question cannot
+be skipped. The API security suite asserts it: an `EMPLOYEE` receives an empty list of
+structures, not the full set.
+
+**Status.** ACCEPTED.
+
+<a id="adr-035"></a>
+
+## ADR-035 — Out-of-scope reads answer 404, not 403
+
+**Context.** A manager requesting a structure outside their perimeter can be told either
+"forbidden" or "not found". "Forbidden" confirms the record exists, which is a small
+disclosure that adds up: an attacker can enumerate the organization by probing ids.
+
+**Decision.** A read of an existing but out-of-scope record returns the same 404 a missing
+record returns. Mutations still return 403, because there the caller already knows the
+record exists — they were shown it or they are guessing, and 403 is the honest answer to
+"you may not change this".
+
+**Consequences.** Ids cannot be used to map the organization. The repository returns null
+for both cases, so a handler cannot leak the difference by accident. Asserted in the API
+security suite.
+
+**Status.** ACCEPTED.

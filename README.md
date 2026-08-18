@@ -87,6 +87,23 @@ Two further rules are enforced rather than remembered:
 - Business content is never machine-translated. Untranslated fields fall back to French
   with a visible "translation pending" affordance (ADR-025).
 
+## Security model
+
+Rights are **role + scope**, never role alone. The seven profiles of CDC v0.1 §3 are
+`TECH_ADMIN`, `BIZ_ADMIN_CE`, `HEAD_CE`, `HR`, `MANAGER`, `EMPLOYEE`, `VIEWER`.
+
+- One decision point: `can(user, action, resource, scope)` in `src/domain/auth`. Every
+  route, action and repository calls it; there is no second place a permission is decided.
+- Scope is applied **in the query**, not in the UI: a manager's request returns their
+  structures and what hangs beneath them, and nothing else.
+- An out-of-scope read answers 404, so ids cannot be used to map the organization.
+- Every sensitive mutation writes an audit row — actor, action, entity, before, after —
+  in the same transaction as the change.
+- Sessions are server-side and revocable on the next request; passwords are Argon2id.
+
+`npm run test:api` asserts these over the wire, including the direct-URL and
+direct-API-call cases, because a hidden link is not a security boundary.
+
 ## Data seeded from the prototype
 
 `seed/data/` holds 14 validated JSON files extracted from the client's HTML prototype:

@@ -34,3 +34,195 @@ model AppSetting {
 
   @@map("app_setting")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 3 — authentication, RBAC with organizational scope, and audit.
+//
+// Rights are role + scope, never role alone: no user sees the whole reference frame
+// merely by being authenticated (CDC v0.1 §3). Scope filtering happens in the query
+// layer, not in the UI (ADR-021), and every sensitive mutation writes an audit row in
+// the same transaction as the change (ADR-022).
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DISABLED
+}
+
+enum ScopeType {
+  /// The whole organization. Held by TECH_ADMIN, BIZ_ADMIN_CE, HEAD_CE, HR, VIEWER.
+  GLOBAL
+  /// One organizational unit and, unless stated otherwise, its descendants.
+  ORGANIZATION_UNIT
+  /// The user's own records only. Held by EMPLOYEE.
+  SELF
+}
+
+/// Structure / department / service. The scope anchor for MANAGER rights, and the
+/// foundation the organization module (Part 7) builds on.
+model OrganizationUnit {
+  id       String  @id @default(uuid()) @db.Uuid
+  /// Stable business code, e.g. "DPR" or "DPR-FAB".
+  code     String  @unique
+  nameFr   String
+  nameAr   String?
+  nameEn   String?
+  /// Free-form for now; Part 7 turns this into an administrable list of values.
+  type     String
+  parentId String? @db.Uuid
+  parent   OrganizationUnit?  @relation("OrganizationUnitTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children OrganizationUnit[] @relation("OrganizationUnitTree")
+
+  /// Archival rather than deletion: history must survive a reorganization
+  /// (CDC v0.1 §16.1).
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  scopes Scope[]
+
+  @@index([parentId])
+  @@index([archivedAt])
+  @@map("organization_unit")
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique
+  /// Argon2id (ADR-012). Never a plaintext or reversible value.
+  passwordHash String
+  displayName  String
+  /// Preferred interface locale; falls back to the platform default (fr).
+  locale       String     @default("fr")
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  sessions   Session[]
+  userRoles  UserRole[]
+  auditTrail AuditLog[] @relation("AuditActor")
+
+  @@index([status])
+  @@map("user")
+}
+
+/// Server-side session. The cookie carries an opaque token; only its hash is stored,
+/// so a database leak does not yield usable sessions. Revocation takes effect on the
+/// next request because the row is read on every request (ADR-011).
+model Session {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  ip        String?
+  userAgent String?
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  /// Sliding expiry: renewed at most once per renewal window.
+  lastSeenAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("session")
+}
+
+model Role {
+  id          String  @id @default(uuid()) @db.Uuid
+  /// One of the seven profiles of CDC v0.1 §3.
+  code        String  @unique
+  nameFr      String
+  nameAr      String?
+  nameEn      String?
+  description String?
+
+  permissions RolePermission[]
+  userRoles   UserRole[]
+
+  @@map("role")
+}
+
+model Permission {
+  id       String @id @default(uuid()) @db.Uuid
+  /// "resource:action", e.g. "job_description:validate".
+  code     String @unique
+  resource String
+  action   String
+
+  roles RolePermission[]
+
+  @@index([resource])
+  @@map("permission")
+}
+
+model RolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permission")
+}
+
+/// An organizational boundary a role assignment applies within.
+model Scope {
+  id                 String            @id @default(uuid()) @db.Uuid
+  type               ScopeType
+  organizationUnitId String?           @db.Uuid
+  organizationUnit   OrganizationUnit? @relation(fields: [organizationUnitId], references: [id], onDelete: Restrict)
+
+  userRoles UserRole[]
+
+  /// One row per boundary: a GLOBAL or SELF scope carries no unit, and an
+  /// ORGANIZATION_UNIT scope is unique per unit.
+  @@unique([type, organizationUnitId])
+  @@map("scope")
+}
+
+/// A role granted to a user, optionally narrowed to a scope. A null scope means the
+/// role's natural breadth — global for the administrative profiles.
+model UserRole {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  roleId    String   @db.Uuid
+  scopeId   String?  @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  scope     Scope?   @relation(fields: [scopeId], references: [id], onDelete: Restrict)
+  grantedAt DateTime @default(now())
+  /// Who granted it. Kept as a plain id: the granting account may later be deleted,
+  /// and the audit trail is the authoritative record.
+  grantedBy String?  @db.Uuid
+
+  @@unique([userId, roleId, scopeId])
+  @@index([roleId])
+  @@map("user_role")
+}
+
+/// Append-only from the application's point of view: no update path, no delete path
+/// (ADR-022). Retention is a business decision and is not implemented here (OQ-16).
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  /// Null for a failed login with an unknown e-mail — the attempt is still recorded.
+  actorId    String?  @db.Uuid
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  /// Who was acting, as written at the time; survives the account being renamed.
+  actorLabel String
+  action     String
+  entityType String
+  entityId   String?
+  before     Json?
+  after      Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([entityType, entityId])
+  @@index([action, createdAt])
+  @@map("audit_log")
+}

@@ -2,7 +2,7 @@
   "name": "soficlef-platform",
   "version": "0.1.0",
   "private": true,
-  "description": "SOFICLEF SARL — plateforme structures, emplois, compétences et parcours d'intégration",
+  "description": "SOFICLEF SARL \u2014 plateforme structures, emplois, comp\u00e9tences et parcours d'int\u00e9gration",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -18,9 +18,14 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
-    "db:check": "prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --exit-code"
+    "db:check": "prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --exit-code",
+    "db:seed": "tsx prisma/seed.ts",
+    "test:security": "vitest run tests/security",
+    "test:api": "vitest run --config vitest.api.config.ts",
+    "test:api:build": "next build && vitest run --config vitest.api.config.ts"
   },
   "dependencies": {
+    "@node-rs/argon2": "^2.1.0",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "next": "^16.3.1",

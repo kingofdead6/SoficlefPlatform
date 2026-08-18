@@ -64,7 +64,7 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Unit tests
+      - name: Unit and security tests
         run: npm run test:unit
 
       - name: Re-run the extractor and check the seed data is up to date
@@ -85,3 +85,10 @@ jobs:
       - name: Migration check — schema and migrations must not diverge
         # Fails on the classic "edited schema.prisma, forgot the migration" defect.
         run: npm run db:check
+
+      - name: API security tests — RBAC, scope, sessions, audit, CSRF over the wire
+        # Runs against the built server: "a manager cannot reach another structure by
+        # direct API call" is a claim about the wire, not about a function.
+        run: npm run test:api
+        env:
+          AUTH_SESSION_SECRET: ci-session-secret-at-least-32-characters-long

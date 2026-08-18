@@ -87,8 +87,8 @@ const config = [
     },
   },
   {
-    // The extractor is a Node script, not application code.
-    files: ['seed/**/*.ts', '*.config.ts', '*.config.mjs'],
+    // Scripts, not application code: they report to a terminal.
+    files: ['seed/**/*.ts', 'prisma/seed.ts', 'tests/**/*.ts', '*.config.ts', '*.config.mjs'],
     rules: { 'no-console': 'off' },
   },
 ];
