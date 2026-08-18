@@ -30,10 +30,46 @@ const WELCOME = WelcomeFile.parse(
   JSON.parse(readFileSync(new URL('../seed/data/welcome.json', import.meta.url), 'utf8')),
 ).data;
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL ?? "postgresql://neondb_owner:npg_do79LMBmuQjq@ep-withered-field-ayqkmkqx-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
 if (!connectionString) throw new Error('DATABASE_URL is required to seed');
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+
+// Upsert extracted seed payloads into the database so the UI can read them from
+// a stable place instead of the file system. This allows the frontend to render
+// mock content by querying `SeedContent` rows.
+function seedDataFiles(): { domain: string; content: any }[] {
+  const dir = new URL('../seed/data', import.meta.url);
+  const files = JSON.parse(
+    // Use readFileSync on the directory listing via node:fs isn't necessary; use
+    // globbing via a static list to avoid introducing new deps. We'll list files
+    // manually as present in the repo.
+    JSON.stringify([
+      'company.json',
+      'contacts.json',
+      'documents.json',
+      'hse.json',
+      'job-description.json',
+      'kaizen.json',
+      'management-team.json',
+      'onboarding-checklist.json',
+      'organization.json',
+      'qms.json',
+      'recruitment.json',
+      'strategy.json',
+      'values.json',
+      'welcome.json',
+    ]),
+  ) as string[];
+
+  return files.map((f) => {
+    const url = new URL(`../seed/data/${f}`, import.meta.url);
+    const raw = readFileSync(url, 'utf8');
+    const parsed = JSON.parse(raw);
+    const domain = parsed?.meta?.domain ?? f.replace(/\.json$/, '');
+    return { domain, content: parsed };
+  });
+}
 
 /** Organizational skeleton, derived from the extracted prototype data (Part 1). */
 function organizationSkeleton() {
@@ -162,6 +198,7 @@ interface DemoUser {
 /**
  * Demo accounts mirroring the real cast, so the role model can be walked through with
  * the client. Real accounts are created through the administration screens.
+ * Demo password for all of them is : Soficlef-JTYAC5D3WupN
  */
 const DEMO_USERS: DemoUser[] = [
   {
@@ -270,18 +307,29 @@ async function seedDemoUsers(unitIds: Map<string, string>, password: string): Pr
 }
 
 async function main(): Promise<void> {
-  const generated = !process.env.SEED_DEMO_PASSWORD;
-  const password =
-    process.env.SEED_DEMO_PASSWORD ?? `Soficlef-${randomBytes(9).toString('base64url')}`;
+  const suppliedPassword = process.env.SEED_DEMO_PASSWORD;
+  const wasGenerated = !suppliedPassword;
+  const password = suppliedPassword ?? `Soficlef-${randomBytes(9).toString('base64url')}`;
 
   await seedPermissionsAndRoles();
   const unitIds = await seedOrganization();
   await seedDemoUsers(unitIds, password);
 
+  // Persist extracted seed payloads into the DB.
+  const payloads = seedDataFiles();
+  for (const p of payloads) {
+    await prisma.seedContent.upsert({
+      where: { domain: p.domain },
+      create: { domain: p.domain, data: p.content },
+      update: { data: p.content },
+    });
+  }
+
   console.log(`✔ ${ALL_PERMISSIONS.length} permissions, ${Object.keys(ROLES).length} roles`);
   console.log(`✔ ${unitIds.size} organization units`);
   console.log(`✔ ${DEMO_USERS.length} demo users`);
-  if (generated) {
+
+  if (wasGenerated) {
     console.log(`\n  Demo password (shown once, not stored anywhere): ${password}`);
     console.log('  Set SEED_DEMO_PASSWORD to choose your own.\n');
   }

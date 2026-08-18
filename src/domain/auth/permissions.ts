@@ -66,20 +66,12 @@ const READ_ONLY_EVERYTHING: PermissionCode[] = [
  */
 export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   TECH_ADMIN: [
-    'user:read',
-    'user:create',
-    'user:update',
-    'user:delete',
-    'user:assign_role',
-    'role:read',
-    'role:create',
-    'role:update',
-    'role:delete',
-    'audit_log:read',
-    'audit_log:export',
-    'setting:read',
-    'setting:update',
-    'organization_unit:read',
+  'user:read', 'user:create', 'user:update', 'user:delete', 'user:assign_role',
+  'role:read', 'role:create', 'role:update', 'role:delete',
+  'audit_log:read', 'audit_log:export',
+  'setting:read', 'setting:update',
+  'organization_unit:read',
+  'onboarding_instance:read', // add whatever else TECH_ADMIN should see
   ],
   BIZ_ADMIN_CE: [
     'organization_unit:read',

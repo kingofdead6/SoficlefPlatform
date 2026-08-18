@@ -230,3 +230,17 @@ model AuditLog {
   @@index([action, createdAt])
   @@map("audit_log")
 }
+
+// Generic storage for extracted seed data used by the prototype UI. Each row
+// holds a domain key (e.g. "welcome", "management-team") and the extracted
+// payload as JSON so the frontend can render prototype content without bespoke
+// tables for every domain.
+model SeedContent {
+  id        String   @id @default(uuid()) @db.Uuid
+  domain    String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("seed_content")
+}

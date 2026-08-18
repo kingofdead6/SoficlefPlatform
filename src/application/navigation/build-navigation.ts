@@ -55,5 +55,6 @@ function canWithinAnyScope(user: AuthenticatedUser, item: NavItem): boolean {
 }
 
 export function canOpen(user: AuthenticatedUser, item: NavItem): boolean {
+  console.log('[AppLayout debug] user assignments', JSON.stringify(user.assignments, null, 2));
   return can(user, item.requires.action, item.requires.resource) || canWithinAnyScope(user, item);
 }
