@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "domain": "documents",
+    "sourceFile": "SOFICLEF_Onboarding_Directeur_Production_.html",
+    "sourcePages": [
+      "docs"
+    ],
+    "extractedCount": 16
+  },
+  "data": {
+    "available": [
+      {
+        "id": "plan-strategique-2024-2026",
+        "fileName": "Plan_Strategique_2024-2026.pdf",
+        "titleFr": "Plan Stratégique 2024–2026",
+        "detailFr": "PDF · 12 Mo",
+        "availability": "AVAILABLE"
+      },
+      {
+        "id": "cartographie-processus-smq",
+        "fileName": "Cartographie_Processus_SMQ.pdf",
+        "titleFr": "Cartographie Processus SMQ — ID-03-DG",
+        "detailFr": "PDF · 6,5 Mo",
+        "availability": "AVAILABLE"
+      },
+      {
+        "id": "organigramme-general-soficlef-2025",
+        "fileName": "Organigramme_General_SOFICLEF_2025.pdf",
+        "titleFr": "Organigramme Général SOFICLEF",
+        "detailFr": "PDF · 385 Ko",
+        "availability": "AVAILABLE"
+      },
+      {
+        "id": "organigramme-direction-production-soficlef-v2",
+        "fileName": "Organigramme_Direction_Production_SOFICLEF_v2.pdf",
+        "titleFr": "Organigramme Direction de Production",
+        "detailFr": "PDF · A3 · 2026",
+        "availability": "AVAILABLE"
+      },
+      {
+        "id": "01-directeur-production-vf",
+        "fileName": "01-Directeur_Production_VF.pdf",
+        "titleFr": "Fiche de Poste — Directeur de Production",
+        "detailFr": "PDF · EN-012-DRH",
+        "availability": "AVAILABLE"
+      },
+      {
+        "id": "plan-de-circulation-general",
+        "fileName": "Plan_de_circulation_general.pdf",
+        "titleFr": "Plan de Circulation HSE",
+        "detailFr": "PDF · 11 Mo",
+        "availability": "AVAILABLE"
+      },
+      {
+        "id": "valeurs-soficlef",
+        "fileName": "Valeurs_SOFICLEF.pdf",
+        "titleFr": "Valeurs SOFICLEF",
+        "detailFr": "PDF · 282 Ko",
+        "availability": "AVAILABLE"
+      },
+      {
+        "id": "vision-soficlef",
+        "fileName": "Vision_SOFICLEF.pdf",
+        "titleFr": "Vision SOFICLEF",
+        "detailFr": "PDF · 263 Ko",
+        "availability": "AVAILABLE"
+      },
+      {
+        "id": "mission-soficlef",
+        "fileName": "Mission_SOFICLEF.pdf",
+        "titleFr": "Mission SOFICLEF",
+        "detailFr": "PDF · 245 Ko",
+        "availability": "AVAILABLE"
+      }
+    ],
+    "pending": [
+      {
+        "id": "objectifs-production-2026-kpis-volumes-delais",
+        "titleFr": "Objectifs Production 2026 (KPIs, volumes, délais)",
+        "availability": "PENDING"
+      },
+      {
+        "id": "pr-01-pro-procedure-fabrication",
+        "titleFr": "PR-01-PRO : Procédure Fabrication",
+        "availability": "PENDING"
+      },
+      {
+        "id": "pr-02-pro-procedure-controle-qualite-production",
+        "titleFr": "PR-02-PRO : Procédure Contrôle Qualité Production",
+        "availability": "PENDING"
+      },
+      {
+        "id": "pr-04-pro-gestion-retours-produits-non-conformes-sav",
+        "titleFr": "PR-04-PRO : Gestion retours produits non conformes SAV",
+        "availability": "PENDING"
+      },
+      {
+        "id": "plan-de-maintenance-preventive-equipements-cnc",
+        "titleFr": "Plan de maintenance préventive équipements CNC",
+        "availability": "PENDING"
+      },
+      {
+        "id": "reglement-interieur-soficlef",
+        "titleFr": "Règlement intérieur SOFICLEF",
+        "availability": "PENDING"
+      },
+      {
+        "id": "liste-des-numeros-internes-complete",
+        "titleFr": "Liste des numéros internes complète",
+        "availability": "PENDING"
+      }
+    ]
+  }
+}

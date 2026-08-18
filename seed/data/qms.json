@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "domain": "qms",
+    "sourceFile": "SOFICLEF_Onboarding_Directeur_Production_.html",
+    "sourcePages": [
+      "smq"
+    ],
+    "extractedCount": 1
+  },
+  "data": {
+    "standardFr": "ISO 9001:2015",
+    "certificationBodyFr": "VINÇOTTE International Algérie",
+    "certifiedSinceFr": "Septembre 2017",
+    "certificationScopeFr": "Production · Distribution · SAV",
+    "ownedProcessCode": "PR02",
+    "ownedProcessNoteFr": "Processus de Réalisation, piloté par le Directeur de Production. Vous êtes le Pilote du Processus PR02. Ce processus couvre la fabrication, le contrôle qualité, la maintenance et le SAV.",
+    "processMapCode": "ID-03-DG",
+    "responsibilities": [
+      {
+        "id": "smq-responsabilite-01",
+        "textFr": "Maîtrise des non-conformités — Identifier, traiter et corriger tout écart qualité en production"
+      },
+      {
+        "id": "smq-responsabilite-02",
+        "textFr": "Suivi des indicateurs qualité — Taux de rebut, taux de conformité, réclamations clients, taux de rejet"
+      },
+      {
+        "id": "smq-responsabilite-03",
+        "textFr": "Actions correctives PDCA — Piloter les plans d'amélioration continue, animer les revues de processus"
+      },
+      {
+        "id": "smq-responsabilite-04",
+        "textFr": "Audits internes — Faciliter et participer aux audits de la Direction de Production"
+      },
+      {
+        "id": "smq-responsabilite-05",
+        "textFr": "Contact SMQ : ARBANE Yassine — Responsable SMQ — Poste 121"
+      }
+    ],
+    "processes": [
+      {
+        "code": "PM01",
+        "category": "MANAGEMENT",
+        "categoryLabelFr": "Management",
+        "nameFr": "Marketing",
+        "isOwnedByProductionDirector": false
+      },
+      {
+        "code": "PM02",
+        "category": "MANAGEMENT",
+        "categoryLabelFr": "Management",
+        "nameFr": "Finances",
+        "isOwnedByProductionDirector": false
+      },
+      {
+        "code": "PM03",
+        "category": "MANAGEMENT",
+        "categoryLabelFr": "Management",
+        "nameFr": "Système d'Information",
+        "isOwnedByProductionDirector": false
+      },
+      {
+        "code": "PM04",
+        "category": "MANAGEMENT",
+        "categoryLabelFr": "Management",
+        "nameFr": "HSE",
+        "isOwnedByProductionDirector": false
+      },
+      {
+        "code": "PR02",
+        "category": "REALISATION",
+        "categoryLabelFr": "Réalisation",
+        "nameFr": "Production",
+        "isOwnedByProductionDirector": true
+      },
+      {
+        "code": "PR01",
+        "category": "REALISATION",
+        "categoryLabelFr": "Réalisation",
+        "nameFr": "Achat",
+        "isOwnedByProductionDirector": false
+      },
+      {
+        "code": "PR03",
+        "category": "REALISATION",
+        "categoryLabelFr": "Réalisation",
+        "nameFr": "Commercial",
+        "isOwnedByProductionDirector": false
+      },
+      {
+        "code": "PS01",
+        "category": "SUPPORT",
+        "categoryLabelFr": "Support",
+        "nameFr": "Ressources Humaines",
+        "isOwnedByProductionDirector": false
+      },
+      {
+        "code": "PS02",
+        "category": "SUPPORT",
+        "categoryLabelFr": "Support",
+        "nameFr": "Moyens Généraux",
+        "isOwnedByProductionDirector": false
+      },
+      {
+        "code": "PS03",
+        "category": "SUPPORT",
+        "categoryLabelFr": "Support",
+        "nameFr": "Logistique",
+        "isOwnedByProductionDirector": false
+      }
+    ]
+  }
+}

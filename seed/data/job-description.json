@@ -1,0 +1,122 @@
+{
+  "meta": {
+    "domain": "job-description",
+    "sourceFile": "SOFICLEF_Onboarding_Directeur_Production_.html",
+    "sourcePages": [
+      "poste"
+    ],
+    "extractedCount": 1
+  },
+  "data": {
+    "code": "EN-012-DRH",
+    "jobTitleFr": "Directeur de Production",
+    "applicationDate": "2018-08-19",
+    "applicationDateSourceFr": "Directeur de Production · Code EN-012-DRH · Date d'application 19.08.2018",
+    "positioning": {
+      "structureFr": "Direction de Production",
+      "processFr": "Production (PR02)",
+      "reportsToFr": "Directeur Général",
+      "subordinatesFr": "Secrétaire · Adjoint Directeur Production · Responsable Fabrication · Responsable Méthodes, Maintenance et CQ"
+    },
+    "requirements": {
+      "educationFr": "Master / Ingénieur en Génie-Industriel ou équivalent",
+      "additionalEducationFr": "MBA ou équivalent en Gestion de Production / FAO&CAO / Maintenance / CQ",
+      "experienceFr": "10 ans dans le domaine d'activité",
+      "workPatternFr": "Jour / Nuit (exceptionnel)"
+    },
+    "missions": [
+      {
+        "id": "mission-01",
+        "textFr": "Accompagner la Direction Générale dans la définition de la stratégie industrielle de l'entreprise, conformément à la réglementation en vigueur"
+      },
+      {
+        "id": "mission-02",
+        "textFr": "Définir et organiser les moyens et les procédés nécessaires à la production, et veiller à la performance globale"
+      }
+    ],
+    "permanentTasks": [
+      {
+        "id": "tache-permanente-01",
+        "textFr": "Participer à la définition de la stratégie de l'entreprise et conseiller la DG sur l'industrialisation à mettre en place"
+      },
+      {
+        "id": "tache-permanente-02",
+        "textFr": "Définir les objectifs opérationnels liés au processus Production, mettre les plans d'actions et indicateurs de performance"
+      },
+      {
+        "id": "tache-permanente-03",
+        "textFr": "Élaborer le budget du Processus Production et ses différentes structures"
+      },
+      {
+        "id": "tache-permanente-04",
+        "textFr": "Assurer la veille technologique et réglementaire liée au Processus Production"
+      },
+      {
+        "id": "tache-permanente-05",
+        "textFr": "Participer et veiller à l'amélioration des systèmes d'information"
+      },
+      {
+        "id": "tache-permanente-06",
+        "textFr": "Assurer le respect des exigences du SMQ au niveau du processus Production, en collaboration avec le Responsable SMQ"
+      },
+      {
+        "id": "tache-permanente-07",
+        "textFr": "Réaliser les études de faisabilité techniques et économiques des projets d'investissement et/ou de modernisation des équipements"
+      },
+      {
+        "id": "tache-permanente-08",
+        "textFr": "Négocier les contrats d'investissement et mettre en place les critères d'évaluation des fournisseurs et sous-traitants"
+      },
+      {
+        "id": "tache-permanente-09",
+        "textFr": "Veiller sur la coordination et le suivi de la prise en charge des prestations internes et externes"
+      },
+      {
+        "id": "tache-permanente-10",
+        "textFr": "Assurer l'établissement des rapports et tableaux de bord d'activité, analyser les données et proposer les axes d'amélioration"
+      },
+      {
+        "id": "tache-permanente-11",
+        "textFr": "Participer au recrutement du nouveau personnel au sein du processus"
+      },
+      {
+        "id": "tache-permanente-12",
+        "textFr": "Assurer l'évaluation du personnel et l'orienter vers les programmes de formation adéquats"
+      },
+      {
+        "id": "tache-permanente-13",
+        "textFr": "Piloter, animer et motiver les équipes dans le respect des procédures internes"
+      },
+      {
+        "id": "tache-permanente-14",
+        "textFr": "Valider et viser les documents liés au processus Production"
+      }
+    ],
+    "responsibilities": [
+      {
+        "id": "responsabilite-01",
+        "textFr": "Respecter la réglementation, la qualité et les délais"
+      },
+      {
+        "id": "responsabilite-02",
+        "textFr": "Respecter la fiabilité des données et la confidentialité des informations"
+      },
+      {
+        "id": "responsabilite-03",
+        "textFr": "Veiller à la préservation du patrimoine"
+      },
+      {
+        "id": "responsabilite-04",
+        "textFr": "Respecter l'application des procédures et règles de gestion"
+      },
+      {
+        "id": "responsabilite-05",
+        "textFr": "Respecter et faire respecter le code d'éthique professionnel"
+      },
+      {
+        "id": "responsabilite-06",
+        "textFr": "Respecter et exécuter les règles et consignes d'hygiène et de sécurité"
+      }
+    ]
+  }
+}

@@ -1,0 +1,382 @@
+{
+  "meta": {
+    "domain": "kaizen",
+    "sourceFile": "SOFICLEF_Onboarding_Directeur_Production_.html",
+    "sourcePages": [
+      "kaizen"
+    ],
+    "extractedCount": 17
+  },
+  "data": {
+    "programmeFr": "Le programme a démarré en avril 2025 avec pour objectifs : déployer la démarche Kaizen sur les lignes d'assemblage, structurer le service Engineering et ancrer une culture d'amélioration continue durable. 3 missions réalisées à ce jour. Les comptes rendus des missions 1 (Avril 2025) et 3 (Mai 2026) sont synthétisés ci-dessous.",
+    "internalLeadFr": "FOUFOU Nadjib",
+    "missions": [
+      {
+        "id": "kaizen-mission-1",
+        "number": 1,
+        "icon": "📋",
+        "titleFr": "Mission 1 — Avril 2025 · Briefing Kaizen & Diagnostic",
+        "periodFr": "12 – 16 Avril 2025 · 5 jours",
+        "referenceFr": null,
+        "internalLeadFr": "FOUFOU Nadjib",
+        "contextFr": "Diagnostic ligne d'assemblage serrure à tirrage · Lancement chantiers Kaizen duplication (coffre-fort & pompe) · Formation chefs de ligne · Élaboration standards 5S.",
+        "results": [
+          {
+            "id": "kaizen-mission-1-resultat-01",
+            "textFr": "Briefing Kaizen réalisé — état ligne d'assemblage documenté"
+          },
+          {
+            "id": "kaizen-mission-1-resultat-02",
+            "textFr": "Formation accélérée dispensée aux chefs de ligne (concepts Kaizen, PDCA, rôles)"
+          },
+          {
+            "id": "kaizen-mission-1-resultat-03",
+            "textFr": "Fiches 5S, fiches standard poste de travail et plan de nettoyage initiés"
+          },
+          {
+            "id": "kaizen-mission-1-resultat-04",
+            "textFr": "Feuille de route des prochaines actions définie avec FOUFOU Nadjib"
+          },
+          {
+            "id": "kaizen-mission-1-resultat-05",
+            "textFr": "Entretiens de recrutement conduits pour deux candidats (service Engineering)"
+          }
+        ],
+        "journal": [
+          {
+            "id": "kaizen-mission-1-journal-01",
+            "dayFr": "J1 — Dim. 12/04",
+            "activitiesFr": "Briefing Kaizen · Diagnostic ligne assemblage serrure · Observation chantiers coffre-fort & pompe",
+            "outcomeFr": "Axes d'amélioration identifiés · Dynamique terrain positive"
+          },
+          {
+            "id": "kaizen-mission-1-journal-02",
+            "dayFr": "J2 — Lun. 13/04",
+            "activitiesFr": "Sensibilisation chefs de ligne sur les écarts J1 · Formation Kaizen (PDCA, rôles, responsabilités)",
+            "outcomeFr": "Gap de compréhension traité · Chefs de ligne engagés"
+          },
+          {
+            "id": "kaizen-mission-1-journal-03",
+            "dayFr": "J3 — Mar. 14/04",
+            "activitiesFr": "Fiches activité 5S · Fiches standard poste de travail · Plan de nettoyage · Mise à jour plan d'action",
+            "outcomeFr": "Socle management visuel terrain constitué"
+          },
+          {
+            "id": "kaizen-mission-1-journal-04",
+            "dayFr": "J4 — Mer. 15/04",
+            "activitiesFr": "Élaboration standards opérationnels · Entretiens recrutement (2 candidats service Engineering)",
+            "outcomeFr": "Modes opératoires de référence rédigés · Profils identifiés"
+          },
+          {
+            "id": "kaizen-mission-1-journal-05",
+            "dayFr": "J5 — Jeu. 16/04",
+            "activitiesFr": "Feuille de route avec FOUFOU · Récapitulatif équipe terrain · Réunion feedback DG",
+            "outcomeFr": "Road Map Kaizen 12 mois définie · Alignement DG confirmé"
+          }
+        ],
+        "gaps": [
+          {
+            "id": "kaizen-mission-1-ecart-01",
+            "domainFr": "Standards 5S",
+            "observedFr": "Fiches partielles, pratiques hétérogènes",
+            "targetFr": "Standards documentés, appliqués et audités — 100% des zones"
+          },
+          {
+            "id": "kaizen-mission-1-ecart-02",
+            "domainFr": "Management visuel",
+            "observedFr": "Absence de tableau de bord 5S",
+            "targetFr": "Tableau de bord 5S opérationnel, mise à jour hebdomadaire"
+          },
+          {
+            "id": "kaizen-mission-1-ecart-03",
+            "domainFr": "Culture Kaizen",
+            "observedFr": "Concept peu maîtrisé par les chefs de ligne",
+            "targetFr": "Chefs de ligne autonomes dans l'animation des chantiers"
+          },
+          {
+            "id": "kaizen-mission-1-ecart-04",
+            "domainFr": "Standardisation postes",
+            "observedFr": "Modes opératoires absents ou non à jour",
+            "targetFr": "Fiches standard validées, affichées et maîtrisées"
+          },
+          {
+            "id": "kaizen-mission-1-ecart-05",
+            "domainFr": "Système de suggestion",
+            "observedFr": "Aucun canal formalisé",
+            "targetFr": "Système actif, traité sous 5 jours ouvrés"
+          }
+        ]
+      },
+      {
+        "id": "kaizen-mission-3",
+        "number": 3,
+        "icon": "📋",
+        "titleFr": "Mission 3 — Mai 2026 · Suivi & Structuration Engineering",
+        "periodFr": "04 – 07 Mai 2026 · 4 jours",
+        "referenceFr": "SOFICLEF-M2-2026",
+        "internalLeadFr": "FOUFOU Nadjib",
+        "contextFr": "Mission de suivi : avancement plan d'action Kaizen · Diagnostic performance atelier plaque · Structuration service Engineering · Formation TRS & SMED superviseurs.",
+        "results": [
+          {
+            "id": "kaizen-mission-3-resultat-01",
+            "textFr": "Diagnostic complet atelier plaque — axes d'amélioration définis"
+          },
+          {
+            "id": "kaizen-mission-3-resultat-02",
+            "textFr": "Correction formule taux de performance (erreur de calcul identifiée & corrigée)"
+          },
+          {
+            "id": "kaizen-mission-3-resultat-03",
+            "textFr": "Formation TRS et SMED dispensée aux superviseurs"
+          },
+          {
+            "id": "kaizen-mission-3-resultat-04",
+            "textFr": "Kits de nettoyage mis en place sur les postes"
+          },
+          {
+            "id": "kaizen-mission-3-resultat-05",
+            "textFr": "Organigramme service Engineering configuré (Ahmed & Walid Bsili)"
+          },
+          {
+            "id": "kaizen-mission-3-resultat-06",
+            "textFr": "Réunion de clôture avec le DG — alignement stratégique confirmé"
+          }
+        ],
+        "journal": [
+          {
+            "id": "kaizen-mission-3-journal-01",
+            "dayFr": "J1 — Lun. 04/05",
+            "activitiesFr": "Ouverture mission · Revue plan d'action Kaizen M1 · Gemba Walk ligne pilote · Rectification écarts résiduels",
+            "outcomeFr": "Avancement plan d'action mesuré · Écarts résiduels traités"
+          },
+          {
+            "id": "kaizen-mission-3-journal-02",
+            "dayFr": "J2 — Mar. 05/05",
+            "activitiesFr": "Diagnostic performance atelier plaque (avec Wissam) · Correction formule TRS · Genba Kaizen ligne modèle · Plan réaménagement zone préparation (Fares)",
+            "outcomeFr": "Formule TRS corrigée et validée · Chantier ligne modèle lancé"
+          },
+          {
+            "id": "kaizen-mission-3-journal-03",
+            "dayFr": "J3 — Mer. 06/05",
+            "activitiesFr": "Formation superviseurs TRS & SMED · Kits nettoyage postes · Structuration Engineering : organigramme + fiches postes (Ahmed & Walid Bsili)",
+            "outcomeFr": "Superviseurs formés · Base organigramme Engineering validée"
+          },
+          {
+            "id": "kaizen-mission-3-journal-04",
+            "dayFr": "J4 — Jeu. 07/05",
+            "activitiesFr": "Revue terrain avec FOUFOU & Hassan · Validation fiches standard · Rectification livret d'accueil · Réunion clôture DG",
+            "outcomeFr": "Alignement DG confirmé · Livret d'accueil en cours de finalisation"
+          }
+        ],
+        "gaps": [
+          {
+            "id": "kaizen-mission-3-ecart-01",
+            "domainFr": "Performance atelier plaque",
+            "observedFr": "Formule taux de performance incorrecte",
+            "targetFr": "TRS calculé correctement, suivi hebdomadaire instauré"
+          },
+          {
+            "id": "kaizen-mission-3-ecart-02",
+            "domainFr": "5S ligne modèle",
+            "observedFr": "Traçage et peinture sol absents",
+            "targetFr": "Zones délimitées, sol tracé et peint"
+          },
+          {
+            "id": "kaizen-mission-3-ecart-03",
+            "domainFr": "Zone de préparation",
+            "observedFr": "Éloignée des lignes — déplacements inutiles",
+            "targetFr": "Zone rapprochée — réduction des temps d'attente"
+          },
+          {
+            "id": "kaizen-mission-3-ecart-04",
+            "domainFr": "Organigramme Engineering",
+            "observedFr": "Non formalisé — rôles flous",
+            "targetFr": "Organigramme validé, fiches de postes rédigées"
+          },
+          {
+            "id": "kaizen-mission-3-ecart-05",
+            "domainFr": "TRS / SMED",
+            "observedFr": "Concepts non maîtrisés par les superviseurs",
+            "targetFr": "Superviseurs formés, indicateurs TRS en place"
+          },
+          {
+            "id": "kaizen-mission-3-ecart-06",
+            "domainFr": "Livret Kaizen",
+            "observedFr": "Comportait des erreurs et données obsolètes",
+            "targetFr": "Livret rectifié, validé et prêt à la diffusion"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "kaizen-mission-1-action-01",
+        "missionId": "kaizen-mission-1",
+        "actionFr": "Élaborer le tableau de bord 5S",
+        "ownerFr": "FOUFOU Nadjib",
+        "deadlineFr": "Mai 2025",
+        "statusFr": "Clôturée"
+      },
+      {
+        "id": "kaizen-mission-1-action-02",
+        "missionId": "kaizen-mission-1",
+        "actionFr": "Déployer la Road Map Kaizen 12 mois",
+        "ownerFr": "FOUFOU Nadjib",
+        "deadlineFr": "Mai 2025",
+        "statusFr": "Clôturée"
+      },
+      {
+        "id": "kaizen-mission-1-action-03",
+        "missionId": "kaizen-mission-1",
+        "actionFr": "Dupliquer le chantier Kaizen — Coffre-fort",
+        "ownerFr": "FOUFOU / ATTOU Fares",
+        "deadlineFr": "Mai 2025",
+        "statusFr": "Clôturée"
+      },
+      {
+        "id": "kaizen-mission-1-action-04",
+        "missionId": "kaizen-mission-1",
+        "actionFr": "Dupliquer le chantier Kaizen — Pompe",
+        "ownerFr": "FOUFOU / Équipe",
+        "deadlineFr": "Mai 2025",
+        "statusFr": "Clôturée"
+      },
+      {
+        "id": "kaizen-mission-1-action-05",
+        "missionId": "kaizen-mission-1",
+        "actionFr": "Mettre en place le système de suggestion",
+        "ownerFr": "FOUFOU / Équipe",
+        "deadlineFr": "Juin 2025",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-1-action-06",
+        "missionId": "kaizen-mission-1",
+        "actionFr": "Rédiger et diffuser le Livret KAIZEN",
+        "ownerFr": "Consultant / Équipe",
+        "deadlineFr": "Juin 2025",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-1-action-07",
+        "missionId": "kaizen-mission-1",
+        "actionFr": "Finaliser les fiches standard poste de travail",
+        "ownerFr": "Chefs de ligne",
+        "deadlineFr": "Continu",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-3-action-01",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Rectifier et valider les écarts ligne pilote",
+        "ownerFr": "FOUFOU Nadjib",
+        "deadlineFr": "Mai 2026",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-3-action-02",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Corriger formule taux de performance atelier plaque",
+        "ownerFr": "Wissam",
+        "deadlineFr": "Mai 2026",
+        "statusFr": "Clôturée"
+      },
+      {
+        "id": "kaizen-mission-3-action-03",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Déployer axes d'amélioration atelier plaque",
+        "ownerFr": "Wissam / FOUFOU",
+        "deadlineFr": "Juin 2026",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-3-action-04",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Réaliser traçage et peinture sol ligne modèle",
+        "ownerFr": "Mohamed",
+        "deadlineFr": "Mai 2026",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-3-action-05",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Réaménager zone préparation (rapprochement assemblage)",
+        "ownerFr": "ATTOU Fares",
+        "deadlineFr": "Mai 2026",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-3-action-06",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Finaliser organigramme service Engineering",
+        "ownerFr": "Ahmed / Walid Bsili",
+        "deadlineFr": "Mai 2026",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-3-action-07",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Rédiger les fiches de postes service Engineering",
+        "ownerFr": "Walid Bsili",
+        "deadlineFr": "Juin 2026",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-3-action-08",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Formaliser le concept de service Engineering",
+        "ownerFr": "Ahmed / Walid",
+        "deadlineFr": "Juin 2026",
+        "statusFr": "Planifiée"
+      },
+      {
+        "id": "kaizen-mission-3-action-09",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Rectifier et diffuser le livret d'accueil",
+        "ownerFr": "FOUFOU Nadjib",
+        "deadlineFr": "Mai 2026",
+        "statusFr": "En cours"
+      },
+      {
+        "id": "kaizen-mission-3-action-10",
+        "missionId": "kaizen-mission-3",
+        "actionFr": "Mettre à jour le plan d'action global Kaizen",
+        "ownerFr": "FOUFOU Nadjib",
+        "deadlineFr": "Mensuel",
+        "statusFr": "En cours"
+      }
+    ],
+    "priorityActionsJ30": [
+      {
+        "id": "kaizen-priorite-01",
+        "dayLabelFr": "J+7",
+        "textFr": "Finaliser traçage et peinture sol ligne modèle (Mohamed)"
+      },
+      {
+        "id": "kaizen-priorite-02",
+        "dayLabelFr": "J+10",
+        "textFr": "Lancer le réaménagement zone de préparation (ATTOU Fares)"
+      },
+      {
+        "id": "kaizen-priorite-03",
+        "dayLabelFr": "J+15",
+        "textFr": "Finaliser organigramme et fiches de postes Engineering"
+      },
+      {
+        "id": "kaizen-priorite-04",
+        "dayLabelFr": "J+15",
+        "textFr": "Rectifier et diffuser le livret d'accueil"
+      },
+      {
+        "id": "kaizen-priorite-05",
+        "dayLabelFr": "J+5",
+        "textFr": "Préparer la charte de projet atelier plaque"
+      },
+      {
+        "id": "kaizen-priorite-06",
+        "dayLabelFr": "J+30",
+        "textFr": "Lancer le chantier pilote zone Plaque · Organiser revue mensuelle plan d'action Kaizen"
+      }
+    ]
+  }
+}

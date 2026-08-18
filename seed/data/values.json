@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "domain": "values",
+    "sourceFile": "SOFICLEF_Onboarding_Directeur_Production_.html",
+    "sourcePages": [
+      "entreprise"
+    ],
+    "extractedCount": 4
+  },
+  "data": [
+    {
+      "id": "fermete-respect",
+      "rank": 1,
+      "nameFr": "Fermeté & Respect",
+      "nameAr": "الحزم والاحترام",
+      "nameEn": "Firmness & Respect"
+    },
+    {
+      "id": "cooperation-esprit-d-equipe",
+      "rank": 2,
+      "nameFr": "Coopération & Esprit d'équipe",
+      "nameAr": "التعاون وروح الفريق",
+      "nameEn": "Cooperation & Team Spirit"
+    },
+    {
+      "id": "rigueur-excellence",
+      "rank": 3,
+      "nameFr": "Rigueur & Excellence",
+      "nameAr": "الرشادة والإتقان",
+      "nameEn": "Rigor & Excellence"
+    },
+    {
+      "id": "innovation-amelioration-continue",
+      "rank": 4,
+      "nameFr": "Innovation & Amélioration continue",
+      "nameAr": "الابتكار والتطوير المستمر",
+      "nameEn": "Innovation & Continuous Improvement"
+    }
+  ]
+}

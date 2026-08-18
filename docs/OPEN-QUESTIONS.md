@@ -39,6 +39,8 @@ Compétences & Emplois). OQ-21…OQ-26 are for whoever validated the prototype.
 | OQ-24 | Part 4 | Open |
 | OQ-25 | Part 5 | Open |
 | OQ-26 | Parts 5, 9 | Open |
+| OQ-27 | Parts 6, 7 | Open |
+| OQ-28 | Parts 6, 13 | Open |
 
 ---
 
@@ -323,3 +325,29 @@ date; before that date it shows the countdown (`J-12`) rather than a fixed J+1. 
 is recorded as a known gap in `CONTENT-INVENTORY.md`; please supply its report. (c) The
 reference is extracted verbatim as `SOFICLEF-M2-2026` with the mission numbered 3 as titled,
 and the mismatch is flagged rather than corrected.
+
+### OQ-27 — Are the four named managers the acting heads of the vacant structures?
+**Context.** The prototype states that all three structures — Fabrication, Contrôle Qualité,
+Maintenance — have a **vacant** head, and separately lists four managers whose titles are
+*Responsable Fabrication* (OUDNI Yassine), *Responsable Maintenance* (ATTOU Fares),
+*Responsable Contrôle Qualité* (BELLAL Yousfi) and *Responsable Développement Industriel*
+(FOUFOU Nadjib). Both statements are extracted as they stand.
+**Why it blocks.** It decides whether the org chart shows three vacancies with acting heads,
+three genuine vacancies plus four people attached elsewhere, or an out-of-date chart. It also
+decides who holds `MANAGER` rights on which scope (Part 3's data), and it interacts with the
+four open recruitments.
+**Blocks.** Part 6 (management page), Part 7 (org chart), and the role/scope assignment data.
+**Proposed default.** Model them as *acting* heads: the post stays `VACANT` — which is what
+drives the recruitment priority — and the person is attached to the structure as its current
+`MANAGER` scope holder. Both facts are then visible instead of one overwriting the other.
+
+### OQ-28 — What are the four "Contribution DPR" progress figures, and as of when?
+**Context.** The strategy page shows four progress bars: production share of revenue 40 %,
+Plaque & Clé capacity 70 %, Direction de Production structuring 20 %, Porte SOFICLEF launch
+15 %. No source, measurement method or as-of date is given anywhere in the corpus.
+**Why it blocks.** Displayed next to the 8 Bn DZD objective they read as measured KPIs. If
+they are illustrative, presenting them as measurements misleads the DG.
+**Blocks.** Part 6 (strategy page), Part 13 (dashboards).
+**Proposed default.** Extracted verbatim and displayed with an explicit "valeur indicative —
+à confirmer" qualifier and no as-of date, until the business supplies the source. They are not
+fed into any dashboard KPI.
