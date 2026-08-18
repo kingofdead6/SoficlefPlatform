@@ -150,3 +150,70 @@ company identity, the four values (Arabic verbatim), the 2024–2026 strategy, t
 the Kaizen missions and their 17 tracked actions, the QMS and HSE reference data, the
 12-milestone onboarding checklist, the internal directory and the document list.
 Counts are asserted by the extractor and re-asserted in CI.
+
+
+
+
+
+/**
+ * Demo accounts mirroring the real cast, so the role model can be walked through with
+ * the client. Real accounts are created through the administration screens.
+ * password of all of the accounts is Pwd123456
+ */
+const DEMO_USERS: DemoUser[] = [
+  {
+    email: 'tech.admin@soficlef.local',
+    displayName: 'Administrateur technique',
+    locale: 'fr',
+    roles: [{ code: 'TECH_ADMIN' }],
+  },
+  {
+    email: 'mostafa@soficlef.local',
+    displayName: 'M. Mostafa — Responsable Compétences & Emplois',
+    locale: 'fr',
+    roles: [{ code: 'HEAD_CE' }],
+  },
+  {
+    email: 'chanane@soficlef.local',
+    displayName: 'CHANANE Mohamed Rafik — Emploi & Compétences',
+    locale: 'fr',
+    roles: [{ code: 'BIZ_ADMIN_CE' }],
+  },
+  {
+    email: 'drh@soficlef.local',
+    displayName: 'Direction des Ressources Humaines',
+    locale: 'fr',
+    roles: [{ code: 'HR' }],
+  },
+  {
+    // The pilot user is both the subject of an onboarding journey and the head of a
+    // structure — two assignments, which is exactly why CDC v1's DIR_PROD maps onto two
+    // of CDC v0.1's profiles (ADR-005).
+    email: 'djaoudi@soficlef.local',
+    displayName: 'DJAOUDI Farid — Directeur de Production',
+    locale: 'fr',
+    roles: [{ code: 'EMPLOYEE' }, { code: 'MANAGER', unitCode: 'DPR' }],
+    // Taken from the extracted prototype data, not retyped.
+    onboardingStartDate: WELCOME.startDate,
+  },
+  {
+    // A collaborator with no managerial breadth: their rights end at their own records,
+    // which is what CDC v0.1 §3's "Collaborateur" profile means.
+    email: 'boubenia@soficlef.local',
+    displayName: 'BOUBENIA Ahmed — Référent Production',
+    locale: 'fr',
+    roles: [{ code: 'EMPLOYEE' }],
+  },
+  {
+    email: 'oudni@soficlef.local',
+    displayName: 'OUDNI Yassine — Responsable Fabrication',
+    locale: 'fr',
+    roles: [{ code: 'MANAGER', unitCode: 'DPR-FABRICATION' }],
+  },
+  {
+    email: 'charikhi@soficlef.local',
+    displayName: 'M. CHARIKHI Sofiane — Directeur Général',
+    locale: 'fr',
+    roles: [{ code: 'VIEWER' }],
+  },
+];
