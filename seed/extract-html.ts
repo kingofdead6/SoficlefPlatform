@@ -20,11 +20,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import * as cheerio from 'cheerio';
-import type { Cheerio, CheerioAPI } from 'cheerio';
+import type { Cheerio } from 'cheerio';
 import type { Element } from 'domhandler';
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import { SeedMeta } from './schemas/common';
+import type { SeedMeta } from './schemas/common';
 import { CompanyFile } from './schemas/company';
 import { ContactsFile } from './schemas/contacts';
 import { DocumentsFile } from './schemas/documents';
@@ -57,7 +57,7 @@ const text = (el: Cheerio<Element>): string => clean(el.text());
  * Split an element's inner HTML on <br>, strip the remaining tags and drop empty
  * lines. Used for the prototype's "<strong>Label :</strong> value<br>…" card bodies.
  */
-function lines($: CheerioAPI, el: Cheerio<Element>): string[] {
+function lines(el: Cheerio<Element>): string[] {
   const html = el.html() ?? '';
   return html
     .split(/<br\s*\/?>/i)
@@ -66,9 +66,9 @@ function lines($: CheerioAPI, el: Cheerio<Element>): string[] {
 }
 
 /** Read "Label : value" lines into a map keyed by the label without its colon. */
-function labelled($: CheerioAPI, el: Cheerio<Element>): Map<string, string> {
+function labelled(el: Cheerio<Element>): Map<string, string> {
   const map = new Map<string, string>();
-  for (const line of lines($, el)) {
+  for (const line of lines(el)) {
     const match = /^([^:]+?)\s*:\s*(.+)$/.exec(line);
     if (match) map.set(clean(match[1]), clean(match[2]));
   }
@@ -90,7 +90,8 @@ function need(map: Map<string, string>, key: string, where: string): string {
  * own field rather than being carried inside every French name.
  */
 function splitIcon(raw: string): { icon: string | null; label: string } {
-  const match = /^([\p{Extended_Pictographic}\u{FE0F}\u{2190}-\u{21FF}\u{2600}-\u{27BF}]+)\s+(.*)$/u.exec(raw);
+  const match =
+    /^([\p{Extended_Pictographic}\u{FE0F}\u{2190}-\u{21FF}\u{2600}-\u{27BF}]+)\s+(.*)$/u.exec(raw);
   return match ? { icon: match[1], label: clean(match[2]) } : { icon: null, label: raw };
 }
 
@@ -106,7 +107,9 @@ function slug(input: string): string {
     .replace(/-+$/g, '');
   // A slug of purely non-Latin text would be empty; fall back to a content hash so
   // the identifier is still stable across runs.
-  return base.length > 0 ? base : `x-${createHash('sha1').update(input).digest('hex').slice(0, 10)}`;
+  return base.length > 0
+    ? base
+    : `x-${createHash('sha1').update(input).digest('hex').slice(0, 10)}`;
 }
 
 /** Sequentially numbered identifier, e.g. mission-permanente-03. */
@@ -114,7 +117,10 @@ const seqId = (prefix: string, index: number): string =>
   `${prefix}-${String(index + 1).padStart(2, '0')}`;
 
 class ExtractionError extends Error {
-  constructor(message: string, public readonly detail?: string) {
+  constructor(
+    message: string,
+    public readonly detail?: string,
+  ) {
     super(message);
     this.name = 'ExtractionError';
   }
@@ -169,7 +175,7 @@ function listItems(scope: Cheerio<Element>): string[] {
 function extractWelcome() {
   const p = page('bienvenue');
   const hero = p.find('.hero').first() as Cheerio<Element>;
-  const messageParts = lines($, hero.find('.hero-msg').first() as Cheerio<Element>);
+  const messageParts = lines(hero.find('.hero-msg').first() as Cheerio<Element>);
   if (messageParts.length < 2) {
     throw new ExtractionError('welcome message and signature not separable');
   }
@@ -212,8 +218,8 @@ function extractWelcome() {
 
 function extractCompany() {
   const p = page('entreprise');
-  const identity = labelled($, p.find('.card').eq(0).find('.card-body').first() as Cheerio<Element>);
-  const visionMission = lines($, p.find('.card').eq(1).find('.card-body').first() as Cheerio<Element>);
+  const identity = labelled(p.find('.card').eq(0).find('.card-body').first() as Cheerio<Element>);
+  const visionMission = lines(p.find('.card').eq(1).find('.card-body').first() as Cheerio<Element>);
 
   const visionIndex = visionMission.findIndex((l) => /^Vision\s*:/.test(l));
   const missionIndex = visionMission.findIndex((l) => /^Mission\s*:/.test(l));
@@ -291,7 +297,8 @@ function extractValues() {
 function extractStrategy() {
   const p = page('strategie');
   const markets = tableRows(p.find('table').first() as Cheerio<Element>).map((cells) => {
-    if (cells.length !== 4) throw new ExtractionError('market row is not 4 cells', cells.join(' | '));
+    if (cells.length !== 4)
+      throw new ExtractionError('market row is not 4 cells', cells.join(' | '));
     return {
       id: slug(cells[0]),
       marketFr: cells[0],
@@ -341,11 +348,21 @@ function extractStrategy() {
 
 function extractJobDescription() {
   const p = page('poste');
-  const positioning = labelled($, p.find('.card').eq(0).find('.card-body').first() as Cheerio<Element>);
-  const requirements = labelled($, p.find('.card').eq(1).find('.card-body').first() as Cheerio<Element>);
-  const listCards = p.find('.mission-list').toArray().map((el) => $(el) as Cheerio<Element>);
+  const positioning = labelled(
+    p.find('.card').eq(0).find('.card-body').first() as Cheerio<Element>,
+  );
+  const requirements = labelled(
+    p.find('.card').eq(1).find('.card-body').first() as Cheerio<Element>,
+  );
+  const listCards = p
+    .find('.mission-list')
+    .toArray()
+    .map((el) => $(el) as Cheerio<Element>);
   if (listCards.length !== 3) {
-    throw new ExtractionError('expected 3 lists on the job description page', String(listCards.length));
+    throw new ExtractionError(
+      'expected 3 lists on the job description page',
+      String(listCards.length),
+    );
   }
 
   const asItems = (list: Cheerio<Element>, prefix: string) =>
@@ -393,7 +410,7 @@ function extractOrganization() {
       // The unit breakdown and the critical-post warning are stored as their own
       // records; the description keeps only what is not carried elsewhere.
       const unitLabels = listItems(body);
-      const descriptionFr = lines($, body)
+      const descriptionFr = lines(body)
         .filter((line) => line !== criticalNoteFr)
         .filter((line) => !/^\d+ Unités de Production\s*:/.test(line))
         .filter((line) => !unitLabels.some((unit) => line.includes(unit)))
@@ -412,18 +429,22 @@ function extractOrganization() {
   const fabrication = structures.find((s) => /Fabrication/i.test(s.nameFr));
   if (!fabrication) throw new ExtractionError('Structure Fabrication not found');
 
-  const units = (p.find('.struct-card').first().find('.mission-list li').toArray() as Element[]).map(
-    (el) => {
-      const item = $(el) as Cheerio<Element>;
-      const nameFr = clean(item.find('strong').first().text());
-      return {
-        id: slug(nameFr),
-        parentStructureId: fabrication.id,
-        nameFr,
-        descriptionFr: clean(text(item).replace(nameFr, '').replace(/^\s*—\s*/, '')),
-      };
-    },
-  );
+  const units = (
+    p.find('.struct-card').first().find('.mission-list li').toArray() as Element[]
+  ).map((el) => {
+    const item = $(el) as Cheerio<Element>;
+    const nameFr = clean(item.find('strong').first().text());
+    return {
+      id: slug(nameFr),
+      parentStructureId: fabrication.id,
+      nameFr,
+      descriptionFr: clean(
+        text(item)
+          .replace(nameFr, '')
+          .replace(/^\s*—\s*/, ''),
+      ),
+    };
+  });
 
   const cells = p
     .find('.grid-2 .card')
@@ -433,7 +454,7 @@ function extractOrganization() {
       const { icon, label: nameFr } = splitIcon(
         text(card.find('.card-title').first() as Cheerio<Element>),
       );
-      const bodyLines = lines($, card.find('.card-body').first() as Cheerio<Element>);
+      const bodyLines = lines(card.find('.card-body').first() as Cheerio<Element>);
       const staffing = bodyLines.find((l) => /^Effectif\s*:/.test(l));
       if (!staffing) throw new ExtractionError('cell staffing not found', nameFr);
       return {
@@ -541,7 +562,11 @@ function extractRecruitment() {
     statusFr: cells[2],
   }));
 
-  const mobility = lines($, cardByTitle(p, /Mobilités internes/).find('.card-body').first() as Cheerio<Element>);
+  const mobility = lines(
+    cardByTitle(p, /Mobilités internes/)
+      .find('.card-body')
+      .first() as Cheerio<Element>,
+  );
   const recommended = mobility.find((l) => /^Action recommandée/.test(l));
   if (!recommended) throw new ExtractionError('internal mobility recommended action not found');
 
@@ -554,7 +579,10 @@ function extractRecruitment() {
 
 function extractKaizen() {
   const p = page('kaizen');
-  const grids = p.find('.grid-2').toArray().map((el) => $(el) as Cheerio<Element>);
+  const grids = p
+    .find('.grid-2')
+    .toArray()
+    .map((el) => $(el) as Cheerio<Element>);
   if (grids.length !== 2) throw new ExtractionError('expected 2 mission summary grids');
 
   const missionSpecs = [
@@ -590,9 +618,11 @@ function extractKaizen() {
     if (!heading) throw new ExtractionError(`mission ${spec.number} heading not found`);
 
     const contextCard = spec.grid.find('.card').eq(0) as Cheerio<Element>;
-    const contextLines = lines($, contextCard.find('.card-body').first() as Cheerio<Element>);
-    const contextMap = labelled($, contextCard.find('.card-body').first() as Cheerio<Element>);
-    const narrative = contextLines.filter((l) => !/^(Période|Projet|Référence|Pilote interne)\s*:/.test(l));
+    const contextLines = lines(contextCard.find('.card-body').first() as Cheerio<Element>);
+    const contextMap = labelled(contextCard.find('.card-body').first() as Cheerio<Element>);
+    const narrative = contextLines.filter(
+      (l) => !/^(Période|Projet|Référence|Pilote interne)\s*:/.test(l),
+    );
 
     const missionId = `kaizen-mission-${spec.number}`;
     const { icon, label: titleFr } = splitIcon(text(heading));
@@ -624,7 +654,8 @@ function extractKaizen() {
     });
 
     for (const [index, cells] of tableRows(cardByTitle(p, spec.planTitle)).entries()) {
-      if (cells.length !== 4) throw new ExtractionError('action row is not 4 cells', cells.join(' | '));
+      if (cells.length !== 4)
+        throw new ExtractionError('action row is not 4 cells', cells.join(' | '));
       actions.push({
         id: `${missionId}-action-${String(index + 1).padStart(2, '0')}`,
         missionId,
@@ -645,7 +676,11 @@ function extractKaizen() {
   );
 
   return {
-    programmeFr: text(cardByTitle(p, /Programme d'Excellence Opérationnelle/).find('.card-body').first() as Cheerio<Element>),
+    programmeFr: text(
+      cardByTitle(p, /Programme d'Excellence Opérationnelle/)
+        .find('.card-body')
+        .first() as Cheerio<Element>,
+    ),
     internalLeadFr: 'FOUFOU Nadjib',
     missions,
     actions,
@@ -655,7 +690,9 @@ function extractKaizen() {
 
 function extractQms() {
   const p = page('smq');
-  const certification = labelled($, p.find('.card').eq(1).find('.card-body').first() as Cheerio<Element>);
+  const certification = labelled(
+    p.find('.card').eq(1).find('.card-body').first() as Cheerio<Element>,
+  );
 
   const processes = p
     .find('.process-block')
@@ -689,9 +726,10 @@ function extractQms() {
     ownedProcessCode: 'PR02' as const,
     ownedProcessNoteFr: text(p.find('.card').eq(0).find('.card-body').first() as Cheerio<Element>),
     processMapCode: 'ID-03-DG' as const,
-    responsibilities: listItems(
-      p.find('.card').eq(2) as Cheerio<Element>,
-    ).map((textFr, index) => ({ id: seqId('smq-responsabilite', index), textFr })),
+    responsibilities: listItems(p.find('.card').eq(2) as Cheerio<Element>).map((textFr, index) => ({
+      id: seqId('smq-responsabilite', index),
+      textFr,
+    })),
     processes,
   };
 }
@@ -699,10 +737,11 @@ function extractQms() {
 function extractHse() {
   const p = page('hse');
   const zonesCard = cardByTitle(p, /Bâtiments & zones principales/);
-  const zoneLines = lines($, zonesCard.find('.card-body').first() as Cheerio<Element>);
+  const zoneLines = lines(zonesCard.find('.card-body').first() as Cheerio<Element>);
   const riskLine = zoneLines.find((l) => /Zone haute tension/.test(l));
   const planLine = zoneLines.find((l) => /plan de circulation/i.test(l));
-  if (!riskLine || !planLine) throw new ExtractionError('HSE risk area or circulation plan note not found');
+  if (!riskLine || !planLine)
+    throw new ExtractionError('HSE risk area or circulation plan note not found');
 
   return {
     siteFr: text(p.find('.section-lead').first() as Cheerio<Element>),
@@ -730,7 +769,11 @@ function extractOnboarding() {
       const dayLabelFr = text(item.find('.check-day').first() as Cheerio<Element>);
       const body = item.find('.check-text').first() as Cheerio<Element>;
       const titleFr = clean(body.find('strong').first().text());
-      const detailFr = clean(text(body).replace(titleFr, '').replace(/^\s*—\s*/, ''));
+      const detailFr = clean(
+        text(body)
+          .replace(titleFr, '')
+          .replace(/^\s*—\s*/, ''),
+      );
       const dayMatch = /^J\+(\d+)$/.exec(dayLabelFr);
       if (!dayMatch) throw new ExtractionError('unexpected checklist day label', dayLabelFr);
       return {
@@ -786,11 +829,13 @@ function extractDocuments() {
       };
     });
 
-  const pending = listItems(cardByTitle(p, /Documents à intégrer ultérieurement/)).map((titleFr) => ({
-    id: slug(titleFr),
-    titleFr,
-    availability: 'PENDING' as const,
-  }));
+  const pending = listItems(cardByTitle(p, /Documents à intégrer ultérieurement/)).map(
+    (titleFr) => ({
+      id: slug(titleFr),
+      titleFr,
+      availability: 'PENDING' as const,
+    }),
+  );
 
   return { available, pending };
 }
@@ -848,17 +893,66 @@ function main(): void {
   write('welcome.json', 'welcome', ['bienvenue'], WelcomeFile, welcome, 1);
   write('company.json', 'company', ['entreprise'], CompanyFile, company, 1);
   write('values.json', 'values', ['entreprise'], ValuesFile, values, values.length);
-  write('strategy.json', 'strategy', ['strategie'], StrategyFile, strategy, strategy.markets.length);
-  write('job-description.json', 'job-description', ['poste'], JobDescriptionFile, jobDescription, 1);
-  write('organization.json', 'organization', ['structures'], OrganizationFile, organization, organization.structures.length);
-  write('management-team.json', 'management-team', ['encadrement'], ManagementTeamFile, managementTeam, managementTeam.members.length);
-  write('recruitment.json', 'recruitment', ['recrutements'], RecruitmentFile, recruitment, recruitment.positions.length);
+  write(
+    'strategy.json',
+    'strategy',
+    ['strategie'],
+    StrategyFile,
+    strategy,
+    strategy.markets.length,
+  );
+  write(
+    'job-description.json',
+    'job-description',
+    ['poste'],
+    JobDescriptionFile,
+    jobDescription,
+    1,
+  );
+  write(
+    'organization.json',
+    'organization',
+    ['structures'],
+    OrganizationFile,
+    organization,
+    organization.structures.length,
+  );
+  write(
+    'management-team.json',
+    'management-team',
+    ['encadrement'],
+    ManagementTeamFile,
+    managementTeam,
+    managementTeam.members.length,
+  );
+  write(
+    'recruitment.json',
+    'recruitment',
+    ['recrutements'],
+    RecruitmentFile,
+    recruitment,
+    recruitment.positions.length,
+  );
   write('kaizen.json', 'kaizen', ['kaizen'], KaizenFile, kaizen, kaizen.actions.length);
   write('qms.json', 'qms', ['smq'], QmsFile, qms, 1);
   write('hse.json', 'hse', ['hse'], HseFile, hse, 1);
-  write('onboarding-checklist.json', 'onboarding-checklist', ['checklist'], OnboardingFile, onboarding, onboarding.length);
+  write(
+    'onboarding-checklist.json',
+    'onboarding-checklist',
+    ['checklist'],
+    OnboardingFile,
+    onboarding,
+    onboarding.length,
+  );
   write('contacts.json', 'contacts', ['interlocuteurs'], ContactsFile, contacts, contacts.length);
-  write('documents.json', 'documents', ['docs'], DocumentsFile, documents, documents.available.length + documents.pending.length);
+  write(
+    'documents.json',
+    'documents',
+    ['docs'],
+    DocumentsFile,
+    documents,
+    documents.available.length + documents.pending.length,
+  );
 
   // Expected counts are the build brief's content inventory. The one deliberate
   // divergence is the Kaizen action count — see ADR-028 and OQ-23.
@@ -866,13 +960,25 @@ function main(): void {
     { domain: 'Company — identity record', expected: 1, actual: 1 },
     { domain: 'Values — trilingual pillars', expected: 4, actual: values.length },
     { domain: 'Strategy — market table rows', expected: 5, actual: strategy.markets.length },
-    { domain: 'Strategy — strategic projects PS-01…PS-04', expected: 4, actual: strategy.projects.length },
+    {
+      domain: 'Strategy — strategic projects PS-01…PS-04',
+      expected: 4,
+      actual: strategy.projects.length,
+    },
     { domain: 'Job description — EN-012-DRH', expected: 1, actual: 1 },
-    { domain: 'Job description — permanent tasks', expected: 14, actual: jobDescription.permanentTasks.length },
+    {
+      domain: 'Job description — permanent tasks',
+      expected: 14,
+      actual: jobDescription.permanentTasks.length,
+    },
     { domain: 'Org — structures', expected: 3, actual: organization.structures.length },
     { domain: 'Org — production units', expected: 2, actual: organization.units.length },
     { domain: 'Org — functional cells', expected: 2, actual: organization.cells.length },
-    { domain: 'Management team — structure heads', expected: 4, actual: managementTeam.members.length },
+    {
+      domain: 'Management team — structure heads',
+      expected: 4,
+      actual: managementTeam.members.length,
+    },
     { domain: 'Recruitment — open posts', expected: 4, actual: recruitment.positions.length },
     { domain: 'Kaizen — documented missions', expected: 2, actual: kaizen.missions.length },
     {
@@ -912,7 +1018,9 @@ function main(): void {
   console.log(
     `\n  Milestone sequence J+${expectedDays.join(', J+')}  ${daysMatch ? 'ok' : `MISMATCH → J+${actualDays.join(', J+')}`}`,
   );
-  console.log(`  J+30 flagged "Recommandé"${' '.repeat(19)}  ${lastIsRecommended ? 'ok' : 'MISMATCH'}`);
+  console.log(
+    `  J+30 flagged "Recommandé"${' '.repeat(19)}  ${lastIsRecommended ? 'ok' : 'MISMATCH'}`,
+  );
 
   if (needsManualReview.length > 0) {
     console.log('\n  Needs manual review (see docs/CONTENT-INVENTORY.md):');

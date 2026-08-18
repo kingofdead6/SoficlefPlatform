@@ -1,0 +1,58 @@
+# Local infrastructure (ADR-016). A developer needs Docker and nothing else:
+#
+#   cp .env.example .env && docker compose up --build
+#
+# Migrations run on start-up, so the application always boots against a schema that
+# matches prisma/migrations. No credential is baked into this file — values come from
+# .env, which is git-ignored (ADR-023).
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: soficlef-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-soficlef}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-soficlef}
+      # Deterministic collation so ORDER BY on French labels behaves identically
+      # on every machine and in CI.
+      LANG: fr_FR.utf8
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - soficlef-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-soficlef} -d ${POSTGRES_DB:-soficlef}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${APP_TARGET:-development}
+    container_name: soficlef-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-soficlef}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-soficlef}?schema=public
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET in .env}
+    ports:
+      - '${APP_PORT:-3000}:3000'
+    volumes:
+      # Source is mounted for hot reload; node_modules and .next stay in the image so a
+      # host-built tree cannot shadow the container's.
+      - ./:/app
+      - /app/node_modules
+      - /app/.next
+    command: sh -c "npx prisma migrate deploy && npm run dev -- --hostname 0.0.0.0"
+
+volumes:
+  soficlef-db-data:
+    name: soficlef-db-data

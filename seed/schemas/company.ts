@@ -15,9 +15,7 @@ export const Company = z.object({
   website: NonEmpty,
   visionFr: NonEmpty,
   missionFr: NonEmpty,
-  activities: z
-    .array(z.object({ id: Id, labelFr: NonEmpty, contentFr: NonEmpty }))
-    .min(1),
+  activities: z.array(z.object({ id: Id, labelFr: NonEmpty, contentFr: NonEmpty })).min(1),
 });
 
 export const CompanyFile = seedFile(Company);

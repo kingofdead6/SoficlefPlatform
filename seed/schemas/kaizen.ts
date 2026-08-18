@@ -51,9 +51,7 @@ export const Kaizen = z.object({
   internalLeadFr: NonEmpty,
   missions: z.array(KaizenMission),
   actions: z.array(KaizenAction),
-  priorityActionsJ30: z.array(
-    z.object({ id: Id, dayLabelFr: NonEmpty, textFr: NonEmpty }),
-  ),
+  priorityActionsJ30: z.array(z.object({ id: Id, dayLabelFr: NonEmpty, textFr: NonEmpty })),
 });
 
 export const KaizenFile = seedFile(Kaizen);

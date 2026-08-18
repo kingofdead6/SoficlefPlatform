@@ -1,0 +1,87 @@
+name: CI
+
+# Gates, in order: lint → typecheck → unit tests → build → migration check (ADR-017).
+# A red gate blocks the merge.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: '1'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: soficlef
+          # CI-only, ephemeral, and never used outside the runner.
+          POSTGRES_PASSWORD: soficlef
+          POSTGRES_DB: soficlef_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U soficlef"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://soficlef:soficlef@localhost:5432/soficlef_ci?schema=public
+      SHADOW_DATABASE_URL: postgresql://soficlef:soficlef@localhost:5432/soficlef_shadow?schema=public
+      APP_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Re-run the extractor and check the seed data is up to date
+        # Catches a hand-edited seed file, and a prototype revision that was not re-extracted.
+        run: |
+          npm run seed:extract
+          git diff --exit-code seed/data
+
+      - name: Build
+        run: npm run build
+
+      - name: Create the shadow database used by the migration check
+        run: PGPASSWORD=soficlef psql -h localhost -U soficlef -d soficlef_ci -c 'CREATE DATABASE soficlef_shadow;'
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
+      - name: Migration check — schema and migrations must not diverge
+        # Fails on the classic "edited schema.prisma, forgot the migration" defect.
+        run: npm run db:check

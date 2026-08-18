@@ -1,0 +1,82 @@
+/**
+ * SOFICLEF design tokens — the single place a literal colour, radius or shadow
+ * appears (ADR-004, ADR-007).
+ *
+ * Values are lifted verbatim from the client-approved prototype's `:root`. CDC v0.1 §13
+ * proposes a red/anthracite identity instead; should the brandbook confirm it, this file
+ * is the only one that changes (plus a contrast re-check). See OQ-22.
+ *
+ * Design intent, in the prototype's own words: industrial, premium, precise. Gold is a
+ * sparing accent on a sand background — hierarchy, not decoration. Cards are quiet and
+ * bordered, not shadowed and floating. Data is monospaced.
+ */
+
+:root {
+  /* ── Brand ─────────────────────────────────────────────────────────────── */
+  --gold: #8b6914; /* brand, primary buttons, active states, card titles */
+  --gold-light: #b8890f;
+  --gold-accent: #c9a84c; /* hover, progress bars, callout backgrounds */
+  --gold-dim: rgba(139, 105, 20, 0.1);
+  --blue: #1e4d8c; /* table headers, structure badges, secondary actions */
+  --blue-dim: rgba(30, 77, 140, 0.1);
+
+  /* ── Surfaces ──────────────────────────────────────────────────────────── */
+  --bg: #f5f4f0; /* app background */
+  --surface: #ffffff; /* cards, modals, tables */
+  --surface2: #f0ede8;
+  --border: #e0dbd4;
+
+  /* ── Status ────────────────────────────────────────────────────────────── */
+  /* Never the only carrier of meaning — every status also has a label (ADR-030). */
+  --green: #1a7a4a; /* validated / conforme */
+  --red: #c0392b; /* critical / vacant / overdue */
+
+  /* ── Text ──────────────────────────────────────────────────────────────── */
+  --text: #1a1a1a;
+  --text-muted: #555050;
+  --text-dim: #999090;
+
+  /* ── Geometry ──────────────────────────────────────────────────────────── */
+  --radius: 10px;
+  --shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+
+  /* ── Layout ────────────────────────────────────────────────────────────── */
+  /* Ported from the prototype's shell: 268px sidebar, 52px top bar. */
+  --sidebar-w: 268px;
+  --topbar-h: 52px;
+
+  /* ── Typography ────────────────────────────────────────────────────────── */
+  /*
+   * The --font-*-active families are re-pointed per locale on <html> (ADR-018).
+   * Playfair Display has no Arabic coverage, so Arabic gets Noto Kufi Arabic for
+   * display and Noto Sans Arabic for UI. Digits stay monospaced in every locale
+   * because codes and extensions are shared across them (ADR-032).
+   */
+  --font-display-latin: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  --font-ui-latin: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display-arabic:
+    var(--font-noto-kufi), 'Noto Kufi Arabic', 'Tajawal', system-ui, sans-serif;
+  --font-ui-arabic:
+    var(--font-noto-sans-arabic), 'Noto Sans Arabic', 'Cairo', system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --font-display: var(--font-display-latin);
+  --font-ui: var(--font-ui-latin);
+
+  /* ── Motion ────────────────────────────────────────────────────────────── */
+  --transition: 180ms ease;
+}
+
+/* Arabic swaps the type families; nothing else about the palette changes. */
+:root:lang(ar),
+[lang='ar'] {
+  --font-display: var(--font-display-arabic);
+  --font-ui: var(--font-ui-arabic);
+}
+
+/* Quality floor: honour a reader who asked for less movement. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition: 0ms;
+  }
+}

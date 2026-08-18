@@ -1,0 +1,36 @@
+// SOFICLEF platform — database schema.
+//
+// Migrations are versioned and applied with `prisma migrate` (ADR-010). `prisma db push`
+// is permitted only against a throwaway local database, never against a shared one, and
+// CI fails when this file and prisma/migrations/ diverge.
+//
+// The authentication, RBAC and audit tables land in Part 3. This first migration proves
+// the pipeline end to end and creates the settings table that the password policy and
+// other administrable parameters will use (ADR-012, CDC v0.1 §11).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/infrastructure/db/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// An administrable platform parameter. CDC v0.1 §2.1 and §11 require values the
+/// business may change to be configuration rather than hardcoded constants.
+model AppSetting {
+  id        String   @id @default(uuid()) @db.Uuid
+  /// Stable business key, e.g. "auth.password.minLength".
+  key       String   @unique
+  /// JSON so a setting can hold a scalar, a list or an object without a migration.
+  value     Json
+  /// What this parameter controls, for the administration screen.
+  labelFr   String
+  labelAr   String?
+  labelEn   String?
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@map("app_setting")
+}

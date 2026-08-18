@@ -1,0 +1,92 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+/**
+ * Tailwind's scales resolve to the tokens rather than to literals, so a utility class
+ * and a raw CSS declaration can never disagree about what "gold" is (ADR-007).
+ * `inline` keeps the var() reference in the generated CSS instead of inlining the value,
+ * which is what lets a locale or a future theme re-point a token at runtime.
+ */
+@theme inline {
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-accent: var(--gold-accent);
+  --color-gold-dim: var(--gold-dim);
+  --color-blue: var(--blue);
+  --color-blue-dim: var(--blue-dim);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-border-token: var(--border);
+  --color-green: var(--green);
+  --color-red: var(--red);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-dim: var(--text-dim);
+
+  --radius-token: var(--radius);
+  --shadow-token: var(--shadow);
+
+  --font-display: var(--font-display);
+  --font-ui: var(--font-ui);
+  --font-mono: var(--font-mono);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /*
+   * Focus must always be visible — part of the unannounced quality floor.
+   * :focus-visible only, so a mouse click does not paint a ring, but every keyboard
+   * path does.
+   */
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  /* Codes, extensions, KPIs and percentages are monospaced data, not prose. */
+  code,
+  kbd,
+  samp,
+  .data {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

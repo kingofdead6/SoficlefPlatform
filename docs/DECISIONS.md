@@ -5,48 +5,49 @@ Format: **Context → Decision → Consequences → Status**.
 `ASSUMPTION` means the decision is a working assumption made to unblock building and is
 **pending client confirmation**. `ACCEPTED` means the decision is internal to engineering and
 needs no business sign-off. Nothing here is silently reversible: changing an `ASSUMPTION`
-after the client answers is a scoped piece of work, noted per ADR under *Consequences*.
+after the client answers is a scoped piece of work, noted per ADR under _Consequences_.
 
 Index
 
-| ADR | Title | Status |
-|---|---|---|
-| [ADR-001](#adr-001) | Build CDC v0.1's generic platform, seeded with CDC v1's content | ASSUMPTION |
-| [ADR-002](#adr-002) | Adopt CDC v0.1's phasing over CDC v1's four one-week sprints | ASSUMPTION |
-| [ADR-003](#adr-003) | AI agent deferred to phase 2 | ASSUMPTION |
-| [ADR-004](#adr-004) | Gold/navy palette, behind a token layer | ASSUMPTION |
-| [ADR-005](#adr-005) | Seven role profiles from CDC v0.1 §3 | ASSUMPTION |
-| [ADR-006](#adr-006) | Next.js App Router + React + TypeScript strict | ACCEPTED |
-| [ADR-007](#adr-007) | Tailwind CSS over CSS custom-property tokens | ACCEPTED |
-| [ADR-008](#adr-008) | Headless accessible primitives (Radix), no UI kit | ACCEPTED |
-| [ADR-009](#adr-009) | PostgreSQL | ACCEPTED |
-| [ADR-010](#adr-010) | Prisma with versioned migrations, no `db push` outside local dev | ACCEPTED |
-| [ADR-011](#adr-011) | Credentials auth with a server-side session table | ASSUMPTION |
-| [ADR-012](#adr-012) | Argon2id password hashing, configurable policy | ACCEPTED |
-| [ADR-013](#adr-013) | `next-intl` with locale-prefixed routes | ACCEPTED |
-| [ADR-014](#adr-014) | Zod validation at every server boundary | ACCEPTED |
-| [ADR-015](#adr-015) | Vitest for unit tests, Playwright for E2E | ACCEPTED |
-| [ADR-016](#adr-016) | Docker Compose for local infrastructure | ACCEPTED |
-| [ADR-017](#adr-017) | CI gates: lint, typecheck, unit, build, migration check | ACCEPTED |
-| [ADR-018](#adr-018) | Locale-driven font stacks; Arabic display face chosen up front | ACCEPTED |
-| [ADR-019](#adr-019) | Domain / application / infrastructure layering | ACCEPTED |
-| [ADR-020](#adr-020) | Single server-side authorization helper `can()` | ACCEPTED |
-| [ADR-021](#adr-021) | Scope filtering in the data layer, never in the UI | ACCEPTED |
-| [ADR-022](#adr-022) | Audit entry on every mutation of a sensitive entity | ACCEPTED |
-| [ADR-023](#adr-023) | No secrets in the repository | ACCEPTED |
-| [ADR-024](#adr-024) | Translation strategy: per-field columns + a translations table | ASSUMPTION |
-| [ADR-025](#adr-025) | Business content is never machine-translated | ASSUMPTION |
-| [ADR-026](#adr-026) | The HTML prototype is the content source of truth | ASSUMPTION |
-| [ADR-027](#adr-027) | Extraction preserves French verbatim and asserts its own counts | ACCEPTED |
+| ADR                 | Title                                                             | Status     |
+| ------------------- | ----------------------------------------------------------------- | ---------- |
+| [ADR-001](#adr-001) | Build CDC v0.1's generic platform, seeded with CDC v1's content   | ASSUMPTION |
+| [ADR-002](#adr-002) | Adopt CDC v0.1's phasing over CDC v1's four one-week sprints      | ASSUMPTION |
+| [ADR-003](#adr-003) | AI agent deferred to phase 2                                      | ASSUMPTION |
+| [ADR-004](#adr-004) | Gold/navy palette, behind a token layer                           | ASSUMPTION |
+| [ADR-005](#adr-005) | Seven role profiles from CDC v0.1 §3                              | ASSUMPTION |
+| [ADR-006](#adr-006) | Next.js App Router + React + TypeScript strict                    | ACCEPTED   |
+| [ADR-007](#adr-007) | Tailwind CSS over CSS custom-property tokens                      | ACCEPTED   |
+| [ADR-008](#adr-008) | Headless accessible primitives (Radix), no UI kit                 | ACCEPTED   |
+| [ADR-009](#adr-009) | PostgreSQL                                                        | ACCEPTED   |
+| [ADR-010](#adr-010) | Prisma with versioned migrations, no `db push` outside local dev  | ACCEPTED   |
+| [ADR-011](#adr-011) | Credentials auth with a server-side session table                 | ASSUMPTION |
+| [ADR-012](#adr-012) | Argon2id password hashing, configurable policy                    | ACCEPTED   |
+| [ADR-013](#adr-013) | `next-intl` with locale-prefixed routes                           | ACCEPTED   |
+| [ADR-014](#adr-014) | Zod validation at every server boundary                           | ACCEPTED   |
+| [ADR-015](#adr-015) | Vitest for unit tests, Playwright for E2E                         | ACCEPTED   |
+| [ADR-016](#adr-016) | Docker Compose for local infrastructure                           | ACCEPTED   |
+| [ADR-017](#adr-017) | CI gates: lint, typecheck, unit, build, migration check           | ACCEPTED   |
+| [ADR-018](#adr-018) | Locale-driven font stacks; Arabic display face chosen up front    | ACCEPTED   |
+| [ADR-019](#adr-019) | Domain / application / infrastructure layering                    | ACCEPTED   |
+| [ADR-020](#adr-020) | Single server-side authorization helper `can()`                   | ACCEPTED   |
+| [ADR-021](#adr-021) | Scope filtering in the data layer, never in the UI                | ACCEPTED   |
+| [ADR-022](#adr-022) | Audit entry on every mutation of a sensitive entity               | ACCEPTED   |
+| [ADR-023](#adr-023) | No secrets in the repository                                      | ACCEPTED   |
+| [ADR-024](#adr-024) | Translation strategy: per-field columns + a translations table    | ASSUMPTION |
+| [ADR-025](#adr-025) | Business content is never machine-translated                      | ASSUMPTION |
+| [ADR-026](#adr-026) | The HTML prototype is the content source of truth                 | ASSUMPTION |
+| [ADR-027](#adr-027) | Extraction preserves French verbatim and asserts its own counts   | ACCEPTED   |
 | [ADR-028](#adr-028) | Kaizen action count follows the prototype (17), not the brief's 5 | ASSUMPTION |
-| [ADR-029](#adr-029) | Physical CSS direction properties are banned by lint | ACCEPTED |
-| [ADR-030](#adr-030) | Status is never communicated by colour alone | ACCEPTED |
-| [ADR-031](#adr-031) | Navigation is filtered server-side by permission | ACCEPTED |
-| [ADR-032](#adr-032) | Western Arabic numerals in the Arabic locale | ASSUMPTION |
+| [ADR-029](#adr-029) | Physical CSS direction properties are banned by lint              | ACCEPTED   |
+| [ADR-030](#adr-030) | Status is never communicated by colour alone                      | ACCEPTED   |
+| [ADR-031](#adr-031) | Navigation is filtered server-side by permission                  | ACCEPTED   |
+| [ADR-032](#adr-032) | Western Arabic numerals in the Arabic locale                      | ASSUMPTION |
 
 ---
 
 <a id="adr-001"></a>
+
 ## ADR-001 — Build CDC v0.1's generic platform, seeded with CDC v1's content
 
 **Context.** Two specifications describe different products. CDC v1 specifies a fixed
@@ -54,10 +55,10 @@ onboarding portal for one named person (M. DJAOUDI Farid), 8 modules, all conten
 CDC v0.1 specifies a generic platform for structures, jobs, competencies and onboarding
 journeys, reusable across the company. The client has approved the prototype, which is the
 v1 shape. HR's stated intent (CDC v1 §1.4, CDC v0.1 §1) is both: get M. Djaoudi operational
-fast *and* obtain a reusable framework.
+fast _and_ obtain a reusable framework.
 
 **Decision.** Build v0.1's generic architecture. Seed it with v1's content. M. Djaoudi's
-onboarding becomes the first *instance* of a reusable onboarding template attached to the
+onboarding becomes the first _instance_ of a reusable onboarding template attached to the
 `EN-012-DRH` job, not a hardcoded page. v0.1 is a superset of v1: every v1 module maps onto a
 v0.1 entity (see `SCOPE.md` §4).
 
@@ -70,6 +71,7 @@ the fixed portal, Parts 7–13 shrink drastically but Parts 0–5 are unaffected
 **Status.** ASSUMPTION — the underlying conflict is a business decision, not an engineering one.
 
 <a id="adr-002"></a>
+
 ## ADR-002 — Adopt CDC v0.1's phasing over CDC v1's four one-week sprints
 
 **Context.** CDC v1 §6 estimates 4 sprints of one week for the whole platform including the
@@ -86,6 +88,7 @@ non-negotiable. Planning, budget and client expectation must be reset against v0
 **Status.** ASSUMPTION — the client set the 4-week expectation and must be told it is not held.
 
 <a id="adr-003"></a>
+
 ## ADR-003 — AI agent deferred to phase 2
 
 **Context.** CDC v1 §4 specifies a full RAG agent in Sprint 3: ingestion pipeline, 512-token
@@ -107,6 +110,7 @@ must be said explicitly, not discovered.
 **Status.** ASSUMPTION.
 
 <a id="adr-004"></a>
+
 ## ADR-004 — Gold/navy palette, behind a token layer
 
 **Context.** CDC v1 §5.1 and the prototype's `:root` specify gold `#8b6914` with industrial
@@ -126,6 +130,7 @@ review: a raw hex in a component is a defect.
 **Status.** ASSUMPTION — pending the vector logo / brandbook (OQ-22).
 
 <a id="adr-005"></a>
+
 ## ADR-005 — Seven role profiles from CDC v0.1 §3
 
 **Context.** CDC v1 §2.3 defines 4 roles (`ADMIN_DRH`, `DIR_PROD`, `EXECUTIVE`,
@@ -145,6 +150,7 @@ are always role + scope, never role alone.
 **Status.** ASSUMPTION — the person-to-role assignment list must be confirmed by HR (OQ-12).
 
 <a id="adr-006"></a>
+
 ## ADR-006 — Next.js App Router + React + TypeScript strict
 
 **Context.** CDC v1 §2.1 recommends React/Next.js 14+ or Vue/Nuxt. CDC v0.1 §14 proposes
@@ -160,6 +166,7 @@ server-side permission filtering all come from the framework rather than from cu
 **Status.** ACCEPTED.
 
 <a id="adr-007"></a>
+
 ## ADR-007 — Tailwind CSS over CSS custom-property tokens
 
 **Context.** Both specifications name Tailwind. The palette may change (ADR-004) and the
@@ -175,6 +182,7 @@ for, is a second token block rather than a component sweep.
 **Status.** ACCEPTED.
 
 <a id="adr-008"></a>
+
 ## ADR-008 — Headless accessible primitives (Radix), no heavyweight UI kit
 
 **Context.** CDC v0.1 §13 requires cards, tables, tabs, badges, timeline, stepper, modal,
@@ -191,6 +199,7 @@ that is the point: a kit's opinions would fight the identity.
 **Status.** ACCEPTED.
 
 <a id="adr-009"></a>
+
 ## ADR-009 — PostgreSQL
 
 **Context.** Both specifications name PostgreSQL. The data is relational and audit-heavy.
@@ -198,11 +207,12 @@ that is the point: a kit's opinions would fight the identity.
 **Decision.** PostgreSQL 16. JSONB for audit before/after snapshots.
 
 **Consequences.** Referential integrity, partial indexes and JSONB in one engine. `pgvector`
-is *not* installed — see ADR-003; adding it later is an extension, not a migration of data.
+is _not_ installed — see ADR-003; adding it later is an extension, not a migration of data.
 
 **Status.** ACCEPTED.
 
 <a id="adr-010"></a>
+
 ## ADR-010 — Prisma with versioned migrations, no `db push` outside local dev
 
 **Context.** CDC v0.1 §14 requires versioned migrations and strong typing; §16.1 requires
@@ -218,6 +228,7 @@ rebuilt from zero.
 **Status.** ACCEPTED.
 
 <a id="adr-011"></a>
+
 ## ADR-011 — Credentials auth with a server-side session table
 
 **Context.** CDC v0.1 §14 prefers SSO/OIDC "if available", otherwise local secure auth. What
@@ -236,6 +247,7 @@ screen changes and nothing else does.
 **Status.** ASSUMPTION — pending the identity-system answer (OQ-13).
 
 <a id="adr-012"></a>
+
 ## ADR-012 — Argon2id password hashing, configurable policy
 
 **Context.** CDC v0.1 §15 requires robust hashing; §2.1 requires parameters not to be
@@ -251,6 +263,7 @@ SOFICLEF's IT security can impose its own policy.
 **Status.** ACCEPTED.
 
 <a id="adr-013"></a>
+
 ## ADR-013 — `next-intl` with locale-prefixed routes
 
 **Context.** CDC v1 §2.2 names i18next or next-intl. CDC v0.1 §12 makes FR/AR/EN mandatory for
@@ -267,6 +280,7 @@ rather than a review burden.
 **Status.** ACCEPTED.
 
 <a id="adr-014"></a>
+
 ## ADR-014 — Zod validation at every server boundary
 
 **Context.** CDC v0.1 §14.2: validate server-side even when the client already validates.
@@ -281,6 +295,7 @@ does not match its schema fails the extractor loudly (ADR-027).
 **Status.** ACCEPTED.
 
 <a id="adr-015"></a>
+
 ## ADR-015 — Vitest for unit tests, Playwright for E2E
 
 **Context.** CDC v0.1 §19 requires unit tests on business rules and E2E on critical paths,
@@ -295,6 +310,7 @@ proof for the layer that carries the accessibility and RTL requirements.
 **Status.** ACCEPTED.
 
 <a id="adr-016"></a>
+
 ## ADR-016 — Docker Compose for local infrastructure
 
 **Context.** CDC v0.1 §14 requires Docker + CI/CD, and hosting constraints are unknown
@@ -309,6 +325,7 @@ plausible for an Algerian industrial site with VPN constraints, stays open.
 **Status.** ACCEPTED.
 
 <a id="adr-017"></a>
+
 ## ADR-017 — CI gates: lint, typecheck, unit tests, build, migration check
 
 **Context.** CDC v0.1 §14.2 and §18 require maintainability, tests and CI/CD.
@@ -322,6 +339,7 @@ migration" defect before it reaches an environment with data.
 **Status.** ACCEPTED.
 
 <a id="adr-018"></a>
+
 ## ADR-018 — Locale-driven font stacks; Arabic display face chosen up front
 
 **Context.** CDC v1 §5.2 specifies Playfair Display for titles, Inter for UI, JetBrains Mono
@@ -340,6 +358,7 @@ which also matters if SOFICLEF deploys on-premise behind a restricted network.
 **Status.** ACCEPTED.
 
 <a id="adr-019"></a>
+
 ## ADR-019 — Domain / application / infrastructure layering
 
 **Context.** CDC v0.1 §14.2 requires a clear separation.
@@ -356,6 +375,7 @@ cost is accepted for the rules layer only, not for read-only view queries.
 **Status.** ACCEPTED.
 
 <a id="adr-020"></a>
+
 ## ADR-020 — Single server-side authorization helper `can()`
 
 **Context.** CDC v0.1 §3 and §19 require that authorization holds against a direct URL or API
@@ -372,6 +392,7 @@ direct-access rejection per role.
 **Status.** ACCEPTED.
 
 <a id="adr-021"></a>
+
 ## ADR-021 — Scope filtering in the data layer, never in the UI
 
 **Context.** CDC v0.1 §3: "a user must never automatically see the whole reference frame
@@ -388,6 +409,7 @@ which is deliberate friction: a query without a caller cannot be written by acci
 **Status.** ACCEPTED.
 
 <a id="adr-022"></a>
+
 ## ADR-022 — Audit entry on every mutation of a sensitive entity
 
 **Context.** CDC v0.1 §15, §19.1 and success indicator "100 % of sensitive operations
@@ -400,12 +422,13 @@ transaction as the mutation. The table is append-only to the application: no upd
 delete path.
 
 **Consequences.** "Who changed this job description, when, from what to what" is answerable.
-Storage grows with activity; retention is a business decision (OQ-16) and is *not* silently
+Storage grows with activity; retention is a business decision (OQ-16) and is _not_ silently
 chosen by engineering.
 
 **Status.** ACCEPTED.
 
 <a id="adr-023"></a>
+
 ## ADR-023 — No secrets in the repository
 
 **Context.** CDC v0.1 §14.2.
@@ -421,6 +444,7 @@ copying the example and filling it in.
 **Status.** ACCEPTED.
 
 <a id="adr-024"></a>
+
 ## ADR-024 — Translation strategy: per-field columns + a translations table
 
 **Context.** CDC v0.1 §12 requires FR/AR/EN on navigation, administrable reference data and
@@ -428,10 +452,10 @@ descriptions. CDC v0.1 §16 lists a `Translation` entity "if a centralised strat
 adopted". Two techniques compete: per-field columns and a generic translations table.
 
 **Decision.** Both, by content shape.
-*Per-field columns* (`nameFr`, `nameAr`, `nameEn`) for short labels on reference entities —
+_Per-field columns_ (`nameFr`, `nameAr`, `nameEn`) for short labels on reference entities —
 roles, structures, competencies, competency levels, job titles, statuses. These are queried,
 sorted and filtered constantly and are cheap to keep as columns.
-*A `Translation` table* keyed by (entityType, entityId, field, locale) for long-form content —
+_A `Translation` table_ keyed by (entityType, entityId, field, locale) for long-form content —
 job-description sections, onboarding task instructions, remarks, document descriptions. These
 are optional, numerous and edited on a review workflow.
 
@@ -443,6 +467,7 @@ and no migration at all for long-form content.
 **Status.** ASSUMPTION — the set of locales for historical business data is unconfirmed (OQ-19).
 
 <a id="adr-025"></a>
+
 ## ADR-025 — Business content is never machine-translated
 
 **Context.** The extracted content is HR material: a job description, QMS process ownership,
@@ -461,14 +486,15 @@ liability in a certified industrial environment; a visibly missing translation i
 **Status.** ASSUMPTION — the client must supply translations and a reviewer (OQ-19).
 
 <a id="adr-026"></a>
+
 ## ADR-026 — The HTML prototype is the content source of truth
 
 **Context.** The same facts appear in CDC v1's PDF and in the prototype, and they disagree in
 places — most visibly the Arabic value strings, which are corrupted in the PDF by a font
 encoding fault, and the Kaizen action list (ADR-028).
 
-**Decision.** Where the prototype and a PDF disagree on *content*, the prototype wins and the
-divergence is recorded. Where they disagree on *requirements*, neither wins silently: it is
+**Decision.** Where the prototype and a PDF disagree on _content_, the prototype wins and the
+divergence is recorded. Where they disagree on _requirements_, neither wins silently: it is
 raised in `OPEN-QUESTIONS.md`.
 
 **Consequences.** Extraction has one input, so re-running it is deterministic. The client has
@@ -477,6 +503,7 @@ seen and validated the prototype's content on screen, which the PDF text cannot 
 **Status.** ASSUMPTION — the client should confirm, in particular the Arabic strings (OQ-21).
 
 <a id="adr-027"></a>
+
 ## ADR-027 — Extraction preserves French verbatim and asserts its own counts
 
 **Context.** Nothing from the prototype may be retyped by hand, and the client may send a
@@ -494,6 +521,7 @@ becomes a build failure instead of a missing card noticed in UAT.
 **Status.** ACCEPTED.
 
 <a id="adr-028"></a>
+
 ## ADR-028 — Kaizen action count follows the prototype (17), not the brief's 5
 
 **Context.** The build brief states the prototype contains 5 tracked Kaizen actions with
@@ -513,6 +541,7 @@ OQ-23.
 **Status.** ASSUMPTION — flagged to the client; see `CONTENT-INVENTORY.md` and OQ-23.
 
 <a id="adr-029"></a>
+
 ## ADR-029 — Physical CSS direction properties are banned by lint
 
 **Context.** CDC v0.1 §12.1 requires full RTL. Every component built after Part 4 must be
@@ -530,6 +559,7 @@ explicit and reviewable.
 **Status.** ACCEPTED.
 
 <a id="adr-030"></a>
+
 ## ADR-030 — Status is never communicated by colour alone
 
 **Context.** CDC v0.1 §7.1 and §13 require accessible level and status indicators; WCAG 2.1 AA
@@ -547,6 +577,7 @@ document a production director may pin to a wall.
 **Status.** ACCEPTED.
 
 <a id="adr-031"></a>
+
 ## ADR-031 — Navigation is filtered server-side by permission
 
 **Context.** CDC v0.1 §3 rights model; Part 5 requires a `VIEWER` not to see routes they
@@ -562,6 +593,7 @@ it: the route itself independently calls `can()` (ADR-020), so a guessed URL is 
 **Status.** ACCEPTED.
 
 <a id="adr-032"></a>
+
 ## ADR-032 — Western Arabic numerals in the Arabic locale
 
 **Context.** Arabic can render digits as Western Arabic (0–9) or Eastern Arabic (٠–٩). The
