@@ -12,17 +12,17 @@ For the technical build, see the root `README.md`.
 
 ## 1. The two rules everything else follows
 
-**Rights are role + scope, never role alone.** Holding a permission says *what* somebody
-may do; the scope attached to their assignment says *where*. A structure manager and an
+**Rights are role + scope, never role alone.** Holding a permission says _what_ somebody
+may do; the scope attached to their assignment says _where_. A structure manager and an
 HR director can both hold `job:read`; only HR sees every structure.
 
 There are three scopes:
 
-| Scope                 | Means                                                    | Who has it                                    |
-| --------------------- | -------------------------------------------------------- | --------------------------------------------- |
-| `GLOBAL`              | The whole organization                                   | Technical admin, business admin, Head C&E, HR, Reader |
-| `ORGANIZATION_UNIT`   | One structure **and everything beneath it**              | Manager                                       |
-| `SELF`                | Only their own records                                   | Employee                                      |
+| Scope               | Means                                       | Who has it                                            |
+| ------------------- | ------------------------------------------- | ----------------------------------------------------- |
+| `GLOBAL`            | The whole organization                      | Technical admin, business admin, Head C&E, HR, Reader |
+| `ORGANIZATION_UNIT` | One structure **and everything beneath it** | Manager                                               |
+| `SELF`              | Only their own records                      | Employee                                              |
 
 **The page is the boundary, not the menu.** A link a user cannot open is never sent to
 their browser — but hiding a link is a courtesy, not security. Typing the URL directly
@@ -40,12 +40,12 @@ exists, which lets someone map the organization by trying ids.
 Four pages are public. They carry the company's own presentation, the same material
 already published on soficlef.com, and read only from tables with no personal data.
 
-| Page              | URL             | What it shows                                                          |
-| ----------------- | --------------- | ---------------------------------------------------------------------- |
-| Home              | `/fr`           | Who SOFICLEF is, key figures, vision and mission, the four values      |
-| Company           | `/fr/entreprise`| Identity, certification, activities, the values in Arabic/French/English |
-| Strategy          | `/fr/strategie` | The 2024–2026 plan: objectives by market, the PS-01…PS-04 projects     |
-| Careers           | `/fr/carrieres` | Positions currently open, and how to apply                             |
+| Page     | URL              | What it shows                                                            |
+| -------- | ---------------- | ------------------------------------------------------------------------ |
+| Home     | `/fr`            | Who SOFICLEF is, key figures, vision and mission, the four values        |
+| Company  | `/fr/entreprise` | Identity, certification, activities, the values in Arabic/French/English |
+| Strategy | `/fr/strategie`  | The 2024–2026 plan: objectives by market, the PS-01…PS-04 projects       |
+| Careers  | `/fr/carrieres`  | Positions currently open, and how to apply                               |
 
 A visitor can switch language (`/ar/…`, `/en/…`) and sign in. They can do nothing else:
 no organization chart, no directory, no employee, no document, no journey.
@@ -75,7 +75,7 @@ structure — two assignments, which is exactly right.
 **Can:**
 
 - Read the reference frame: company, strategy, structures, jobs, job descriptions, QMS, HSE, the internal directory, documents.
-- **Run their own 30-day onboarding journey.** Tick a step as done, mark one *in progress*, or flag it *blocked* — which is what tells HR something is stuck. Deadlines and lateness are shown per step.
+- **Run their own 30-day onboarding journey.** Tick a step as done, mark one _in progress_, or flag it _blocked_ — which is what tells HR something is stuck. Deadlines and lateness are shown per step.
 - **See their own competency assessment** — the level their job requires, the level they were assessed at, and the gap.
 - **Write in the remarks journal**, addressed to HR and the DG, and delete their own entries. They can export the journal as a text file.
 - Read and clear their own notifications.
@@ -87,7 +87,7 @@ themselves, see anybody else's journey, remarks or assessments, or open the Kaiz
 
 **Who.** The head of a structure — Fabrication, Contrôle Qualité, Maintenance.
 
-**Scope: ORGANIZATION_UNIT.** Their structure *and its descendants*: the head of
+**Scope: ORGANIZATION_UNIT.** Their structure _and its descendants_: the head of
 Fabrication also covers the Coffre and Brouette units, automatically.
 
 **Can, within their perimeter:**
@@ -192,7 +192,7 @@ onboarding checklist.
 **Cannot — and this is intentional:**
 
 - **Validate a job description, or assess a competency.** Signing off business content is a business act. IT running the servers does not make IT the authority on whether someone is competent.
-- **Grant a role to themselves.** The attempt is refused *and written to the audit log*, so an administrator quietly widening their own access is both blocked and visible.
+- **Grant a role to themselves.** The attempt is refused _and written to the audit log_, so an administrator quietly widening their own access is both blocked and visible.
 - **Suspend their own account**, which would lock the platform's administrator out of it.
 
 ---
@@ -202,24 +202,24 @@ onboarding checklist.
 `R` read · `W` create/update · `V` validate · `—` no access.
 Read this alongside the scope column: two roles with `R` see different amounts of data.
 
-| Resource                    | Employee | Manager | HR     | Head C&E | Biz admin | Reader | Tech admin |
-| --------------------------- | -------- | ------- | ------ | -------- | --------- | ------ | ---------- |
-| Scope                       | self     | unit    | global | global   | global    | global | global     |
-| Structures                  | R        | R       | R      | R        | **W**     | R      | R          |
-| Jobs                        | R        | R       | R      | **W**    | **W**     | R      | —          |
-| Job descriptions            | R        | R       | R + **V** | **W** + **V** | **W** | R  | —          |
-| Competency frame            | R        | R       | R      | R + **V**| **W**     | R      | —          |
-| Assessments                 | R (own)  | R + **W** | R    | R        | —         | —      | —          |
-| Onboarding templates        | —        | —       | R      | R        | **W**     | —      | —          |
-| Onboarding journeys         | R (own)  | R       | **W**  | R + **V**| **W**     | R      | R          |
-| Onboarding tasks            | **W** (own) | **W** + **V** | **W** | R + **V** | **W** | — | —      |
-| Remarks journal             | **W** (own) | —    | R      | R        | R         | —      | —          |
-| Kaizen actions              | —        | R + **W** | —    | R        | **W**     | —      | —          |
-| Documents                   | R        | R       | **W**  | R        | **W**     | R      | —          |
-| Dashboard & reports         | R        | R       | R      | R        | R         | R      | R          |
-| Users & roles               | —        | —       | —      | —        | —         | —      | **W**      |
-| Audit log                   | —        | —       | —      | —        | —         | —      | R          |
-| Settings                    | —        | —       | —      | —        | R         | —      | **W**      |
+| Resource             | Employee    | Manager       | HR         | Head C&E      | Biz admin  | Reader | Tech admin    |
+| -------------------- | ----------- | ------------- | ---------- | ------------- | ---------- | ------ | ------------- |
+| Scope                | self        | unit          | global     | global        | global     | global | global        |
+| Structures           | R           | R             | R          | R             | **W**      | R      | R             |
+| Jobs                 | R           | R             | R          | **W**         | **W**      | R      | —             |
+| Job descriptions     | R           | R             | R + **V**  | **W** + **V** | **W**      | R      | —             |
+| Competency frame     | R           | R             | R          | R + **V**     | **W**      | R      | —             |
+| Assessments          | R (own)     | R + **W**     | R          | R             | —          | —      | —             |
+| Onboarding templates | —           | —             | R          | R             | **W**      | —      | —             |
+| Onboarding journeys  | R (own)     | R             | **W**      | R + **V**     | **W**      | R      | R             |
+| Onboarding tasks     | **W** (own) | **W** + **V** | **W**      | R + **V**     | **W**      | —      | —             |
+| Remarks journal      | **W** (own) | —             | R          | R             | R          | —      | —             |
+| Kaizen actions       | —           | R + **W**     | —          | R             | **W**      | —      | —             |
+| Documents            | R           | R             | **W**      | R             | **W**      | R      | — (no access) |
+| Dashboard & reports  | R           | R             | R + export | R + export    | R + export | R      | R + export    |
+| Users & roles        | —           | —             | —          | —             | —          | —      | **W**         |
+| Audit log            | —           | —             | —          | —             | —          | —      | R             |
+| Settings             | —           | —             | —          | —             | R          | —      | **W**         |
 
 Three separations are worth stating plainly, because they are the point of the model:
 
@@ -234,25 +234,25 @@ Three separations are worth stating plainly, because they are the point of the m
 Seventeen routes in six groups. Each declares the permission it needs, so the menu and the
 route agree by construction.
 
-| Group          | Page                      | Who sees it                                   | What it does                                                       |
-| -------------- | ------------------------- | --------------------------------------------- | ------------------------------------------------------------------ |
-| Pilotage       | Tableau de bord           | all seven                                     | Role-aware KPIs; each block appears only if you hold its permission |
-| Onboarding     | Bienvenue                 | all seven                                     | The welcome message, key dates, the first day's agenda             |
-| Onboarding     | Entreprise                | all seven                                     | Identity, values, activities                                       |
-| Onboarding     | Plan Stratégique          | all seven                                     | The 2024–2026 plan and its four projects                           |
-| Onboarding     | Fiche de Poste            | all but technical admin                       | The `EN-012-DRH` fiche, its versions, its validation circuit       |
-| Direction      | Structures & Organisation | all seven (each within their own scope)       | The organization tree; create/edit/archive with the right permission |
-| Direction      | Équipe Encadrement        | all seven (own scope)                         | Structure heads and their priorities                               |
-| Direction      | Recrutements en cours     | all but technical admin                       | Open positions and internal mobility                               |
-| Direction      | Projet Kaizen             | manager, business admin, Head C&E             | The consultant's missions, gaps and tracked actions                |
-| Référentiels   | SMQ · ISO 9001            | all but technical admin                       | The PR02 process, responsibilities, the process map                |
-| Référentiels   | HSE                       | all but technical admin                       | Site safety rules, PPE, restricted zones                           |
-| Référentiels   | Interlocuteurs            | all seven                                     | The internal directory with extensions                             |
-| Référentiels   | Documents                 | all but technical admin                       | The reference document library                                     |
-| Outils         | Checklist 30 jours        | all but technical admin and reader            | The interactive journey, plus oversight for managers and HR        |
-| Outils         | Bilan Compétences         | all but technical admin                       | The job↔competency matrix and gaps                                 |
-| Outils         | Remarques                 | employee, HR, Head C&E, business admin        | The observations journal, with export                              |
-| Administration | Administration            | technical admin only                          | Accounts, roles, audit trail                                       |
+| Group          | Page                      | Who sees it                             | What it does                                                         |
+| -------------- | ------------------------- | --------------------------------------- | -------------------------------------------------------------------- |
+| Pilotage       | Tableau de bord           | all seven                               | Role-aware KPIs; each block appears only if you hold its permission  |
+| Onboarding     | Bienvenue                 | all seven                               | The welcome message, key dates, the first day's agenda               |
+| Onboarding     | Entreprise                | all seven                               | Identity, values, activities                                         |
+| Onboarding     | Plan Stratégique          | all seven                               | The 2024–2026 plan and its four projects                             |
+| Onboarding     | Fiche de Poste            | all but technical admin                 | The `EN-012-DRH` fiche, its versions, its validation circuit         |
+| Direction      | Structures & Organisation | all seven (each within their own scope) | The organization tree; create/edit/archive with the right permission |
+| Direction      | Équipe Encadrement        | all seven (own scope)                   | Structure heads and their priorities                                 |
+| Direction      | Recrutements en cours     | all but technical admin                 | Open positions and internal mobility                                 |
+| Direction      | Projet Kaizen             | manager, business admin, Head C&E       | The consultant's missions, gaps and tracked actions                  |
+| Référentiels   | SMQ · ISO 9001            | all but technical admin                 | The PR02 process, responsibilities, the process map                  |
+| Référentiels   | HSE                       | all but technical admin                 | Site safety rules, PPE, restricted zones                             |
+| Référentiels   | Interlocuteurs            | all seven                               | The internal directory with extensions                               |
+| Référentiels   | Documents                 | all but technical admin                 | The reference document library                                       |
+| Outils         | Checklist 30 jours        | all but technical admin and reader      | The interactive journey, plus oversight for managers and HR          |
+| Outils         | Bilan Compétences         | all but technical admin                 | The job↔competency matrix and gaps                                   |
+| Outils         | Remarques                 | employee, HR, Head C&E, business admin  | The observations journal, with export                                |
+| Administration | Administration            | technical admin only                    | Accounts, roles, audit trail                                         |
 
 The technical administrator sees fewer business pages than anyone else, which is the model
 working as intended: running the platform is not a reason to read its HR content. The
@@ -315,16 +315,16 @@ The seed creates one account per profile so the whole model can be walked throug
 share a password set by `SEED_DEMO_PASSWORD` at seed time — never written in the
 repository. If it is unset, the seed generates one and prints it once.
 
-| Account                      | Role(s)                       | Useful for showing                            |
-| ---------------------------- | ----------------------------- | --------------------------------------------- |
-| `djaoudi@soficlef.local`     | Employee + Manager (DPR)      | Both sides at once: own journey, and a perimeter |
-| `oudni@soficlef.local`       | Manager (DPR-FABRICATION)     | Scope: sees one structure, not its siblings   |
-| `drh@soficlef.local`         | HR                            | Oversight of every journey                    |
-| `mostafa@soficlef.local`     | Head C&E                      | Validation authority                          |
-| `chanane@soficlef.local`     | Business admin C&E            | The widest business rights, and no validation |
-| `charikhi@soficlef.local`    | Reader (DG)                   | Read-only: every mutation refused             |
-| `tech.admin@soficlef.local`  | Technical admin               | Accounts, roles, audit — and no business rights |
-| `boubenia@soficlef.local`    | Employee                      | The narrowest profile                         |
+| Account                     | Role(s)                   | Useful for showing                               |
+| --------------------------- | ------------------------- | ------------------------------------------------ |
+| `djaoudi@soficlef.local`    | Employee + Manager (DPR)  | Both sides at once: own journey, and a perimeter |
+| `oudni@soficlef.local`      | Manager (DPR-FABRICATION) | Scope: sees one structure, not its siblings      |
+| `drh@soficlef.local`        | HR                        | Oversight of every journey                       |
+| `mostafa@soficlef.local`    | Head C&E                  | Validation authority                             |
+| `chanane@soficlef.local`    | Business admin C&E        | The widest business rights, and no validation    |
+| `charikhi@soficlef.local`   | Reader (DG)               | Read-only: every mutation refused                |
+| `tech.admin@soficlef.local` | Technical admin           | Accounts, roles, audit — and no business rights  |
+| `boubenia@soficlef.local`   | Employee                  | The narrowest profile                            |
 
 A good five-minute demonstration: sign in as **oudni** and note the dashboard counts one
 vacant structure; sign in as **drh** and note the same tile reads three. Nothing was
