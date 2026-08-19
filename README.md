@@ -152,16 +152,17 @@ prototype's browser-side implementation could not have worked outside a sandbox 
 | `/competencies`  | The job↔competency matrix, gaps against a configurable level scale, and assessment recording          |
 | `/remarks`       | The collaborator's journal to HR and the DG, with an audited text export                              |
 | `/admin`         | Accounts, roles and the audit trail. `TECH_ADMIN` only                                                |
-| Content routes   | Company, strategy, job description, management, recruitment, Kaizen, QMS, HSE, contacts, documents    |
+| `/job-description` | The `EN-012-DRH` fiche, its versions, and the §6.1 validation circuit                                |
+| Content routes   | Company, strategy, management, recruitment, Kaizen, QMS, HSE, contacts, documents                     |
 
 Every mutation goes through one helper (`src/application/shared/mutate.ts`) that
 authenticates, re-validates the payload with Zod, authorizes against the resolved target
 and writes the audit row in the same transaction — so a new action cannot forget one of
 the four.
 
-Two gaps are deliberate and documented in `docs/SCOPE.md`: job-description authoring
-(the workflow state machine exists and is tested, the screens are not built), and
-document upload with per-document ACLs, which awaits the storage decision (OQ-15).
+Two gaps are deliberate and documented in `docs/SCOPE.md`: field-level editing of a job
+description's §6.2 content (the versioning and validation workflow around it is complete),
+and document upload with per-document ACLs, which awaits the storage decision (OQ-15).
 
 ## Data seeded from the prototype
 

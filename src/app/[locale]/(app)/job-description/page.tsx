@@ -1,13 +1,25 @@
+import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
+import { loadDossier } from '@/application/job-description/versions';
+import { canOpen } from '@/application/navigation/build-navigation';
+import { VersionPanel } from '@/components/job-description/version-panel';
 import { Card, CardBody, CardTitle, EmptyState, SectionTitle } from '@/components/ui';
+import { can } from '@/domain/auth/authorization';
+import { navItemByHref } from '@/domain/navigation/navigation';
 import type { Locale } from '@/i18n/config';
 import { formatDate } from '@/lib/format';
+import { getCurrentUser } from '@/infrastructure/auth/current-user';
 import { prisma } from '@/infrastructure/db/client';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // The page is the boundary, not the sidebar (ADR-020).
+  const item = navItemByHref('/job-description');
+  const user = await getCurrentUser();
+  if (!item || !user || !canOpen(user, item)) notFound();
 
   let jobDescription: Awaited<ReturnType<typeof loadJobDescription>> = null;
 
@@ -25,6 +37,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       />
     );
   }
+
+  const dossier = await loadDossier(user, jobDescription.id).catch(() => null);
+  const mayDraft = can(user, 'update', 'job_description');
 
   return (
     <div className="space-y-8">
@@ -121,6 +136,31 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           </ul>
         </section>
       )}
+
+      {dossier ? (
+        <section>
+          <SectionTitle lead="Le circuit de validation de la fiche : brouillon, revue, corrections, validation, archivage (§6.1).">
+            Versions & validation
+          </SectionTitle>
+          <VersionPanel
+            jobDescriptionId={dossier.jobDescriptionId}
+            mayDraft={mayDraft}
+            versions={dossier.versions.map((version) => ({
+              id: version.id,
+              versionNumber: version.versionNumber,
+              status: version.status,
+              reasonFr: version.reasonFr,
+              createdLabel: formatDate(version.createdAt, locale as Locale),
+              validatedLabel: version.validatedAt
+                ? formatDate(version.validatedAt, locale as Locale)
+                : null,
+              authorName: version.authorName,
+              validatorName: version.validatorName,
+              actions: version.actions,
+            }))}
+          />
+        </section>
+      ) : null}
     </div>
   );
 }

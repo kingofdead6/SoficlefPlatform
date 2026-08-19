@@ -189,9 +189,12 @@ test.describe('keyboard and accessibility', () => {
       .getByRole('navigation', { name: /navigation/i })
       .getByRole('link')
       .first();
+    // Assert against the link's own href rather than a hardcoded route: the claim is
+    // that Enter activates the focused link, not that any particular entry comes first.
+    const href = await firstLink.getAttribute('href');
     await firstLink.focus();
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/fr\/welcome$/);
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
   });
 
   for (const locale of ['fr', 'ar']) {

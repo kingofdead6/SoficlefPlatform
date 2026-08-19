@@ -174,5 +174,5 @@ deliberate gaps remain, each with its reason:
 
 | Gap | Part | Why it is still open |
 | --- | ---- | -------------------- |
-| Job-description authoring and its §6.1 validation workflow | 11 / 13 | The schema, the state machine and its 12 tests exist (`src/domain/workflow/job-description.ts`, `JobDescriptionVersion`, `WorkflowAction`); the authoring screens are not built. The job description is displayed read-only, which is what the prototype offered. |
+| Field-level editing of a job description's §6.2 content | 11 | The §6.1 workflow is complete — versions, states, validation, separation of duties, an immutable snapshot per version. A new version currently forks the current content with a stated motive; editing the mission and task text in the browser is the remaining step, and it awaits confirmation of who may author what (OQ-07). |
 | Document upload, per-document ACLs, CSV/XLSX exports | 12 / 13 | Upload needs the storage decision (OQ-15: object storage, antivirus, retention). The remarks journal exports as text today; tabular CSV/XLSX exports await confirmation of which reports the business actually needs (OQ-17). |
