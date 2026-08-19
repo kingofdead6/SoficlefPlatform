@@ -41,10 +41,12 @@ function user(role: RoleCode, scopeUnits?: string[]): AuthenticatedUser {
 const idsOf = (groups: ReturnType<typeof buildNavigation>) =>
   groups.flatMap((group) => group.items.map((item) => item.id));
 
-describe('navigation is fifteen routes in four groups', () => {
-  it('declares exactly the fifteen routes of the specification', () => {
-    expect(NAV_ITEMS).toHaveLength(15);
-    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(15);
+describe('navigation is seventeen routes in six groups', () => {
+  it('declares exactly the seventeen routes of the specification', () => {
+    // Fifteen content routes from the prototype, plus the role dashboard and the
+    // administration section of CDC v0.1 §4.
+    expect(NAV_ITEMS).toHaveLength(17);
+    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(17);
   });
 
   it('does not include the AI assistant — phase 2 (ADR-003)', () => {
@@ -53,8 +55,21 @@ describe('navigation is fifteen routes in four groups', () => {
     expect(NAV_ITEMS.map((item) => item.id)).not.toContain('assistant');
   });
 
-  it('shows every entry to the business administrator', () => {
-    expect(idsOf(buildNavigation(user('BIZ_ADMIN_CE')))).toHaveLength(15);
+  it('shows every business entry to the business administrator', () => {
+    const visible = idsOf(buildNavigation(user('BIZ_ADMIN_CE')));
+    // Everything except the technical administration section, which is TECH_ADMIN's:
+    // the business administrator manages the reference frame, not accounts and logs.
+    expect(visible).toHaveLength(16);
+    expect(visible).not.toContain('admin');
+    expect(visible).toContain('dashboard');
+  });
+
+  it('reserves the administration section for the technical administrator', () => {
+    expect(idsOf(buildNavigation(user('TECH_ADMIN')))).toContain('admin');
+    for (const role of ['HEAD_CE', 'HR', 'MANAGER', 'EMPLOYEE', 'VIEWER'] as RoleCode[]) {
+      const account = role === 'MANAGER' ? user(role, [FABRICATION]) : user(role);
+      expect(idsOf(buildNavigation(account)), role).not.toContain('admin');
+    }
   });
 });
 
@@ -97,7 +112,7 @@ describe('entries a role cannot open are never sent', () => {
 
 describe('canOpen agrees with the menu', () => {
   it('is true for every visible entry and false for every hidden one', () => {
-    for (const role of ['VIEWER', 'MANAGER', 'EMPLOYEE', 'HR'] as RoleCode[]) {
+    for (const role of ['VIEWER', 'MANAGER', 'EMPLOYEE', 'HR', 'TECH_ADMIN'] as RoleCode[]) {
       const account = role === 'MANAGER' ? user(role, [FABRICATION]) : user(role);
       const visible = new Set(idsOf(buildNavigation(account)));
 

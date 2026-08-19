@@ -13,7 +13,7 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
 
-  if (await getCurrentUser()) redirect({ href: '/welcome', locale });
+  if (await getCurrentUser()) redirect({ href: '/dashboard', locale });
 
   const t = await getTranslations('auth');
 

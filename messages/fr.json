@@ -72,7 +72,9 @@
       "onboarding": "Onboarding",
       "direction": "Direction",
       "references": "Référentiels",
-      "tools": "Outils"
+      "tools": "Outils",
+      "steering": "Pilotage",
+      "administration": "Administration"
     },
     "items": {
       "welcome": "Bienvenue",
@@ -89,7 +91,9 @@
       "documents": "Documents",
       "onboardingChecklist": "Checklist 30 jours",
       "competencies": "Bilan Compétences",
-      "remarks": "Remarques"
+      "remarks": "Remarques",
+      "dashboard": "Tableau de bord",
+      "admin": "Administration"
     }
   },
   "shell": {
@@ -119,7 +123,9 @@
     "competencies": "Le référentiel de compétences sera disponible après validation de la grille par la DRH.",
     "remarks": "Votre journal de remarques et recommandations sera activé avec la mise en service du module Onboarding.",
     "genericTitle": "Bientôt disponible",
-    "unblockedBy": "Ce qui débloque cette page"
+    "unblockedBy": "Ce qui débloque cette page",
+    "dashboard": "Votre tableau de bord se remplit dès que des parcours, des fiches et des évaluations existent.",
+    "admin": "L'administration de la plateforme est réservée aux administrateurs."
   },
   "components": {
     "dataTable": {

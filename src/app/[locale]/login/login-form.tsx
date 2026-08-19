@@ -26,7 +26,7 @@ export function LoginForm() {
         await formAction(formData);
         // The action sets the session cookie; refreshing lets the authenticated layout
         // take over, and a failed attempt simply re-renders with its message.
-        router.replace('/welcome');
+        router.replace('/dashboard');
         router.refresh();
       }}
       className="flex flex-col gap-4"

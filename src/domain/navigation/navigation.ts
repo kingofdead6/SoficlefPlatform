@@ -11,7 +11,13 @@ import type { Action, Resource } from '@/domain/auth/permissions';
  * Domain code: no framework imports (ADR-019).
  */
 
-export type NavGroupId = 'onboarding' | 'direction' | 'references' | 'tools';
+export type NavGroupId =
+  | 'steering'
+  | 'onboarding'
+  | 'direction'
+  | 'references'
+  | 'tools'
+  | 'administration';
 
 export interface NavItem {
   /** Key into `messages.nav.items`, and the item's stable id. */
@@ -26,9 +32,25 @@ export interface NavItem {
   badge?: 'onboarding-progress';
 }
 
-export const NAV_GROUPS: NavGroupId[] = ['onboarding', 'direction', 'references', 'tools'];
+export const NAV_GROUPS: NavGroupId[] = [
+  'steering',
+  'onboarding',
+  'direction',
+  'references',
+  'tools',
+  'administration',
+];
 
 export const NAV_ITEMS: NavItem[] = [
+  // ── Pilotage ───────────────────────────────────────────────────────────────
+  {
+    id: 'dashboard',
+    href: '/dashboard',
+    group: 'steering',
+    requires: { resource: 'dashboard', action: 'read' },
+    deliveredIn: 13,
+  },
+
   // ── Onboarding ─────────────────────────────────────────────────────────────
   {
     id: 'welcome',
@@ -141,6 +163,17 @@ export const NAV_ITEMS: NavItem[] = [
     group: 'tools',
     requires: { resource: 'remark', action: 'read' },
     deliveredIn: 10,
+  },
+
+  // ── Administration ─────────────────────────────────────────────────────────
+  // Gated on `user:read`, which only TECH_ADMIN holds: the administration screens are
+  // accounts, roles and the audit trail, not the business reference frame.
+  {
+    id: 'admin',
+    href: '/admin',
+    group: 'administration',
+    requires: { resource: 'user', action: 'read' },
+    deliveredIn: 13,
   },
 ];
 

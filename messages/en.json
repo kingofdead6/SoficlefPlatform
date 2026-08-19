@@ -72,7 +72,9 @@
       "onboarding": "Onboarding",
       "direction": "Management",
       "references": "Reference data",
-      "tools": "Tools"
+      "tools": "Tools",
+      "steering": "Steering",
+      "administration": "Administration"
     },
     "items": {
       "welcome": "Welcome",
@@ -89,7 +91,9 @@
       "documents": "Documents",
       "onboardingChecklist": "30-day checklist",
       "competencies": "Competency review",
-      "remarks": "Remarks"
+      "remarks": "Remarks",
+      "dashboard": "Dashboard",
+      "admin": "Administration"
     }
   },
   "shell": {
@@ -119,7 +123,9 @@
     "competencies": "The competency framework will be available once HR has approved the grid.",
     "remarks": "Your remarks and recommendations journal becomes active when the Onboarding module goes live.",
     "genericTitle": "Coming soon",
-    "unblockedBy": "What unblocks this page"
+    "unblockedBy": "What unblocks this page",
+    "dashboard": "Your dashboard fills up as journeys, job descriptions and assessments appear.",
+    "admin": "Platform administration is restricted to administrators."
   },
   "components": {
     "dataTable": {
