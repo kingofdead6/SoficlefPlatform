@@ -1,133 +1,141 @@
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { setRequestLocale } from 'next-intl/server';
 
-import { TranslatableText } from '@/components/i18n/translation-pending';
-import { Card, CardBody, CardTitle, EmptyState, SectionTitle, StatusBadge } from '@/components/ui';
-import type { StatusTone } from '@/components/ui';
-import type { Locale } from '@/i18n/config';
+import { assignableParents } from '@/application/organization/parents';
+import { canOpen } from '@/application/navigation/build-navigation';
+import { OrgTree, buildForest } from '@/components/organization/org-tree';
+import {
+  ArchiveUnitButton,
+  CreateUnitDialog,
+  EditUnitDialog,
+} from '@/components/organization/unit-dialogs';
+import { Card, CardBody, EmptyState, KpiTile, SectionTitle } from '@/components/ui';
+import { can, scopeFilterFor } from '@/domain/auth/authorization';
+import { navItemByHref } from '@/domain/navigation/navigation';
+import { getCurrentUser } from '@/infrastructure/auth/current-user';
 import { prisma } from '@/infrastructure/db/client';
 
-const OCCUPANCY_TONE: Record<string, StatusTone> = {
-  VACANT: 'red',
-  TO_FILL: 'gold',
-  OCCUPIED: 'green',
-};
-
-const OCCUPANCY_KEY: Record<string, 'vacant' | 'toFill' | 'occupied'> = {
-  VACANT: 'vacant',
-  TO_FILL: 'toFill',
-  OCCUPIED: 'occupied',
-};
-
+/**
+ * Organization and structures (CDC v0.1 §5, §5.1).
+ *
+ * The tree is a query over the same table that anchors RBAC scope, not a duplicate of
+ * it: what a reader sees here is exactly the perimeter their rights cover, because the
+ * scope predicate is in the `where` clause (ADR-021).
+ */
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('status');
 
-  let units: Awaited<ReturnType<typeof loadUnits>> = [];
+  const item = navItemByHref('/organization');
+  const user = await getCurrentUser();
+  if (!item || !user || !canOpen(user, item)) notFound();
 
-  try {
-    units = await loadUnits();
-  } catch (error) {
-    console.error('Failed to load organization data:', error);
-  }
+  const scope = scopeFilterFor(user, 'read', 'organization_unit');
 
-  const direction = units.find((unit) => unit.type === 'DIRECTION');
-  const structures = units.filter((unit) => unit.type === 'STRUCTURE');
-  const productionUnits = units.filter((unit) => unit.type === 'UNITE_PRODUCTION');
-  const cells = units.filter((unit) => unit.type === 'CELLULE');
+  const units =
+    scope.kind === 'none' || scope.kind === 'self'
+      ? []
+      : await prisma.organizationUnit
+          .findMany({
+            where: {
+              archivedAt: null,
+              ...(scope.kind === 'units' ? { id: { in: scope.organizationUnitIds } } : {}),
+            },
+            orderBy: [{ type: 'asc' }, { code: 'asc' }],
+            select: {
+              id: true,
+              code: true,
+              nameFr: true,
+              type: true,
+              parentId: true,
+              headLabelFr: true,
+              headOccupancy: true,
+              descriptionFr: true,
+            },
+          })
+          .catch((error) => {
+            console.error('Failed to load organization units:', error);
+            return [];
+          });
 
   if (units.length === 0) {
     return (
       <EmptyState
         title="Structures & Organisation"
-        description="L'organigramme n'est pas encore disponible."
+        description="Aucune structure n'est visible dans votre périmètre."
       />
     );
   }
 
+  const mayCreate = can(user, 'create', 'organization_unit');
+  const parents = mayCreate ? await assignableParents(user) : [];
+
+  const forest = buildForest(units);
+  const vacant = units.filter((unit) => unit.headOccupancy === 'VACANT').length;
+
   return (
     <div className="space-y-8">
-      {direction && (
-        <Card accent="gold">
-          <CardTitle>{direction.code}</CardTitle>
-          <CardBody className="text-text text-[13.5px] font-medium">
-            <TranslatableText
-              field={{ fr: direction.nameFr, ar: direction.nameAr, en: direction.nameEn }}
-              locale={locale as Locale}
-            />
-          </CardBody>
-        </Card>
-      )}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <KpiTile value={units.length} label="Entités" />
+        <KpiTile
+          value={units.filter((unit) => unit.type === 'STRUCTURE').length}
+          label="Structures"
+        />
+        <KpiTile
+          value={units.filter((unit) => unit.type === 'CELLULE').length}
+          label="Cellules"
+        />
+        <KpiTile value={vacant} label="Postes vacants" />
+      </div>
 
-      {structures.length > 0 && (
-        <section>
-          <SectionTitle>Structures</SectionTitle>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {structures.map((structure) => (
-              <Card key={structure.id}>
-                <CardTitle>
-                  {structure.icon ? `${structure.icon} ` : ''}
-                  <TranslatableText
-                    field={{ fr: structure.nameFr, ar: structure.nameAr, en: structure.nameEn }}
-                    locale={locale as Locale}
+      <section>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <SectionTitle
+            className="mb-0"
+            lead="L'arborescence de votre périmètre. Une structure archivée conserve son historique et reste référencée par les emplois qui l'ont citée."
+          >
+            Arborescence
+          </SectionTitle>
+          {mayCreate ? <CreateUnitDialog parents={parents} /> : null}
+        </div>
+
+        <OrgTree
+          nodes={forest}
+          renderActions={(node) => {
+            const target = { organizationUnitId: node.id };
+            const mayEdit = can(user, 'update', 'organization_unit', target);
+            const mayArchive = can(user, 'delete', 'organization_unit', target);
+            if (!mayEdit && !mayArchive) return null;
+
+            return (
+              <span className="flex flex-wrap items-center justify-end gap-2">
+                {mayEdit ? (
+                  <EditUnitDialog
+                    unit={{
+                      id: node.id,
+                      nameFr: node.nameFr,
+                      type: node.type,
+                      descriptionFr: node.descriptionFr,
+                      headLabelFr: node.headLabelFr,
+                      headOccupancy: node.headOccupancy,
+                    }}
                   />
-                </CardTitle>
-                <CardBody className="text-text space-y-2">
-                  {structure.descriptionFr && <p>{structure.descriptionFr}</p>}
-                  {structure.headOccupancy && (
-                    <StatusBadge
-                      label={`${t(OCCUPANCY_KEY[structure.headOccupancy])}${structure.headLabelFr ? ` · ${structure.headLabelFr}` : ''}`}
-                      tone={OCCUPANCY_TONE[structure.headOccupancy]}
-                    />
-                  )}
-                  {structure.criticalNoteFr && (
-                    <p className="text-red text-[12.5px] font-medium">{structure.criticalNoteFr}</p>
-                  )}
-                  {productionUnits
-                    .filter((unit) => unit.parentId === structure.id)
-                    .map((unit) => (
-                      <div key={unit.id} className="mt-2 border-s-2 border-(--border) ps-3">
-                        <p className="text-text text-[12.5px] font-medium">{unit.nameFr}</p>
-                        {unit.descriptionFr && (
-                          <p className="text-text-muted text-[12px]">{unit.descriptionFr}</p>
-                        )}
-                      </div>
-                    ))}
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
+                ) : null}
+                {mayArchive ? <ArchiveUnitButton id={node.id} name={node.nameFr} /> : null}
+              </span>
+            );
+          }}
+        />
+      </section>
 
-      {cells.length > 0 && (
-        <section>
-          <SectionTitle>Cellules fonctionnelles</SectionTitle>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {cells.map((cell) => (
-              <Card key={cell.id}>
-                <CardTitle>
-                  {cell.icon ? `${cell.icon} ` : ''}
-                  {cell.nameFr}
-                </CardTitle>
-                <CardBody className="text-text space-y-1">
-                  {cell.descriptionFr && <p>{cell.descriptionFr}</p>}
-                  {cell.staffingFr && (
-                    <p className="text-text-muted text-[12px]">{cell.staffingFr}</p>
-                  )}
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
+      <Card>
+        <CardBody>
+          Rien n&apos;est supprimé : archiver une structure la retire des listes actives tout en
+          préservant l&apos;historique (§16.1). Une structure qui porte encore des entités ou des
+          emplois actifs ne peut pas être archivée — la réorganisation se fait explicitement,
+          en partant des feuilles.
+        </CardBody>
+      </Card>
     </div>
   );
-}
-
-async function loadUnits() {
-  return prisma.organizationUnit.findMany({
-    where: { archivedAt: null },
-    orderBy: { createdAt: 'asc' },
-  });
 }
