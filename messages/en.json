@@ -128,11 +128,22 @@
       "sortDescending": "Sort descending",
       "rowCount": "{count, plural, =0 {No rows} one {# row} other {# rows}}"
     },
-    "stepper": { "step": "Step {current} of {total}", "completed": "Completed" },
-    "timeline": { "label": "Timeline" },
-    "modal": { "close": "Close dialog" },
-    "drawer": { "close": "Close panel" },
-    "tabs": { "label": "Tabs" }
+    "stepper": {
+      "step": "Step {current} of {total}",
+      "completed": "Completed"
+    },
+    "timeline": {
+      "label": "Timeline"
+    },
+    "modal": {
+      "close": "Close dialog"
+    },
+    "drawer": {
+      "close": "Close panel"
+    },
+    "tabs": {
+      "label": "Tabs"
+    }
   },
   "errors": {
     "notFound": "Page not found",
@@ -142,5 +153,12 @@
     "serverError": "Unexpected error",
     "serverErrorLead": "Something went wrong. The incident has been recorded.",
     "backToHome": "Back to home"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications.",
+    "markAllRead": "Mark all as read",
+    "unreadCount": "{count} unread",
+    "open": "Open notifications"
   }
 }

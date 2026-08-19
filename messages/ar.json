@@ -128,11 +128,22 @@
       "sortDescending": "ترتيب تنازلي",
       "rowCount": "{count, plural, =0 {لا توجد أسطر} one {# سطر} two {سطران} few {# أسطر} many {# سطراً} other {# سطر}}"
     },
-    "stepper": { "step": "المرحلة {current} من {total}", "completed": "منتهية" },
-    "timeline": { "label": "التسلسل الزمني" },
-    "modal": { "close": "إغلاق النافذة" },
-    "drawer": { "close": "إغلاق اللوحة" },
-    "tabs": { "label": "التبويبات" }
+    "stepper": {
+      "step": "المرحلة {current} من {total}",
+      "completed": "منتهية"
+    },
+    "timeline": {
+      "label": "التسلسل الزمني"
+    },
+    "modal": {
+      "close": "إغلاق النافذة"
+    },
+    "drawer": {
+      "close": "إغلاق اللوحة"
+    },
+    "tabs": {
+      "label": "التبويبات"
+    }
   },
   "errors": {
     "notFound": "الصفحة غير موجودة",
@@ -142,5 +153,12 @@
     "serverError": "خطأ غير متوقع",
     "serverErrorLead": "حدث خطأ. تم تسجيل الحادثة.",
     "backToHome": "العودة إلى الصفحة الرئيسية"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات.",
+    "markAllRead": "تعليم الكل كمقروء",
+    "unreadCount": "{count} غير مقروءة",
+    "open": "فتح الإشعارات"
   }
 }

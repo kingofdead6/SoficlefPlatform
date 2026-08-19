@@ -71,9 +71,17 @@ export interface MutateOptions<TSchema extends z.ZodTypeAny, TResult> {
   /**
    * The scope the permission is checked against. A function so it can be derived from
    * the parsed input — a manager may edit *their* structure, not any structure.
-   * Omit only for a resource with no organizational anchor.
+   *
+   * The acting user is passed too, because a self-scoped resource (a remark, an
+   * onboarding task of one's own) anchors on the actor rather than on the payload, and
+   * a SELF assignment covers no row whose owner is not named.
+   *
+   * Omit only for a resource with no organizational anchor and no owner.
    */
-  target?: (input: z.infer<TSchema>) => TargetScope | Promise<TargetScope>;
+  target?: (
+    input: z.infer<TSchema>,
+    user: AuthenticatedUser,
+  ) => TargetScope | Promise<TargetScope>;
   schema: TSchema;
   run: (input: z.infer<TSchema>, context: MutationContext) => Promise<TResult>;
 }
@@ -106,7 +114,7 @@ export async function mutate<TSchema extends z.ZodTypeAny, TResult>(
 
   let target: TargetScope | undefined;
   try {
-    target = options.target ? await options.target(value) : undefined;
+    target = options.target ? await options.target(value, user) : undefined;
   } catch {
     // A target resolver that cannot find its row answers not-found rather than leaking
     // that the id exists but is out of scope.

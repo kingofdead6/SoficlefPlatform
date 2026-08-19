@@ -212,6 +212,9 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'onboarding_task:update',
     'remark:read',
     'remark:create',
+    // Withdrawing one's own entry. Ownership is enforced at the target, so this never
+    // means "delete anybody's remark" — a SELF-scoped assignment covers no other row.
+    'remark:delete',
     'document:read',
     'dashboard:read',
     'notification:read',

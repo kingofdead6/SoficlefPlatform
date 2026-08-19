@@ -128,11 +128,22 @@
       "sortDescending": "Trier par ordre décroissant",
       "rowCount": "{count, plural, =0 {Aucune ligne} one {# ligne} other {# lignes}}"
     },
-    "stepper": { "step": "Étape {current} sur {total}", "completed": "Terminée" },
-    "timeline": { "label": "Chronologie" },
-    "modal": { "close": "Fermer la fenêtre" },
-    "drawer": { "close": "Fermer le panneau" },
-    "tabs": { "label": "Onglets" }
+    "stepper": {
+      "step": "Étape {current} sur {total}",
+      "completed": "Terminée"
+    },
+    "timeline": {
+      "label": "Chronologie"
+    },
+    "modal": {
+      "close": "Fermer la fenêtre"
+    },
+    "drawer": {
+      "close": "Fermer le panneau"
+    },
+    "tabs": {
+      "label": "Onglets"
+    }
   },
   "errors": {
     "notFound": "Page introuvable",
@@ -142,5 +153,12 @@
     "serverError": "Erreur inattendue",
     "serverErrorLead": "Une erreur est survenue. L'incident a été enregistré.",
     "backToHome": "Retour à l'accueil"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification.",
+    "markAllRead": "Tout marquer comme lu",
+    "unreadCount": "{count} non lues",
+    "open": "Ouvrir les notifications"
   }
 }

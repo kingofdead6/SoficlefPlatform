@@ -3,6 +3,8 @@ import { getTranslations } from 'next-intl/server';
 import type { AuthenticatedUser } from '@/domain/auth/authorization';
 import type { VisibleNavGroup } from '@/application/navigation/build-navigation';
 import { loadJourney } from '@/application/onboarding/journey';
+import { loadNotifications } from '@/application/notifications/inbox';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 import { formatDate } from '@/lib/format';
 import type { Locale } from '@/i18n/config';
 
@@ -40,9 +42,10 @@ export async function AppShell({
   const needsProgress = navigation.some((group) =>
     group.items.some((item) => item.badge === 'onboarding-progress'),
   );
-  const journey = needsProgress
-    ? await loadJourney(user).catch(() => null)
-    : null;
+  const [journey, notifications] = await Promise.all([
+    needsProgress ? loadJourney(user).catch(() => null) : Promise.resolve(null),
+    loadNotifications(user, locale).catch(() => []),
+  ]);
   const progressBadge = journey
     ? `${journey.progress.completed}/${journey.progress.total}`
     : null;
@@ -120,6 +123,7 @@ export async function AppShell({
           <TopBarTitle fallback={t('app.tagline')} />
           <div className="flex-1" />
           <DayBadge startDate={user.onboardingStartDate} locale={locale} />
+          <NotificationBell notifications={notifications} localePrefix={`/${locale}`} />
           <LocaleSwitcher current={locale} />
           <UserMenu displayName={user.displayName} initials={initials} roleLabel={roleLabel} />
         </header>
