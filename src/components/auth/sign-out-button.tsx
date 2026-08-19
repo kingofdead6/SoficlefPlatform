@@ -27,7 +27,7 @@ export default function SignOutButton() {
       type="button"
       onClick={() => void signOut()}
       disabled={loading}
-      className="ml-auto rounded bg-(--surface2) px-3 py-1 text-sm"
+      className="ms-auto rounded bg-(--surface2) px-3 py-1 text-sm"
     >
       {loading ? 'Signing out…' : 'Sign out'}
     </button>

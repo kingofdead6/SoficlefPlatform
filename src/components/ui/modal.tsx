@@ -15,6 +15,8 @@ export function Modal({
   children,
   closeLabel,
   className,
+  open,
+  onOpenChange,
 }: {
   trigger: React.ReactNode;
   title: string;
@@ -22,9 +24,15 @@ export function Modal({
   children: React.ReactNode;
   closeLabel: string;
   className?: string;
+  /**
+   * Controlled open state. Omit both to let Radix manage it; a dialog holding a form
+   * needs control so it can close itself once the mutation has succeeded.
+   */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   return (
-    <Dialog.Root>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/30" />

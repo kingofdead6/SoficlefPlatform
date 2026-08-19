@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 
 import { describe, expect, it } from 'vitest';
 
@@ -136,8 +137,13 @@ describe('message catalogues', () => {
   it('passes the parity check the CI gate runs', () => {
     // The check is a script so it can fail a build; running it here means a broken
     // catalogue is caught by `npm run test:unit` too.
+    // Spawn the current Node binary with tsx's CLI resolved from node_modules rather
+    // than shelling out to `npx`: on Windows `npx` is a `.cmd` shim, which execFileSync
+    // refuses to run without a shell (ENOENT, then EINVAL on newer Node). The check
+    // therefore never actually ran on a Windows machine.
+    const tsxCli = createRequire(import.meta.url).resolve('tsx/cli');
     expect(() =>
-      execFileSync('npx', ['tsx', 'scripts/check-messages.ts'], { stdio: 'pipe' }),
+      execFileSync(process.execPath, [tsxCli, 'scripts/check-messages.ts'], { stdio: 'pipe' }),
     ).not.toThrow();
   });
 

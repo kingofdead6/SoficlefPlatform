@@ -14,6 +14,10 @@
 import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
+// The seed runs as a plain script, outside Next's runtime, so nothing has loaded .env
+// for it. `prisma.config.ts` does the same for the CLI.
+import 'dotenv/config';
+
 import { hash } from '@node-rs/argon2';
 
 import { PrismaClient } from '../src/infrastructure/db/generated/client';
@@ -57,7 +61,7 @@ const RECRUITMENT = RecruitmentFile.parse(readSeed('recruitment.json')).data;
 const ONBOARDING_MILESTONES = OnboardingFile.parse(readSeed('onboarding-checklist.json')).data;
 const WELCOME = WelcomeFile.parse(readSeed('welcome.json')).data;
 
-const connectionString = "postgresql://neondb_owner:npg_do79LMBmuQjq@ep-withered-field-ayqkmkqx-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is required to seed');
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
@@ -1034,6 +1038,77 @@ async function seedWelcomeAndOnboardingInstance(templateId: string): Promise<voi
   }
 }
 
+/**
+ * The competency reference frame (CDC v0.1 §7).
+ *
+ * Unlike everything above, this is *not* extracted from the prototype: the prototype's
+ * "Bilan des compétences" page is an explicit placeholder ("en cours d'ajout"). §7.2
+ * says the final labels must be supplied and validated by the business, so the frame is
+ * seeded from the CDC's own example list, flagged as a proposal in the source file, and
+ * fully editable through the administration screens (OQ-05, OQ-06).
+ */
+async function seedCompetencyFrame(jobId: string | null): Promise<number> {
+  const frame = JSON.parse(
+    readFileSync(new URL('../seed/reference/competency-frame.json', import.meta.url), 'utf8'),
+  ) as {
+    levels: { value: number; labelFr: string; definitionFr: string }[];
+    families: { code: string; nameFr: string; order: number }[];
+    competencies: {
+      code: string;
+      familyCode: string;
+      nameFr: string;
+      requiredLevel: number;
+      mandatory: boolean;
+    }[];
+  };
+
+  for (const level of frame.levels) {
+    await prisma.competencyLevel.upsert({
+      where: { value: level.value },
+      create: { value: level.value, labelFr: level.labelFr, definitionFr: level.definitionFr },
+      update: { labelFr: level.labelFr, definitionFr: level.definitionFr },
+    });
+  }
+
+  const familyIds = new Map<string, string>();
+  for (const family of frame.families) {
+    const row = await prisma.competencyFamily.upsert({
+      where: { code: family.code },
+      create: { code: family.code, nameFr: family.nameFr, order: family.order },
+      update: { nameFr: family.nameFr, order: family.order },
+    });
+    familyIds.set(family.code, row.id);
+  }
+
+  for (const competency of frame.competencies) {
+    const familyId = familyIds.get(competency.familyCode) ?? null;
+    const row = await prisma.competency.upsert({
+      where: { code: competency.code },
+      create: { code: competency.code, nameFr: competency.nameFr, familyId },
+      update: { nameFr: competency.nameFr, familyId },
+    });
+
+    // The matrix row only exists once there is a job to attach it to.
+    if (jobId) {
+      await prisma.jobCompetency.upsert({
+        where: { jobId_competencyId: { jobId, competencyId: row.id } },
+        create: {
+          jobId,
+          competencyId: row.id,
+          requiredLevel: competency.requiredLevel,
+          notesFr: competency.mandatory ? 'Obligatoire' : 'Optionnelle',
+        },
+        update: {
+          requiredLevel: competency.requiredLevel,
+          notesFr: competency.mandatory ? 'Obligatoire' : 'Optionnelle',
+        },
+      });
+    }
+  }
+
+  return frame.competencies.length;
+}
+
 async function main(): Promise<void> {
   const suppliedPassword = process.env.SEED_DEMO_PASSWORD;
   const wasGenerated = !suppliedPassword;
@@ -1055,6 +1130,7 @@ async function main(): Promise<void> {
   await seedRecruitment();
   const templateId = await seedOnboardingTemplate(jobId);
   await seedWelcomeAndOnboardingInstance(templateId);
+  const competencyCount = await seedCompetencyFrame(jobId);
 
   // Legacy generic store, kept for pages not yet migrated off it (see file header).
   const payloads = seedDataFiles();
@@ -1072,6 +1148,7 @@ async function main(): Promise<void> {
   console.log('✔ company, values, strategy, job description, management team, org chart');
   console.log('✔ kaizen, qms, hse, contacts, documents, recruitment');
   console.log('✔ onboarding template + welcome content + onboarding instance');
+  console.log(`✔ competency frame — ${competencyCount} competencies (proposal, awaiting validation)`);
 
   if (wasGenerated) {
     console.log(`\n  Demo password (shown once, not stored anywhere): ${password}`);

@@ -23,6 +23,7 @@ export const RESOURCES = [
   'document',
   'report',
   'dashboard',
+  'notification',
   'user',
   'role',
   'audit_log',
@@ -57,6 +58,7 @@ const READ_ONLY_EVERYTHING: PermissionCode[] = [
   'report:read',
   'dashboard:read',
   'document:read',
+  'notification:read',
 ];
 
 /**
@@ -65,13 +67,33 @@ const READ_ONLY_EVERYTHING: PermissionCode[] = [
  * director can both hold `job:read`; only HR sees every structure.
  */
 export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
+  /**
+   * The technical administrator runs the platform, not the business reference frame:
+   * accounts, roles, settings, logs, notifications. Deliberately no `job_description:validate`
+   * and no `assessment:assess` — signing off a job description or rating a competency is a
+   * business act, and CDC v0.1 §3 gives it to HEAD_CE and the managers, not to IT.
+   */
   TECH_ADMIN: [
-  'user:read', 'user:create', 'user:update', 'user:delete', 'user:assign_role',
-  'role:read', 'role:create', 'role:update', 'role:delete',
-  'audit_log:read', 'audit_log:export',
-  'setting:read', 'setting:update',
-  'organization_unit:read',
-  'onboarding_instance:read', // add whatever else TECH_ADMIN should see
+    'user:read',
+    'user:create',
+    'user:update',
+    'user:delete',
+    'user:assign_role',
+    'role:read',
+    'role:create',
+    'role:update',
+    'role:delete',
+    'audit_log:read',
+    'audit_log:export',
+    'setting:read',
+    'setting:update',
+    'organization_unit:read',
+    'onboarding_instance:read',
+    'notification:read',
+    'notification:update',
+    'dashboard:read',
+    'report:read',
+    'report:export',
   ],
   BIZ_ADMIN_CE: [
     'organization_unit:read',
@@ -108,6 +130,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'report:export',
     'dashboard:read',
     'setting:read',
+    'notification:read',
+    'notification:update',
   ],
   HEAD_CE: [
     'organization_unit:read',
@@ -130,6 +154,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'report:read',
     'report:export',
     'dashboard:read',
+    'notification:read',
+    'notification:update',
   ],
   HR: [
     'organization_unit:read',
@@ -150,6 +176,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'report:read',
     'report:export',
     'dashboard:read',
+    'notification:read',
+    'notification:update',
   ],
   MANAGER: [
     'organization_unit:read',
@@ -170,6 +198,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     // the HR chain and HEAD_CE — a structure head is not on that list.
     'report:read',
     'dashboard:read',
+    'notification:read',
+    'notification:update',
   ],
   EMPLOYEE: [
     'organization_unit:read',
@@ -184,6 +214,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'remark:create',
     'document:read',
     'dashboard:read',
+    'notification:read',
+    'notification:update',
   ],
   VIEWER: [...READ_ONLY_EVERYTHING],
 };

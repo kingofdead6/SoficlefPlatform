@@ -85,15 +85,15 @@ enum Occupancy {
 /// carries what the "structures" page displays about it, so the org chart is a query
 /// over this table rather than a duplicate of it.
 model OrganizationUnit {
-  id       String  @id @default(uuid()) @db.Uuid
+  id       String             @id @default(uuid()) @db.Uuid
   /// Stable business code, e.g. "DPR" or "DPR-FAB".
-  code     String  @unique
+  code     String             @unique
   nameFr   String
   nameAr   String?
   nameEn   String?
   /// Free-form for now; Part 7 turns this into an administrable list of values.
   type     String
-  parentId String? @db.Uuid
+  parentId String?            @db.Uuid
   parent   OrganizationUnit?  @relation("OrganizationUnitTree", fields: [parentId], references: [id], onDelete: Restrict)
   children OrganizationUnit[] @relation("OrganizationUnitTree")
 
@@ -114,10 +114,10 @@ model OrganizationUnit {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  scopes             Scope[]
-  jobs                Job[]
-  managementMembers   ManagementMember[]
-  orgChartNodes       OrgChartNode[]
+  scopes            Scope[]
+  jobs              Job[]
+  managementMembers ManagementMember[]
+  orgChartNodes     OrgChartNode[]
 
   @@index([parentId])
   @@index([archivedAt])
@@ -125,29 +125,30 @@ model OrganizationUnit {
 }
 
 model User {
-  id           String     @id @default(uuid()) @db.Uuid
-  email        String     @unique
+  id                  String     @id @default(uuid()) @db.Uuid
+  email               String     @unique
   /// Argon2id (ADR-012). Never a plaintext or reversible value.
-  passwordHash String
-  displayName  String
+  passwordHash        String
+  displayName         String
   /// Preferred interface locale; falls back to the platform default (fr).
-  locale       String     @default("fr")
-  status       UserStatus @default(ACTIVE)
+  locale              String     @default("fr")
+  status              UserStatus @default(ACTIVE)
   /// Start date of this person's onboarding journey, when they have one. The shell's day
   /// badge counts from it — forward once the journey has started, down before it (OQ-26).
   /// Part 9's onboarding engine reads the same field.
   onboardingStartDate DateTime?
-  lastLoginAt  DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  lastLoginAt         DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 
-  sessions           Session[]
-  userRoles          UserRole[]
-  auditTrail         AuditLog[]              @relation("AuditActor")
+  sessions            Session[]
+  userRoles           UserRole[]
+  auditTrail          AuditLog[]           @relation("AuditActor")
   onboardingInstances OnboardingInstance[]
-  assessments        Assessment[]
-  remarks            Remark[]
-  welcome            Welcome?
+  assessments         Assessment[]
+  remarks             Remark[]
+  welcome             Welcome?
+  notifications       Notification[]
 
   @@index([status])
   @@map("user")
@@ -157,17 +158,17 @@ model User {
 /// so a database leak does not yield usable sessions. Revocation takes effect on the
 /// next request because the row is read on every request (ADR-011).
 model Session {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @db.Uuid
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash String    @unique
-  expiresAt DateTime
-  ip        String?
-  userAgent String?
-  revokedAt DateTime?
-  createdAt DateTime  @default(now())
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  ip         String?
+  userAgent  String?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
   /// Sliding expiry: renewed at most once per renewal window.
-  lastSeenAt DateTime @default(now())
+  lastSeenAt DateTime  @default(now())
 
   @@index([userId])
   @@index([expiresAt])
@@ -318,12 +319,12 @@ model Company {
 }
 
 model CompanyActivity {
-  id        String   @id @default(uuid()) @db.Uuid
-  slug      String   @unique
-  companyId String   @db.Uuid
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid()) @db.Uuid
+  slug      String  @unique
+  companyId String  @db.Uuid
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   labelFr   String
-  contentFr String   @db.Text
+  contentFr String  @db.Text
   order     Int
 
   @@index([companyId])
@@ -428,8 +429,8 @@ model Job {
   updatedAt          DateTime          @updatedAt
 
   jobDescription      JobDescription?
-  jobCompetencies      JobCompetency[]
-  onboardingTemplates  OnboardingTemplate[]
+  jobCompetencies     JobCompetency[]
+  onboardingTemplates OnboardingTemplate[]
 
   @@index([organizationUnitId])
   @@map("job")
@@ -440,28 +441,29 @@ model Job {
 /// `requirement*` are the zod schema's nested objects, flattened into columns so the
 /// document stays queryable rather than living in a JSON blob (§16.1).
 model JobDescription {
-  id                       String    @id @default(uuid()) @db.Uuid
+  id                               String   @id @default(uuid()) @db.Uuid
   /// Document code, e.g. "EN-012-DRH".
-  code                     String    @unique
-  jobId                    String?   @unique @db.Uuid
-  job                      Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
-  jobTitleFr               String
-  applicationDate          DateTime  @db.Date
-  applicationDateSourceFr  String
-  positioningStructureFr    String
-  positioningProcessFr      String
-  positioningReportsToFr    String
-  positioningSubordinatesFr String
+  code                             String   @unique
+  jobId                            String?  @unique @db.Uuid
+  job                              Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  jobTitleFr                       String
+  applicationDate                  DateTime @db.Date
+  applicationDateSourceFr          String
+  positioningStructureFr           String
+  positioningProcessFr             String
+  positioningReportsToFr           String
+  positioningSubordinatesFr        String
   requirementEducationFr           String
   requirementAdditionalEducationFr String
   requirementExperienceFr          String
   requirementWorkPatternFr         String
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
+  createdAt                        DateTime @default(now())
+  updatedAt                        DateTime @updatedAt
 
-  missions         JobDescriptionMission[]
-  permanentTasks   JobDescriptionTask[]
-  responsibilities JobDescriptionResponsibility[]
+  missions               JobDescriptionMission[]
+  permanentTasks         JobDescriptionTask[]
+  responsibilities       JobDescriptionResponsibility[]
+  jobDescriptionVersions JobDescriptionVersion[]
 
   @@map("job_description")
 }
@@ -503,15 +505,19 @@ model JobDescriptionResponsibility {
 }
 
 model Competency {
-  id            String    @id @default(uuid()) @db.Uuid
+  id            String            @id @default(uuid()) @db.Uuid
   /// Business code, when the client provides one.
-  code          String?   @unique
+  code          String?           @unique
   nameFr        String
+  /// Legacy free-text category from the prototype extraction. `familyId` supersedes it;
+  /// kept so nothing extracted is silently dropped before the client validates families.
   categoryFr    String?
-  descriptionFr String?   @db.Text
+  familyId      String?           @db.Uuid
+  family        CompetencyFamily? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  descriptionFr String?           @db.Text
   archivedAt    DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   jobCompetencies JobCompetency[]
   assessments     Assessment[]
@@ -919,21 +925,21 @@ model OpenPosition {
 
 /// Welcome/landing content for one onboarding recipient — prototype page "bienvenue".
 model Welcome {
-  id                 String    @id @default(uuid()) @db.Uuid
-  slug               String    @unique
-  userId             String?   @unique @db.Uuid
-  user               User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  recipientFr        String
-  recipientRoleFr    String
-  startDate          DateTime  @db.Date
-  startDateSourceFr  String
-  greetingFr         String
+  id                String   @id @default(uuid()) @db.Uuid
+  slug              String   @unique
+  userId            String?  @unique @db.Uuid
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  recipientFr       String
+  recipientRoleFr   String
+  startDate         DateTime @db.Date
+  startDateSourceFr String
+  greetingFr        String
   /// Rich text, rendered with dangerouslySetInnerHTML by the page — sanitize on write,
   /// not just on read.
-  messageFr          String    @db.Text
-  signatureFr        String
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  messageFr         String   @db.Text
+  signatureFr       String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   stats  WelcomeStat[]
   agenda WelcomeAgendaItem[]
@@ -969,11 +975,11 @@ model WelcomeAgendaItem {
 
 /// A reusable 30-day checklist, optionally attached to the job it onboards someone into.
 model OnboardingTemplate {
-  id      String   @id @default(uuid()) @db.Uuid
-  slug    String   @unique
-  jobId   String?  @db.Uuid
-  job     Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
-  titleFr String
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique
+  jobId     String?  @db.Uuid
+  job       Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  titleFr   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -987,16 +993,16 @@ model OnboardingTemplate {
 /// A milestone of the 30-day checklist. `order` preserves the prototype's sequence;
 /// several milestones share a day.
 model OnboardingMilestone {
-  id            String              @id @default(uuid()) @db.Uuid
-  slug          String              @unique
-  templateId    String              @db.Uuid
-  template      OnboardingTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  id            String             @id @default(uuid()) @db.Uuid
+  slug          String             @unique
+  templateId    String             @db.Uuid
+  template      OnboardingTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   order         Int
   /// e.g. "J+1".
   dayLabelFr    String
   dayOffset     Int
   titleFr       String
-  detailFr      String              @db.Text
+  detailFr      String             @db.Text
   isRecommended Boolean
 
   completions OnboardingTaskCompletion[]
@@ -1060,4 +1066,139 @@ model Remark {
 
   @@index([authorId])
   @@map("remark")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 11 — Competency reference frame: families, a configurable level scale, and the
+// job↔competency matrix with gap computation (CDC v0.1 §7).
+//
+// The level scale is a table rather than a hardcoded 1–4: §7 says the scale is
+// configurable and §11 says a value the business may change is configuration, not a
+// constant. A gap is therefore never "level − 4"; it is computed against the scale.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// A competency family — technique, comportementale, management, sécurité… (§7).
+model CompetencyFamily {
+  id            String    @id @default(uuid()) @db.Uuid
+  code          String    @unique
+  nameFr        String
+  nameAr        String?
+  nameEn        String?
+  descriptionFr String?   @db.Text
+  order         Int       @default(0)
+  archivedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  competencies Competency[]
+
+  @@map("competency_family")
+}
+
+/// One rung of the proficiency scale. `value` is the number stored on assessments and
+/// required levels; the label and definition are what a human reads (§7 "libellé +
+/// définition par niveau").
+model CompetencyLevel {
+  id           String   @id @default(uuid()) @db.Uuid
+  value        Int      @unique
+  labelFr      String
+  labelAr      String?
+  labelEn      String?
+  definitionFr String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("competency_level")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 11/13 — Job-description versioning and the validation workflow
+// (CDC v0.1 §6.1, §9).
+//
+// A validated job description may not be edited in place; editing forks a new DRAFT
+// version and the validated one is archived (§19.1). The state lives on the version,
+// not on the document, so the history reads as a sequence of states.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum JobDescriptionStatus {
+  DRAFT
+  IN_REVIEW
+  CHANGES_REQUESTED
+  VALIDATED
+  ARCHIVED
+}
+
+/// One version of a job description. `content` holds the whole §6.2 field set as JSON so
+/// a version is an immutable snapshot: a later change to the live tables can never
+/// rewrite what somebody validated.
+model JobDescriptionVersion {
+  id               String               @id @default(uuid()) @db.Uuid
+  jobDescriptionId String               @db.Uuid
+  jobDescription   JobDescription       @relation(fields: [jobDescriptionId], references: [id], onDelete: Cascade)
+  /// 1, 2, 3… unique per document.
+  versionNumber    Int
+  status           JobDescriptionStatus @default(DRAFT)
+  /// Immutable snapshot of the §6.2 content at this version.
+  content          Json
+  /// Why this version was created, shown in the history (§6 "motif").
+  reasonFr         String?
+  authorId         String?              @db.Uuid
+  validatedBy      String?              @db.Uuid
+  validatedAt      DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@unique([jobDescriptionId, versionNumber])
+  @@index([status])
+  @@map("job_description_version")
+}
+
+/// One step in a validation workflow — who did what to which object, and what they said.
+/// Generic over the object type so §9's other workflows (competency, onboarding) reuse it.
+///
+/// `entityId` deliberately carries no foreign key: the row is polymorphic, and an FK to
+/// any single table would make it impossible to record an action against the others.
+/// Referential integrity is the writing use case's job; the history is append-only and
+/// must outlive the object it describes, exactly as the audit log does.
+model WorkflowAction {
+  id         String   @id @default(uuid()) @db.Uuid
+  /// e.g. "job_description_version", "onboarding_instance".
+  entityType String
+  entityId   String   @db.Uuid
+  /// submit | approve | request_changes | archive.
+  action     String
+  fromStatus String?
+  toStatus   String?
+  commentFr  String?  @db.Text
+  actorId    String?  @db.Uuid
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@map("workflow_action")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 13 — Notification centre (CDC v0.1 §9).
+//
+// In-app is mandatory; e-mail is "recommended" and deferred with the SMTP decision
+// (OQ-15). A notification therefore has no delivery channel column yet: adding one later
+// does not change what is stored here.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// e.g. "onboarding.task.due", "job_description.validated".
+  kind      String
+  titleFr   String
+  bodyFr    String?   @db.Text
+  /// Where clicking the notification takes the reader, locale prefix excluded.
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+  @@map("notification")
 }

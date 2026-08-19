@@ -43,14 +43,6 @@ export default async function AppLayout({
   const route = pathname.replace(new RegExp(`^/${locale}`), '') || '/';
   const item = navItemByHref(route);
 
-  // TEMP DEBUG — remove once the 404 on /welcome is diagnosed.
-  console.log('[AppLayout debug]', {
-    pathname,
-    route,
-    item,
-    canOpen: item ? canOpen(user, item) : 'n/a (no matching item)',
-  });
-
   if (item && !canOpen(user, item)) notFound();
 
   return (
