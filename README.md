@@ -128,7 +128,7 @@ A fixed 268px sidebar, a 52px top bar and a scrolling content area — the proto
 structure, rebuilt with logical properties so it mirrors in Arabic. Below tablet width the
 sidebar becomes a drawer.
 
-- Fifteen routes in four groups. Each declares the permission it needs, so the menu and the
+- Seventeen routes in six groups. Each declares the permission it needs, so the menu and the
   route agree by construction: entries a user cannot open are never sent to the browser,
   and typing the URL answers 404.
 - Every route is a real page with an empty state that names what will live there and what
@@ -141,6 +141,28 @@ sidebar becomes a drawer.
 
 The AI assistant is deliberately absent from the navigation: it is phase 2, and the
 prototype's browser-side implementation could not have worked outside a sandbox (ADR-003).
+
+## Modules
+
+| Route            | What it does                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `/dashboard`     | Role-aware KPIs: onboarding health, competency gaps, job-description coverage, data quality           |
+| `/organization`  | The structure tree, with create / edit / archive. Nothing is deleted — archival preserves history     |
+| `/onboarding`    | The 30-day journey: task states, deadlines, lateness, manager validation, and an oversight table      |
+| `/competencies`  | The job↔competency matrix, gaps against a configurable level scale, and assessment recording          |
+| `/remarks`       | The collaborator's journal to HR and the DG, with an audited text export                              |
+| `/admin`         | Accounts, roles and the audit trail. `TECH_ADMIN` only                                                |
+| Content routes   | Company, strategy, job description, management, recruitment, Kaizen, QMS, HSE, contacts, documents    |
+
+Every mutation goes through one helper (`src/application/shared/mutate.ts`) that
+authenticates, re-validates the payload with Zod, authorizes against the resolved target
+and writes the audit row in the same transaction — so a new action cannot forget one of
+the four.
+
+Three gaps are deliberate and documented in `docs/SCOPE.md`: job-description authoring
+(the workflow state machine exists and is tested, the screens are not built), Kaizen
+action editing, and document upload with per-document ACLs, which awaits the storage
+decision (OQ-15).
 
 ## Data seeded from the prototype
 
@@ -158,7 +180,10 @@ Counts are asserted by the extractor and re-asserted in CI.
 /**
  * Demo accounts mirroring the real cast, so the role model can be walked through with
  * the client. Real accounts are created through the administration screens.
- * password of all of the accounts is Pwd123456
+ *
+ * They share one password, which is never written here or anywhere else in the
+ * repository (ADR-023): set SEED_DEMO_PASSWORD before `npm run db:seed` to choose it, or
+ * leave it unset and the seed generates one and prints it once.
  */
 const DEMO_USERS: DemoUser[] = [
   {

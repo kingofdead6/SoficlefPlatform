@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// Playwright does not read .env, so DATABASE_URL and AUTH_SESSION_SECRET would be empty
+// here and the started server would refuse to boot on an invalid configuration.
+import 'dotenv/config';
+
 /**
  * End-to-end suite (ADR-015): authenticated journeys, locale switching, RTL rendering
  * and the screenshots used for visual comparison.

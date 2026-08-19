@@ -157,12 +157,23 @@ All 24 sections plus the annex appear.
 | 3    | Auth, RBAC, scope, audit                             | Delivered   |
 | 4    | i18n and RTL                                         | Delivered   |
 | 5    | Application shell, navigation, component library     | Delivered   |
-| 6    | Business content pages                               | Not started |
-| 7    | Organization and org chart                           | Not started |
-| 8    | Kaizen tracking                                      | Not started |
-| 9    | Onboarding engine                                    | Not started |
-| 10   | Remarks                                              | Not started |
-| 11   | Competency matrix                                    | Not started |
-| 12   | Document library                                     | Not started |
-| 13   | Workflows, notifications, dashboards, administration | Not started |
+| 6    | Business content pages                               | Delivered   |
+| 7    | Organization and org chart                           | Delivered   |
+| 8    | Kaizen tracking                                      | Delivered (read-only) |
+| 9    | Onboarding engine                                    | Delivered   |
+| 10   | Remarks                                              | Delivered   |
+| 11   | Competency matrix                                    | Delivered   |
+| 12   | Document library                                     | Partial — listing only, no upload or per-document ACL |
+| 13   | Workflows, notifications, dashboards, administration | Partial — see below |
 | 14   | AI agent — phase 2                                   | Not started |
+
+### What remains inside the delivered Parts
+
+The Parts above are marked delivered where the module is usable end to end. Three
+deliberate gaps remain, each with its reason:
+
+| Gap | Part | Why it is still open |
+| --- | ---- | -------------------- |
+| Job-description authoring and its §6.1 validation workflow | 11 / 13 | The schema, the state machine and its 12 tests exist (`src/domain/workflow/job-description.ts`, `JobDescriptionVersion`, `WorkflowAction`); the authoring screens are not built. The job description is displayed read-only, which is what the prototype offered. |
+| Kaizen action editing | 8 | The Kaizen pages render the two missions, their gaps and their 17 tracked actions from the database, but a pilot cannot yet update an action's status from the UI. |
+| Document upload, per-document ACLs, CSV/XLSX exports | 12 / 13 | Upload needs the storage decision (OQ-15: object storage, antivirus, retention). The remarks journal exports as text today; tabular CSV/XLSX exports await confirmation of which reports the business actually needs (OQ-17). |
