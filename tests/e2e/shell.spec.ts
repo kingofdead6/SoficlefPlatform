@@ -76,8 +76,15 @@ test.describe('every route is reachable and real', () => {
       await expect(main).toBeVisible();
       await expect(main).not.toContainText(/bientôt disponible|coming soon/i);
 
-      const body = await main.innerText();
-      expect(body.trim().length, `empty page at ${route}`).toBeGreaterThan(60);
+      // Wait for the segment's loading skeleton to be replaced by real content. Reading
+      // innerText straight after goto() measures whichever of the two happened to be
+      // painted, so a slower page fails on timing rather than on substance.
+      await expect(page.locator('#main-content [role="status"]')).toHaveCount(0);
+      await expect
+        .poll(async () => (await main.innerText()).trim().length, {
+          message: `empty page at ${route}`,
+        })
+        .toBeGreaterThan(60);
     }
   });
 
