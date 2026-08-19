@@ -315,6 +315,13 @@ The seed creates one account per profile so the whole model can be walked throug
 share a password set by `SEED_DEMO_PASSWORD` at seed time — never written in the
 repository. If it is unset, the seed generates one and prints it once.
 
+To change it, re-run the seed: `SEED_DEMO_PASSWORD=… npm run db:seed`. It is idempotent,
+so nothing else is disturbed.
+
+> The E2E and API suites reseed before they run, which resets these passwords. They
+> therefore require `TEST_DATABASE_URL` to point at a **separate, throwaway database**, and
+> refuse to start if it is unset or resolves to the same database as `DATABASE_URL`.
+
 | Account                     | Role(s)                   | Useful for showing                               |
 | --------------------------- | ------------------------- | ------------------------------------------------ |
 | `djaoudi@soficlef.local`    | Employee + Manager (DPR)  | Both sides at once: own journey, and a perimeter |

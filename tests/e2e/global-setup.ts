@@ -2,20 +2,24 @@ import { spawnSync } from 'node:child_process';
 
 import 'dotenv/config';
 
+import { resolveTestDatabaseUrl } from '../support/test-database';
+
 /**
  * Prepares the database the end-to-end suite runs against: migrations, then the demo
  * accounts. The password comes from the environment, never from a literal in a fixture
  * (ADR-023).
+ *
+ * The database is TEST_DATABASE_URL, never the application's own: this setup reseeds, and
+ * reseeding a working database resets every demo password under the developer using it.
  */
 export default function globalSetup(): void {
+  const databaseUrl = resolveTestDatabaseUrl('E2E');
+
   const env: NodeJS.ProcessEnv = {
     ...process.env,
+    DATABASE_URL: databaseUrl,
     SEED_DEMO_PASSWORD: process.env.E2E_DEMO_PASSWORD ?? 'Soficlef-Test-2026!',
   };
-
-  if (!env.DATABASE_URL) {
-    throw new Error('DATABASE_URL must point at a PostgreSQL instance to run the E2E suite');
-  }
 
   // `npx` is a .cmd shim on Windows and cannot be spawned without a shell, so each tool
   // is resolved from node_modules and run through the current Node binary instead.

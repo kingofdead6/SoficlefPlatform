@@ -49,7 +49,8 @@ export default defineConfig({
     env: {
       NODE_ENV: 'production',
       APP_URL: baseURL,
-      DATABASE_URL: process.env.DATABASE_URL ?? '',
+      // The suite's own database, never the application's — see tests/support/test-database.ts.
+      DATABASE_URL: process.env.TEST_DATABASE_URL ?? '',
       AUTH_SESSION_SECRET:
         process.env.AUTH_SESSION_SECRET ?? 'e2e-session-secret-at-least-32-characters-long',
       // The suite screenshots the design-system pages, which are off by default in a

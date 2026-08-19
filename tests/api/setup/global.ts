@@ -1,9 +1,11 @@
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 
-// Vitest does not read .env, so DATABASE_URL would be undefined and the suite would
-// refuse to start even against a perfectly reachable database.
+// Vitest does not read .env, so the connection string would be undefined and the suite
+// would refuse to start even against a perfectly reachable database.
 import 'dotenv/config';
+
+import { resolveTestDatabaseUrl } from '../../support/test-database';
 
 /**
  * Boots a real server for the API security suite: migrations, seed, then `next start`.
@@ -56,15 +58,13 @@ async function waitForServer(url: string, timeoutMs: number): Promise<void> {
 }
 
 export async function setup(): Promise<void> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error(
-      'DATABASE_URL must point at a PostgreSQL instance to run the API security suite',
-    );
-  }
+  // The suite's own database, never the application's: it reseeds, and reseeding a
+  // working database resets every demo password under the developer using it.
+  const databaseUrl = resolveTestDatabaseUrl('API security');
 
   const env: NodeJS.ProcessEnv = {
     ...process.env,
+    DATABASE_URL: databaseUrl,
     NODE_ENV: 'production',
     APP_URL: BASE_URL,
     AUTH_SESSION_SECRET:

@@ -56,6 +56,20 @@ npm run dev
 | `npm run db:deploy`                       | Apply pending migrations (any environment)                     |
 | `npm run db:check`                        | Fail if `schema.prisma` and `prisma/migrations/` have diverged |
 
+## Running the test suites
+
+`npm run test:unit` needs nothing but the repository. The **E2E and API suites apply
+migrations and reseed**, which resets every demo account's password, so they require
+`TEST_DATABASE_URL` to point at a separate, throwaway database and refuse to start if it
+is unset or resolves to the same host, port and database name as `DATABASE_URL`
+(`tests/support/test-database.ts`).
+
+```bash
+npm run test:unit                     # no database needed
+TEST_DATABASE_URL=… npm run test:e2e  # builds, seeds a throwaway database, runs Playwright
+TEST_DATABASE_URL=… npm run test:api  # the security suite, over HTTP
+```
+
 ## Architecture
 
 ```
