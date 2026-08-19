@@ -5,7 +5,6 @@ import { z } from 'zod';
 
 import { mutate, type ActionResult } from '@/application/shared/mutate';
 
-
 /**
  * Organization structures — create, edit, archive (CDC v0.1 §5).
  *

@@ -14,11 +14,12 @@ const LOCALES = [
 ] as const;
 
 test.describe('locale routing', () => {
-  test('negotiates a locale at the root and redirects', async ({ page }) => {
+  test('negotiates a locale at the root', async ({ page }) => {
     await page.goto('/');
-    // The locale root is itself a router: anonymous visitors land on the sign-in form,
-    // in the negotiated language.
-    await expect(page).toHaveURL(/\/(fr|ar|en)\/login$/);
+    // The unprefixed root negotiates a language and keeps the visitor on the public home
+    // page. It used to bounce to the sign-in form, which is right for a private tool and
+    // wrong for the front door of a company that publishes this material anyway.
+    await expect(page).toHaveURL(/\/(fr|ar|en)$/);
   });
 
   for (const { code, dir } of LOCALES) {

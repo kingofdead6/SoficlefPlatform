@@ -56,7 +56,7 @@ export function NotificationBell({
           ✉
         </span>
         {unread > 0 ? (
-          <span className="absolute -top-1.5 -end-1.5 min-w-4 rounded-full bg-(--red) px-1 text-[10px] leading-4 font-semibold text-white">
+          <span className="absolute -end-1.5 -top-1.5 min-w-4 rounded-full bg-(--red) px-1 text-[10px] leading-4 font-semibold text-white">
             {unread}
           </span>
         ) : null}

@@ -46,9 +46,7 @@ export async function AppShell({
     needsProgress ? loadJourney(user).catch(() => null) : Promise.resolve(null),
     loadNotifications(user, locale).catch(() => []),
   ]);
-  const progressBadge = journey
-    ? `${journey.progress.completed}/${journey.progress.total}`
-    : null;
+  const progressBadge = journey ? `${journey.progress.completed}/${journey.progress.total}` : null;
 
   const groups: NavGroupView[] = navigation.map((group) => ({
     id: group.id,

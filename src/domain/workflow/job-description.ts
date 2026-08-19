@@ -15,21 +15,15 @@
  */
 
 export type JobDescriptionStatus =
-  | 'DRAFT'
-  | 'IN_REVIEW'
-  | 'CHANGES_REQUESTED'
-  | 'VALIDATED'
-  | 'ARCHIVED';
+  'DRAFT' | 'IN_REVIEW' | 'CHANGES_REQUESTED' | 'VALIDATED' | 'ARCHIVED';
 
-export type WorkflowActionKind =
-  | 'submit'
-  | 'approve'
-  | 'request_changes'
-  | 'archive'
-  | 'reopen';
+export type WorkflowActionKind = 'submit' | 'approve' | 'request_changes' | 'archive' | 'reopen';
 
 /** Which action moves which state where. The single source of truth for the machine. */
-const TRANSITIONS: Record<WorkflowActionKind, { from: JobDescriptionStatus[]; to: JobDescriptionStatus }> = {
+const TRANSITIONS: Record<
+  WorkflowActionKind,
+  { from: JobDescriptionStatus[]; to: JobDescriptionStatus }
+> = {
   submit: { from: ['DRAFT', 'CHANGES_REQUESTED'], to: 'IN_REVIEW' },
   approve: { from: ['IN_REVIEW'], to: 'VALIDATED' },
   request_changes: { from: ['IN_REVIEW'], to: 'CHANGES_REQUESTED' },

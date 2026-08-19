@@ -15,7 +15,10 @@ import type { JobDescriptionStatus, WorkflowActionKind } from '@/domain/workflow
  * offer a transition the server would refuse.
  */
 
-const STATUS: Record<JobDescriptionStatus, { label: string; tone: 'neutral' | 'gold' | 'blue' | 'green' | 'red' }> = {
+const STATUS: Record<
+  JobDescriptionStatus,
+  { label: string; tone: 'neutral' | 'gold' | 'blue' | 'green' | 'red' }
+> = {
   DRAFT: { label: 'Brouillon', tone: 'neutral' },
   IN_REVIEW: { label: 'En revue', tone: 'blue' },
   CHANGES_REQUESTED: { label: 'À corriger', tone: 'gold' },
@@ -78,8 +81,8 @@ export function VersionPanel({
     <div className="space-y-4">
       {versions.length === 0 ? (
         <p className="text-text-muted text-[13px]">
-          Cette fiche n&apos;a pas encore de version suivie. Créez-en une pour lancer le circuit
-          de validation.
+          Cette fiche n&apos;a pas encore de version suivie. Créez-en une pour lancer le circuit de
+          validation.
         </p>
       ) : (
         <ul className="space-y-2">
@@ -166,8 +169,8 @@ export function VersionPanel({
       ) : null}
 
       <p className="text-text-dim text-[11px]">
-        Une fiche validée ne peut pas être modifiée : une nouvelle version est créée, et la
-        version validée reste telle qu&apos;elle a été signée.
+        Une fiche validée ne peut pas être modifiée : une nouvelle version est créée, et la version
+        validée reste telle qu&apos;elle a été signée.
       </p>
     </div>
   );

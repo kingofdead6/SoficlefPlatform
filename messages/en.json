@@ -166,5 +166,48 @@
     "markAllRead": "Mark all as read",
     "unreadCount": "{count} unread",
     "open": "Open notifications"
+  },
+  "public": {
+    "nav": {
+      "home": "Home",
+      "company": "Company",
+      "strategy": "Strategy",
+      "careers": "Careers",
+      "signIn": "Employee area"
+    },
+    "hero": {
+      "eyebrow": "SOFICLEF SARL · Si Mustapha, Boumerdès",
+      "title": "Opening and locking solutions",
+      "lead": "Since 1994, SOFICLEF has designed, manufactured and distributed locks, handles, licence plates and safes. ISO 9001:2015 certified, Authorised Economic Operator.",
+      "cta": "Go to the employee area"
+    },
+    "company": {
+      "title": "The company",
+      "lead": "Identity, vision and scope of activity.",
+      "identity": "Identity",
+      "visionMission": "Vision & Mission",
+      "vision": "Vision",
+      "mission": "Mission",
+      "activities": "Activities",
+      "values": "Our values"
+    },
+    "strategy": {
+      "title": "Strategic plan 2024–2026",
+      "lead": "Our growth objectives and the industrial projects behind them.",
+      "markets": "Objectives by market",
+      "projects": "Strategic projects"
+    },
+    "careers": {
+      "title": "Open positions",
+      "lead": "Current recruitment within the Production Department.",
+      "empty": "No position is currently open.",
+      "attachment": "Reports to",
+      "status": "Status",
+      "apply": "Applications: send your file to the Human Resources Department."
+    },
+    "footer": {
+      "rights": "All rights reserved.",
+      "internal": "Internal Skills & Employment platform."
+    }
   }
 }

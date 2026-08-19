@@ -66,7 +66,10 @@ export function AssessmentDialog({
         <input type="hidden" name="subjectUserId" value={subjectUserId} />
 
         <div>
-          <label htmlFor={`level-${competencyId}`} className="text-text block text-[12px] font-medium">
+          <label
+            htmlFor={`level-${competencyId}`}
+            className="text-text block text-[12px] font-medium"
+          >
             Niveau acquis
           </label>
           <select
@@ -88,7 +91,10 @@ export function AssessmentDialog({
         </div>
 
         <div>
-          <label htmlFor={`notes-${competencyId}`} className="text-text block text-[12px] font-medium">
+          <label
+            htmlFor={`notes-${competencyId}`}
+            className="text-text block text-[12px] font-medium"
+          >
             Commentaire <span className="text-text-dim font-normal">(facultatif)</span>
           </label>
           <textarea

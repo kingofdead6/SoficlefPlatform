@@ -6,10 +6,26 @@
     "note": "Not extracted from the prototype. CDC v0.1 §7.2 states the final labels must be supplied and validated by the business; these are the document's own example labels, seeded so the matrix is demonstrable, and every row is replaceable through the administration screens without a migration."
   },
   "levels": [
-    { "value": 1, "labelFr": "Notions", "definitionFr": "Connaît le sujet et l'applique avec un accompagnement." },
-    { "value": 2, "labelFr": "Pratique", "definitionFr": "Applique de façon autonome dans les situations courantes." },
-    { "value": 3, "labelFr": "Maîtrise", "definitionFr": "Traite les situations complexes et fiabilise la pratique." },
-    { "value": 4, "labelFr": "Expertise", "definitionFr": "Fait référence, forme les autres et fait évoluer la pratique." }
+    {
+      "value": 1,
+      "labelFr": "Notions",
+      "definitionFr": "Connaît le sujet et l'applique avec un accompagnement."
+    },
+    {
+      "value": 2,
+      "labelFr": "Pratique",
+      "definitionFr": "Applique de façon autonome dans les situations courantes."
+    },
+    {
+      "value": 3,
+      "labelFr": "Maîtrise",
+      "definitionFr": "Traite les situations complexes et fiabilise la pratique."
+    },
+    {
+      "value": 4,
+      "labelFr": "Expertise",
+      "definitionFr": "Fait référence, forme les autres et fait évoluer la pratique."
+    }
   ],
   "families": [
     { "code": "TECH", "nameFr": "Technique", "order": 1 },
@@ -20,17 +36,89 @@
     { "code": "COMP", "nameFr": "Comportementale", "order": 6 }
   ],
   "competencies": [
-    { "code": "CMP-PROD", "familyCode": "MGMT", "nameFr": "Management de production", "requiredLevel": 4, "mandatory": true },
-    { "code": "CMP-PLAN", "familyCode": "TECH", "nameFr": "Planification et ordonnancement", "requiredLevel": 3, "mandatory": true },
-    { "code": "CMP-KAIZEN", "familyCode": "TECH", "nameFr": "Amélioration continue (Lean, Kaizen, 5S)", "requiredLevel": 3, "mandatory": true },
-    { "code": "CMP-QUAL", "familyCode": "QUAL", "nameFr": "Qualité et exigences ISO 9001:2015", "requiredLevel": 3, "mandatory": true },
-    { "code": "CMP-HSE", "familyCode": "HSE", "nameFr": "Hygiène, sécurité et environnement", "requiredLevel": 3, "mandatory": true },
-    { "code": "CMP-KPI", "familyCode": "OUTIL", "nameFr": "Pilotage des indicateurs (TRS, SMED)", "requiredLevel": 3, "mandatory": true },
-    { "code": "CMP-RH", "familyCode": "MGMT", "nameFr": "Gestion des ressources et des équipes", "requiredLevel": 3, "mandatory": true },
-    { "code": "CMP-MAINT", "familyCode": "TECH", "nameFr": "Maintenance et coordination technique", "requiredLevel": 2, "mandatory": false },
-    { "code": "CMP-COM", "familyCode": "COMP", "nameFr": "Communication managériale", "requiredLevel": 3, "mandatory": true },
-    { "code": "CMP-REPORT", "familyCode": "OUTIL", "nameFr": "Maîtrise des outils de reporting", "requiredLevel": 2, "mandatory": false },
-    { "code": "CMP-BUDGET", "familyCode": "MGMT", "nameFr": "Élaboration et pilotage budgétaire", "requiredLevel": 3, "mandatory": true },
-    { "code": "CMP-INVEST", "familyCode": "TECH", "nameFr": "Études de faisabilité et investissements CNC", "requiredLevel": 2, "mandatory": false }
+    {
+      "code": "CMP-PROD",
+      "familyCode": "MGMT",
+      "nameFr": "Management de production",
+      "requiredLevel": 4,
+      "mandatory": true
+    },
+    {
+      "code": "CMP-PLAN",
+      "familyCode": "TECH",
+      "nameFr": "Planification et ordonnancement",
+      "requiredLevel": 3,
+      "mandatory": true
+    },
+    {
+      "code": "CMP-KAIZEN",
+      "familyCode": "TECH",
+      "nameFr": "Amélioration continue (Lean, Kaizen, 5S)",
+      "requiredLevel": 3,
+      "mandatory": true
+    },
+    {
+      "code": "CMP-QUAL",
+      "familyCode": "QUAL",
+      "nameFr": "Qualité et exigences ISO 9001:2015",
+      "requiredLevel": 3,
+      "mandatory": true
+    },
+    {
+      "code": "CMP-HSE",
+      "familyCode": "HSE",
+      "nameFr": "Hygiène, sécurité et environnement",
+      "requiredLevel": 3,
+      "mandatory": true
+    },
+    {
+      "code": "CMP-KPI",
+      "familyCode": "OUTIL",
+      "nameFr": "Pilotage des indicateurs (TRS, SMED)",
+      "requiredLevel": 3,
+      "mandatory": true
+    },
+    {
+      "code": "CMP-RH",
+      "familyCode": "MGMT",
+      "nameFr": "Gestion des ressources et des équipes",
+      "requiredLevel": 3,
+      "mandatory": true
+    },
+    {
+      "code": "CMP-MAINT",
+      "familyCode": "TECH",
+      "nameFr": "Maintenance et coordination technique",
+      "requiredLevel": 2,
+      "mandatory": false
+    },
+    {
+      "code": "CMP-COM",
+      "familyCode": "COMP",
+      "nameFr": "Communication managériale",
+      "requiredLevel": 3,
+      "mandatory": true
+    },
+    {
+      "code": "CMP-REPORT",
+      "familyCode": "OUTIL",
+      "nameFr": "Maîtrise des outils de reporting",
+      "requiredLevel": 2,
+      "mandatory": false
+    },
+    {
+      "code": "CMP-BUDGET",
+      "familyCode": "MGMT",
+      "nameFr": "Élaboration et pilotage budgétaire",
+      "requiredLevel": 3,
+      "mandatory": true
+    },
+    {
+      "code": "CMP-INVEST",
+      "familyCode": "TECH",
+      "nameFr": "Études de faisabilité et investissements CNC",
+      "requiredLevel": 2,
+      "mandatory": false
+    }
   ]
 }

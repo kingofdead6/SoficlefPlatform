@@ -425,7 +425,12 @@ async function seedCompanyAndValues(): Promise<void> {
         nameAr: value.nameAr,
         nameEn: value.nameEn,
       },
-      update: { rank: value.rank, nameFr: value.nameFr, nameAr: value.nameAr, nameEn: value.nameEn },
+      update: {
+        rank: value.rank,
+        nameFr: value.nameFr,
+        nameAr: value.nameAr,
+        nameEn: value.nameEn,
+      },
     });
   }
 }
@@ -433,7 +438,11 @@ async function seedCompanyAndValues(): Promise<void> {
 async function seedStrategy(): Promise<void> {
   const strategy = await prisma.strategy.upsert({
     where: { slug: 'plan-2024-2026' },
-    create: { slug: 'plan-2024-2026', planFr: STRATEGY.planFr, globalObjectiveFr: STRATEGY.globalObjectiveFr },
+    create: {
+      slug: 'plan-2024-2026',
+      planFr: STRATEGY.planFr,
+      globalObjectiveFr: STRATEGY.globalObjectiveFr,
+    },
     update: { planFr: STRATEGY.planFr, globalObjectiveFr: STRATEGY.globalObjectiveFr },
     select: { id: true },
   });
@@ -546,7 +555,12 @@ async function seedJobAndDescription(unitIds: Map<string, string>): Promise<stri
   for (const [order, mission] of JOB_DESCRIPTION.missions.entries()) {
     await prisma.jobDescriptionMission.upsert({
       where: { slug: mission.id },
-      create: { slug: mission.id, jobDescriptionId: jobDescription.id, textFr: mission.textFr, order },
+      create: {
+        slug: mission.id,
+        jobDescriptionId: jobDescription.id,
+        textFr: mission.textFr,
+        order,
+      },
       update: { textFr: mission.textFr, order },
     });
   }
@@ -611,7 +625,12 @@ async function seedManagementTeamAndOrgChart(unitIds: Map<string, string>): Prom
         textFr: action.textFr,
         order,
       },
-      update: { dayOffset: action.dayOffset, dayLabelFr: action.dayLabelFr, textFr: action.textFr, order },
+      update: {
+        dayOffset: action.dayOffset,
+        dayLabelFr: action.dayLabelFr,
+        textFr: action.textFr,
+        order,
+      },
     });
   }
 
@@ -631,7 +650,13 @@ async function seedManagementTeamAndOrgChart(unitIds: Map<string, string>): Prom
         organizationUnitId: unitIds.get(node.id) ?? null,
         order,
       },
-      update: { labelFr: node.labelFr, roleFr: node.roleFr, occupancy: node.occupancy, parentId, order },
+      update: {
+        labelFr: node.labelFr,
+        roleFr: node.roleFr,
+        occupancy: node.occupancy,
+        parentId,
+        order,
+      },
       select: { id: true },
     });
     nodeIds.set(node.id, record.id);
@@ -641,7 +666,11 @@ async function seedManagementTeamAndOrgChart(unitIds: Map<string, string>): Prom
 async function seedKaizen(): Promise<void> {
   const programme = await prisma.kaizenProgramme.upsert({
     where: { slug: 'programme-kaizen' },
-    create: { slug: 'programme-kaizen', programmeFr: KAIZEN.programmeFr, internalLeadFr: KAIZEN.internalLeadFr },
+    create: {
+      slug: 'programme-kaizen',
+      programmeFr: KAIZEN.programmeFr,
+      internalLeadFr: KAIZEN.internalLeadFr,
+    },
     update: { programmeFr: KAIZEN.programmeFr, internalLeadFr: KAIZEN.internalLeadFr },
     select: { id: true },
   });
@@ -692,7 +721,12 @@ async function seedKaizen(): Promise<void> {
           outcomeFr: entry.outcomeFr,
           order,
         },
-        update: { dayFr: entry.dayFr, activitiesFr: entry.activitiesFr, outcomeFr: entry.outcomeFr, order },
+        update: {
+          dayFr: entry.dayFr,
+          activitiesFr: entry.activitiesFr,
+          outcomeFr: entry.outcomeFr,
+          order,
+        },
       });
     }
     for (const [order, gap] of mission.gaps.entries()) {
@@ -706,14 +740,20 @@ async function seedKaizen(): Promise<void> {
           targetFr: gap.targetFr,
           order,
         },
-        update: { domainFr: gap.domainFr, observedFr: gap.observedFr, targetFr: gap.targetFr, order },
+        update: {
+          domainFr: gap.domainFr,
+          observedFr: gap.observedFr,
+          targetFr: gap.targetFr,
+          order,
+        },
       });
     }
   }
 
   for (const [order, action] of KAIZEN.actions.entries()) {
     const missionId = missionIds.get(action.missionId);
-    if (!missionId) throw new Error(`kaizen action references unknown mission: ${action.missionId}`);
+    if (!missionId)
+      throw new Error(`kaizen action references unknown mission: ${action.missionId}`);
     await prisma.kaizenAction.upsert({
       where: { slug: action.id },
       create: {
@@ -738,7 +778,13 @@ async function seedKaizen(): Promise<void> {
   for (const [order, action] of KAIZEN.priorityActionsJ30.entries()) {
     await prisma.kaizenPriorityActionJ30.upsert({
       where: { slug: action.id },
-      create: { slug: action.id, programmeId: programme.id, dayLabelFr: action.dayLabelFr, textFr: action.textFr, order },
+      create: {
+        slug: action.id,
+        programmeId: programme.id,
+        dayLabelFr: action.dayLabelFr,
+        textFr: action.textFr,
+        order,
+      },
       update: { dayLabelFr: action.dayLabelFr, textFr: action.textFr, order },
     });
   }
@@ -825,7 +871,13 @@ async function seedHse(): Promise<void> {
   for (const rule of HSE.trafficRules) {
     await prisma.hseRule.upsert({
       where: { slug: rule.id },
-      create: { slug: rule.id, hseId: hse.id, kind: 'TRAFFIC', textFr: rule.textFr, order: order++ },
+      create: {
+        slug: rule.id,
+        hseId: hse.id,
+        kind: 'TRAFFIC',
+        textFr: rule.textFr,
+        order: order++,
+      },
       update: { kind: 'TRAFFIC', textFr: rule.textFr },
     });
   }
@@ -876,7 +928,12 @@ async function seedDocuments(): Promise<void> {
         availability: 'AVAILABLE',
         order: order++,
       },
-      update: { fileName: doc.fileName, titleFr: doc.titleFr, detailFr: doc.detailFr, availability: 'AVAILABLE' },
+      update: {
+        fileName: doc.fileName,
+        titleFr: doc.titleFr,
+        detailFr: doc.detailFr,
+        availability: 'AVAILABLE',
+      },
     });
   }
   for (const doc of DOCUMENTS.pending) {
@@ -914,7 +971,12 @@ async function seedRecruitment(): Promise<void> {
         statusFr: position.statusFr,
         order,
       },
-      update: { titleFr: position.titleFr, attachmentFr: position.attachmentFr, statusFr: position.statusFr, order },
+      update: {
+        titleFr: position.titleFr,
+        attachmentFr: position.attachmentFr,
+        statusFr: position.statusFr,
+        order,
+      },
     });
   }
 }
@@ -923,8 +985,12 @@ async function seedRecruitment(): Promise<void> {
 async function seedOnboardingTemplate(jobId: string): Promise<string> {
   const template = await prisma.onboardingTemplate.upsert({
     where: { slug: 'checklist-directeur-production' },
-    create: { slug: 'checklist-directeur-production', jobId, titleFr: 'Checklist d\'intégration 30 jours' },
-    update: { jobId, titleFr: 'Checklist d\'intégration 30 jours' },
+    create: {
+      slug: 'checklist-directeur-production',
+      jobId,
+      titleFr: "Checklist d'intégration 30 jours",
+    },
+    update: { jobId, titleFr: "Checklist d'intégration 30 jours" },
     select: { id: true },
   });
 
@@ -996,14 +1062,26 @@ async function seedWelcomeAndOnboardingInstance(templateId: string): Promise<voi
   for (const [order, stat] of WELCOME.stats.entries()) {
     await prisma.welcomeStat.upsert({
       where: { slug: stat.id },
-      create: { slug: stat.id, welcomeId: welcome.id, valueFr: stat.valueFr, labelFr: stat.labelFr, order },
+      create: {
+        slug: stat.id,
+        welcomeId: welcome.id,
+        valueFr: stat.valueFr,
+        labelFr: stat.labelFr,
+        order,
+      },
       update: { valueFr: stat.valueFr, labelFr: stat.labelFr, order },
     });
   }
   for (const [order, item] of WELCOME.agenda.entries()) {
     await prisma.welcomeAgendaItem.upsert({
       where: { slug: item.id },
-      create: { slug: item.id, welcomeId: welcome.id, titleFr: item.titleFr, detailFr: item.detailFr, order },
+      create: {
+        slug: item.id,
+        welcomeId: welcome.id,
+        titleFr: item.titleFr,
+        detailFr: item.detailFr,
+        order,
+      },
       update: { titleFr: item.titleFr, detailFr: item.detailFr, order },
     });
   }
@@ -1148,7 +1226,9 @@ async function main(): Promise<void> {
   console.log('✔ company, values, strategy, job description, management team, org chart');
   console.log('✔ kaizen, qms, hse, contacts, documents, recruitment');
   console.log('✔ onboarding template + welcome content + onboarding instance');
-  console.log(`✔ competency frame — ${competencyCount} competencies (proposal, awaiting validation)`);
+  console.log(
+    `✔ competency frame — ${competencyCount} competencies (proposal, awaiting validation)`,
+  );
 
   if (wasGenerated) {
     console.log(`\n  Demo password (shown once, not stored anywhere): ${password}`);

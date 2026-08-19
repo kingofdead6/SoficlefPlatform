@@ -78,10 +78,7 @@ export interface MutateOptions<TSchema extends z.ZodTypeAny, TResult> {
    *
    * Omit only for a resource with no organizational anchor and no owner.
    */
-  target?: (
-    input: z.infer<TSchema>,
-    user: AuthenticatedUser,
-  ) => TargetScope | Promise<TargetScope>;
+  target?: (input: z.infer<TSchema>, user: AuthenticatedUser) => TargetScope | Promise<TargetScope>;
   schema: TSchema;
   run: (input: z.infer<TSchema>, context: MutationContext) => Promise<TResult>;
 }

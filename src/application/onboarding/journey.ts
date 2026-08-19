@@ -57,8 +57,7 @@ export async function loadJourney(
 
   // `self` scope may only ever read its own journey, whatever id was asked for — the
   // restriction is applied to the query rather than checked afterwards (ADR-021).
-  const subjectUserId =
-    scope.kind === 'self' ? user.id : (options.subjectUserId ?? user.id);
+  const subjectUserId = scope.kind === 'self' ? user.id : (options.subjectUserId ?? user.id);
 
   const instance = await prisma.onboardingInstance.findFirst({
     where: {
@@ -137,7 +136,9 @@ export async function loadJourneySummaries(user: AuthenticatedUser) {
           : {},
     include: {
       user: { select: { id: true, displayName: true } },
-      template: { select: { titleFr: true, milestones: { select: { id: true, dayOffset: true } } } },
+      template: {
+        select: { titleFr: true, milestones: { select: { id: true, dayOffset: true } } },
+      },
       taskCompletions: { select: { status: true, dueDate: true, milestoneId: true } },
     },
     orderBy: { startDate: 'desc' },

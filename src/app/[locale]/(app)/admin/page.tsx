@@ -166,8 +166,8 @@ function UsersTab({
       />
       <Card>
         <CardBody>
-          Un administrateur ne peut pas s&apos;attribuer un rôle à lui-même ni suspendre son
-          propre compte : la tentative est refusée et journalisée.
+          Un administrateur ne peut pas s&apos;attribuer un rôle à lui-même ni suspendre son propre
+          compte : la tentative est refusée et journalisée.
         </CardBody>
       </Card>
     </div>

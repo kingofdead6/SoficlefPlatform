@@ -166,5 +166,48 @@
     "markAllRead": "Tout marquer comme lu",
     "unreadCount": "{count} non lues",
     "open": "Ouvrir les notifications"
+  },
+  "public": {
+    "nav": {
+      "home": "Accueil",
+      "company": "Entreprise",
+      "strategy": "Stratégie",
+      "careers": "Carrières",
+      "signIn": "Espace collaborateur"
+    },
+    "hero": {
+      "eyebrow": "SOFICLEF SARL · Si Mustapha, Boumerdès",
+      "title": "Solutions d'ouverture et de verrouillage",
+      "lead": "Depuis 1994, SOFICLEF conçoit, fabrique et distribue des serrures, poignées, plaques d'immatriculation et coffres-forts. Certifiée ISO 9001:2015, Opérateur Économique Agréé.",
+      "cta": "Accéder à l'espace collaborateur"
+    },
+    "company": {
+      "title": "L'entreprise",
+      "lead": "Identité, vision et périmètre d'activité.",
+      "identity": "Identité",
+      "visionMission": "Vision & Mission",
+      "vision": "Vision",
+      "mission": "Mission",
+      "activities": "Activités",
+      "values": "Nos valeurs"
+    },
+    "strategy": {
+      "title": "Plan stratégique 2024–2026",
+      "lead": "Nos objectifs de croissance et les projets industriels qui les portent.",
+      "markets": "Objectifs par marché",
+      "projects": "Projets stratégiques"
+    },
+    "careers": {
+      "title": "Postes ouverts",
+      "lead": "Les recrutements en cours au sein de la Direction de Production.",
+      "empty": "Aucun poste n'est ouvert actuellement.",
+      "attachment": "Rattachement",
+      "status": "Statut",
+      "apply": "Candidatures : adressez votre dossier à la Direction des Ressources Humaines."
+    },
+    "footer": {
+      "rights": "Tous droits réservés.",
+      "internal": "Plateforme interne Compétences & Emplois."
+    }
   }
 }

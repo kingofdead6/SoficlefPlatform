@@ -13,9 +13,9 @@ import { StatusBadge } from '@/components/ui';
  * so the page does not change shape depending on who is looking at it.
  */
 const TONE: Record<string, 'green' | 'gold' | 'blue'> = {
-  'Clôturée': 'green',
+  Clôturée: 'green',
   'En cours': 'gold',
-  'Planifiée': 'blue',
+  Planifiée: 'blue',
 };
 
 export function KaizenActionStatus({

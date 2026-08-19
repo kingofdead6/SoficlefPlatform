@@ -65,10 +65,7 @@ export interface AuditRow {
 }
 
 /** The audit trail, newest first (§15). Capped so the page cannot be a full table scan. */
-export async function listAuditTrail(
-  actor: AuthenticatedUser,
-  limit = 100,
-): Promise<AuditRow[]> {
+export async function listAuditTrail(actor: AuthenticatedUser, limit = 100): Promise<AuditRow[]> {
   assertCan(actor, 'read', 'audit_log');
 
   const rows = await prisma.auditLog.findMany({

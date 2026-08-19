@@ -48,9 +48,7 @@ export function buildForest(
     descriptionFr: string | null;
   }[],
 ): OrgNode[] {
-  const byId = new Map<string, OrgNode>(
-    units.map((unit) => [unit.id, { ...unit, children: [] }]),
-  );
+  const byId = new Map<string, OrgNode>(units.map((unit) => [unit.id, { ...unit, children: [] }]));
   const roots: OrgNode[] = [];
 
   for (const unit of units) {

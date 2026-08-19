@@ -87,7 +87,10 @@ export async function loadDossier(
   });
 
   const names = await namesOf([
-    ...document.jobDescriptionVersions.flatMap((version) => [version.authorId, version.validatedBy]),
+    ...document.jobDescriptionVersions.flatMap((version) => [
+      version.authorId,
+      version.validatedBy,
+    ]),
     ...trailRows.map((row) => row.actorId),
   ]);
 
@@ -104,9 +107,7 @@ export async function loadDossier(
       validatorName: version.validatedBy ? (names.get(version.validatedBy) ?? null) : null,
       // Only offer what this reader may actually do: the machine says what is legal from
       // the state, `can()` says whether this person may take that step.
-      actions: availableActions(status).filter((action) =>
-        actionAllowedFor(user, action),
-      ),
+      actions: availableActions(status).filter((action) => actionAllowedFor(user, action)),
     };
   });
 

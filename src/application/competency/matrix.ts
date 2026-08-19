@@ -56,9 +56,7 @@ export async function loadJobMatrix(
       // A unit-scoped reader only sees jobs anchored in their structures. `self` is not
       // an anchor for a job, so it falls through to the unrestricted branch below and is
       // constrained by the assessment subject instead.
-      ...(scope.kind === 'units'
-        ? { organizationUnitId: { in: scope.organizationUnitIds } }
-        : {}),
+      ...(scope.kind === 'units' ? { organizationUnitId: { in: scope.organizationUnitIds } } : {}),
     },
     orderBy: { createdAt: 'asc' },
     select: { id: true, code: true, titleFr: true, organizationUnitId: true },

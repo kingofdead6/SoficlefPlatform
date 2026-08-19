@@ -26,12 +26,7 @@ let server: ChildProcess | undefined;
  * connection left open by a previous run can still hold for a few seconds, hence the
  * retry. A genuinely unreachable database still fails on the last attempt.
  */
-function run(
-  cliSpecifier: string,
-  args: string[],
-  env: NodeJS.ProcessEnv,
-  attempts = 1,
-): void {
+function run(cliSpecifier: string, args: string[], env: NodeJS.ProcessEnv, attempts = 1): void {
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const result = spawnSync(process.execPath, [require.resolve(cliSpecifier), ...args], {
       env,
@@ -83,10 +78,14 @@ export async function setup(): Promise<void> {
   run('prisma/build/index.js', ['migrate', 'deploy'], env, 3);
   run('tsx/cli', ['prisma/seed.ts'], env, 2);
 
-  server = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--port', String(PORT)], {
-    env,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
+  server = spawn(
+    process.execPath,
+    [require.resolve('next/dist/bin/next'), 'start', '--port', String(PORT)],
+    {
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
   server.stderr?.on('data', (chunk: Buffer) => process.stderr.write(`[server] ${chunk}`));
 
   await waitForServer(BASE_URL, 60_000);

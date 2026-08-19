@@ -29,7 +29,10 @@ import { getCurrentUser } from '@/infrastructure/auth/current-user';
  * carries its own word — §7.1 forbids a level that depends on colour alone.
  */
 
-const STATUS_PRESENTATION: Record<GapStatus, { label: string; tone: 'green' | 'gold' | 'red' | 'neutral' }> = {
+const STATUS_PRESENTATION: Record<
+  GapStatus,
+  { label: string; tone: 'green' | 'gold' | 'red' | 'neutral' }
+> = {
   conforme: { label: 'Conforme', tone: 'green' },
   'a-developper': { label: 'À développer', tone: 'gold' },
   critique: { label: 'Critique', tone: 'red' },

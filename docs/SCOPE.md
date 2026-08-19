@@ -149,30 +149,30 @@ All 24 sections plus the annex appear.
 
 ## 6. Part plan
 
-| Part | Content                                              | State       |
-| ---- | ---------------------------------------------------- | ----------- |
-| 0    | Scope, decisions, open questions                     | Delivered   |
-| 1    | Content extraction from the prototype                | Delivered   |
-| 2    | Foundations — Next.js, Docker, Prisma, tokens, CI    | Delivered   |
-| 3    | Auth, RBAC, scope, audit                             | Delivered   |
-| 4    | i18n and RTL                                         | Delivered   |
-| 5    | Application shell, navigation, component library     | Delivered   |
-| 6    | Business content pages                               | Delivered   |
-| 7    | Organization and org chart                           | Delivered   |
-| 8    | Kaizen tracking                                      | Delivered   |
-| 9    | Onboarding engine                                    | Delivered   |
-| 10   | Remarks                                              | Delivered   |
-| 11   | Competency matrix                                    | Delivered   |
+| Part | Content                                              | State                                                 |
+| ---- | ---------------------------------------------------- | ----------------------------------------------------- |
+| 0    | Scope, decisions, open questions                     | Delivered                                             |
+| 1    | Content extraction from the prototype                | Delivered                                             |
+| 2    | Foundations — Next.js, Docker, Prisma, tokens, CI    | Delivered                                             |
+| 3    | Auth, RBAC, scope, audit                             | Delivered                                             |
+| 4    | i18n and RTL                                         | Delivered                                             |
+| 5    | Application shell, navigation, component library     | Delivered                                             |
+| 6    | Business content pages                               | Delivered                                             |
+| 7    | Organization and org chart                           | Delivered                                             |
+| 8    | Kaizen tracking                                      | Delivered                                             |
+| 9    | Onboarding engine                                    | Delivered                                             |
+| 10   | Remarks                                              | Delivered                                             |
+| 11   | Competency matrix                                    | Delivered                                             |
 | 12   | Document library                                     | Partial — listing only, no upload or per-document ACL |
-| 13   | Workflows, notifications, dashboards, administration | Partial — see below |
-| 14   | AI agent — phase 2                                   | Not started |
+| 13   | Workflows, notifications, dashboards, administration | Partial — see below                                   |
+| 14   | AI agent — phase 2                                   | Not started                                           |
 
 ### What remains inside the delivered Parts
 
 The Parts above are marked delivered where the module is usable end to end. Three
 deliberate gaps remain, each with its reason:
 
-| Gap | Part | Why it is still open |
-| --- | ---- | -------------------- |
-| Field-level editing of a job description's §6.2 content | 11 | The §6.1 workflow is complete — versions, states, validation, separation of duties, an immutable snapshot per version. A new version currently forks the current content with a stated motive; editing the mission and task text in the browser is the remaining step, and it awaits confirmation of who may author what (OQ-07). |
-| Document upload, per-document ACLs, CSV/XLSX exports | 12 / 13 | Upload needs the storage decision (OQ-15: object storage, antivirus, retention). The remarks journal exports as text today; tabular CSV/XLSX exports await confirmation of which reports the business actually needs (OQ-17). |
+| Gap                                                     | Part    | Why it is still open                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Field-level editing of a job description's §6.2 content | 11      | The §6.1 workflow is complete — versions, states, validation, separation of duties, an immutable snapshot per version. A new version currently forks the current content with a stated motive; editing the mission and task text in the browser is the remaining step, and it awaits confirmation of who may author what (OQ-07). |
+| Document upload, per-document ACLs, CSV/XLSX exports    | 12 / 13 | Upload needs the storage decision (OQ-15: object storage, antivirus, retention). The remarks journal exports as text today; tabular CSV/XLSX exports await confirmation of which reports the business actually needs (OQ-17).                                                                                                     |

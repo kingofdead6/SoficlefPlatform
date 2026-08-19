@@ -17,8 +17,18 @@ import { prisma } from '@/infrastructure/db/client';
 
 export interface DashboardData {
   jobDescriptions: { total: number; validated: number; draft: number; coverage: number } | null;
-  competencies: { total: number; critical: number; unassessed: number; conformity: number | null } | null;
-  onboarding: { journeys: number; overdueTasks: number; blockedTasks: number; averagePercent: number } | null;
+  competencies: {
+    total: number;
+    critical: number;
+    unassessed: number;
+    conformity: number | null;
+  } | null;
+  onboarding: {
+    journeys: number;
+    overdueTasks: number;
+    blockedTasks: number;
+    averagePercent: number;
+  } | null;
   validation: { pendingJobDescriptions: number } | null;
   quality: { unitsWithoutHead: number; jobsWithoutDescription: number } | null;
 }

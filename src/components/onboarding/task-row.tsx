@@ -137,7 +137,11 @@ export function TaskRow({
               <span
                 className={cn(
                   'font-mono text-[11px]',
-                  overdue ? 'text-red font-semibold' : dueSoon ? 'text-gold-strong' : 'text-text-dim',
+                  overdue
+                    ? 'text-red font-semibold'
+                    : dueSoon
+                      ? 'text-gold-strong'
+                      : 'text-text-dim',
                 )}
               >
                 {overdue ? 'En retard · ' : dueSoon ? 'Échéance proche · ' : 'Échéance · '}
@@ -206,7 +210,7 @@ function SmallButton({
       className={cn(
         'rounded border px-2 py-1 text-[11px] disabled:opacity-50',
         tone === 'green'
-          ? 'border-(--green) text-green bg-white'
+          ? 'text-green border-(--green) bg-white'
           : 'text-text-muted border-(--border) bg-(--surface2)',
       )}
     >

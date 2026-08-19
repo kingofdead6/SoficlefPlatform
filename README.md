@@ -11,6 +11,7 @@ an instance of a reusable template, not a hardcoded portal — see `docs/SCOPE.m
 
 | File                        | What it holds                                                                                         |
 | --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `docs/USER-GUIDE.md`        | **How the platform works**: each user type, what they can and cannot do, the pages, the two workflows |
 | `docs/SCOPE.md`             | Reconciled scope, MVP boundary, and the mapping of every CDC v1 module and CDC v0.1 section to a Part |
 | `docs/DECISIONS.md`         | ADRs. Anything flagged `ASSUMPTION` awaits client confirmation                                        |
 | `docs/OPEN-QUESTIONS.md`    | Business questions with a proposed default each, so an unanswered one never halts the build           |
@@ -144,21 +145,28 @@ prototype's browser-side implementation could not have worked outside a sandbox 
 
 ## Modules
 
-| Route            | What it does                                                                                          |
-| ---------------- | ----------------------------------------------------------------------------------------------------- |
-| `/dashboard`     | Role-aware KPIs: onboarding health, competency gaps, job-description coverage, data quality           |
-| `/organization`  | The structure tree, with create / edit / archive. Nothing is deleted — archival preserves history     |
-| `/onboarding`    | The 30-day journey: task states, deadlines, lateness, manager validation, and an oversight table      |
-| `/competencies`  | The job↔competency matrix, gaps against a configurable level scale, and assessment recording          |
-| `/remarks`       | The collaborator's journal to HR and the DG, with an audited text export                              |
-| `/admin`         | Accounts, roles and the audit trail. `TECH_ADMIN` only                                                |
-| `/job-description` | The `EN-012-DRH` fiche, its versions, and the §6.1 validation circuit                                |
-| Content routes   | Company, strategy, management, recruitment, Kaizen, QMS, HSE, contacts, documents                     |
+| Route              | What it does                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| Public pages       | `/`, `/entreprise`, `/strategie`, `/carrieres` — no session needed. See `docs/USER-GUIDE.md` §2   |
+| `/dashboard`       | Role-aware KPIs: onboarding health, competency gaps, job-description coverage, data quality       |
+| `/organization`    | The structure tree, with create / edit / archive. Nothing is deleted — archival preserves history |
+| `/onboarding`      | The 30-day journey: task states, deadlines, lateness, manager validation, and an oversight table  |
+| `/competencies`    | The job↔competency matrix, gaps against a configurable level scale, and assessment recording      |
+| `/remarks`         | The collaborator's journal to HR and the DG, with an audited text export                          |
+| `/admin`           | Accounts, roles and the audit trail. `TECH_ADMIN` only                                            |
+| `/job-description` | The `EN-012-DRH` fiche, its versions, and the §6.1 validation circuit                             |
+| Content routes     | Company, strategy, management, recruitment, Kaizen, QMS, HSE, contacts, documents                 |
 
 Every mutation goes through one helper (`src/application/shared/mutate.ts`) that
 authenticates, re-validates the payload with Zod, authorizes against the resolved target
 and writes the audit row in the same transaction — so a new action cannot forget one of
 the four.
+
+The public pages are a sibling route group, `src/app/[locale]/(public)/`, deliberately not
+a child of `(app)`: the `(app)` layout resolves the session and refuses anonymous
+visitors, so a page that must stay public cannot live under it. Their reads are isolated in
+`src/application/public/presentation.ts`, where every query names its columns explicitly —
+adding a field to a table can therefore never widen what an anonymous visitor sees.
 
 Two gaps are deliberate and documented in `docs/SCOPE.md`: field-level editing of a job
 description's §6.2 content (the versioning and validation workflow around it is complete),
@@ -173,72 +181,69 @@ the Kaizen missions and their 17 tracked actions, the QMS and HSE reference data
 12-milestone onboarding checklist, the internal directory and the document list.
 Counts are asserted by the extractor and re-asserted in CI.
 
-
-
-
-
 /**
- * Demo accounts mirroring the real cast, so the role model can be walked through with
- * the client. Real accounts are created through the administration screens.
- *
- * They share one password, which is never written here or anywhere else in the
- * repository (ADR-023): set SEED_DEMO_PASSWORD before `npm run db:seed` to choose it, or
- * leave it unset and the seed generates one and prints it once.
- */
-const DEMO_USERS: DemoUser[] = [
+
+- Demo accounts mirroring the real cast, so the role model can be walked through with
+- the client. Real accounts are created through the administration screens.
+-
+- They share one password, which is never written here or anywhere else in the
+- repository (ADR-023): set SEED_DEMO_PASSWORD before `npm run db:seed` to choose it, or
+- leave it unset and the seed generates one and prints it once.
+  */
+  const DEMO_USERS: DemoUser[] = [
   {
-    email: 'tech.admin@soficlef.local',
-    displayName: 'Administrateur technique',
-    locale: 'fr',
-    roles: [{ code: 'TECH_ADMIN' }],
+  email: 'tech.admin@soficlef.local',
+  displayName: 'Administrateur technique',
+  locale: 'fr',
+  roles: [{ code: 'TECH_ADMIN' }],
   },
   {
-    email: 'mostafa@soficlef.local',
-    displayName: 'M. Mostafa — Responsable Compétences & Emplois',
-    locale: 'fr',
-    roles: [{ code: 'HEAD_CE' }],
+  email: 'mostafa@soficlef.local',
+  displayName: 'M. Mostafa — Responsable Compétences & Emplois',
+  locale: 'fr',
+  roles: [{ code: 'HEAD_CE' }],
   },
   {
-    email: 'chanane@soficlef.local',
-    displayName: 'CHANANE Mohamed Rafik — Emploi & Compétences',
-    locale: 'fr',
-    roles: [{ code: 'BIZ_ADMIN_CE' }],
+  email: 'chanane@soficlef.local',
+  displayName: 'CHANANE Mohamed Rafik — Emploi & Compétences',
+  locale: 'fr',
+  roles: [{ code: 'BIZ_ADMIN_CE' }],
   },
   {
-    email: 'drh@soficlef.local',
-    displayName: 'Direction des Ressources Humaines',
-    locale: 'fr',
-    roles: [{ code: 'HR' }],
+  email: 'drh@soficlef.local',
+  displayName: 'Direction des Ressources Humaines',
+  locale: 'fr',
+  roles: [{ code: 'HR' }],
   },
   {
-    // The pilot user is both the subject of an onboarding journey and the head of a
-    // structure — two assignments, which is exactly why CDC v1's DIR_PROD maps onto two
-    // of CDC v0.1's profiles (ADR-005).
-    email: 'djaoudi@soficlef.local',
-    displayName: 'DJAOUDI Farid — Directeur de Production',
-    locale: 'fr',
-    roles: [{ code: 'EMPLOYEE' }, { code: 'MANAGER', unitCode: 'DPR' }],
-    // Taken from the extracted prototype data, not retyped.
-    onboardingStartDate: WELCOME.startDate,
+  // The pilot user is both the subject of an onboarding journey and the head of a
+  // structure — two assignments, which is exactly why CDC v1's DIR_PROD maps onto two
+  // of CDC v0.1's profiles (ADR-005).
+  email: 'djaoudi@soficlef.local',
+  displayName: 'DJAOUDI Farid — Directeur de Production',
+  locale: 'fr',
+  roles: [{ code: 'EMPLOYEE' }, { code: 'MANAGER', unitCode: 'DPR' }],
+  // Taken from the extracted prototype data, not retyped.
+  onboardingStartDate: WELCOME.startDate,
   },
   {
-    // A collaborator with no managerial breadth: their rights end at their own records,
-    // which is what CDC v0.1 §3's "Collaborateur" profile means.
-    email: 'boubenia@soficlef.local',
-    displayName: 'BOUBENIA Ahmed — Référent Production',
-    locale: 'fr',
-    roles: [{ code: 'EMPLOYEE' }],
+  // A collaborator with no managerial breadth: their rights end at their own records,
+  // which is what CDC v0.1 §3's "Collaborateur" profile means.
+  email: 'boubenia@soficlef.local',
+  displayName: 'BOUBENIA Ahmed — Référent Production',
+  locale: 'fr',
+  roles: [{ code: 'EMPLOYEE' }],
   },
   {
-    email: 'oudni@soficlef.local',
-    displayName: 'OUDNI Yassine — Responsable Fabrication',
-    locale: 'fr',
-    roles: [{ code: 'MANAGER', unitCode: 'DPR-FABRICATION' }],
+  email: 'oudni@soficlef.local',
+  displayName: 'OUDNI Yassine — Responsable Fabrication',
+  locale: 'fr',
+  roles: [{ code: 'MANAGER', unitCode: 'DPR-FABRICATION' }],
   },
   {
-    email: 'charikhi@soficlef.local',
-    displayName: 'M. CHARIKHI Sofiane — Directeur Général',
-    locale: 'fr',
-    roles: [{ code: 'VIEWER' }],
+  email: 'charikhi@soficlef.local',
+  displayName: 'M. CHARIKHI Sofiane — Directeur Général',
+  locale: 'fr',
+  roles: [{ code: 'VIEWER' }],
   },
-];
+  ];

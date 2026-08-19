@@ -101,9 +101,7 @@ function OwnJourney({
       />
 
       <section>
-        <SectionTitle
-          lead="Cochez une étape lorsqu'elle est réalisée. Votre responsable la valide ensuite ; une étape bloquée est signalée à la DRH."
-        >
+        <SectionTitle lead="Cochez une étape lorsqu'elle est réalisée. Votre responsable la valide ensuite ; une étape bloquée est signalée à la DRH.">
           Jalons
         </SectionTitle>
         <ul className="space-y-2">
@@ -192,8 +190,8 @@ function Oversight({
       <Card className="mt-4">
         <CardBody>
           Une étape en retard n&apos;est pas calculée à l&apos;avance : elle est dérivée de
-          l&apos;échéance et du statut à chaque affichage, donc elle ne peut pas rester affichée
-          à tort après coup.
+          l&apos;échéance et du statut à chaque affichage, donc elle ne peut pas rester affichée à
+          tort après coup.
         </CardBody>
       </Card>
     </section>

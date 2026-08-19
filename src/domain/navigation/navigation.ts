@@ -12,12 +12,7 @@ import type { Action, Resource } from '@/domain/auth/permissions';
  */
 
 export type NavGroupId =
-  | 'steering'
-  | 'onboarding'
-  | 'direction'
-  | 'references'
-  | 'tools'
-  | 'administration';
+  'steering' | 'onboarding' | 'direction' | 'references' | 'tools' | 'administration';
 
 export interface NavItem {
   /** Key into `messages.nav.items`, and the item's stable id. */

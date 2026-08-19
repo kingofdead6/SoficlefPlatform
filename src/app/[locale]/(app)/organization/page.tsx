@@ -81,10 +81,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           value={units.filter((unit) => unit.type === 'STRUCTURE').length}
           label="Structures"
         />
-        <KpiTile
-          value={units.filter((unit) => unit.type === 'CELLULE').length}
-          label="Cellules"
-        />
+        <KpiTile value={units.filter((unit) => unit.type === 'CELLULE').length} label="Cellules" />
         <KpiTile value={vacant} label="Postes vacants" />
       </div>
 
@@ -132,8 +129,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <CardBody>
           Rien n&apos;est supprimé : archiver une structure la retire des listes actives tout en
           préservant l&apos;historique (§16.1). Une structure qui porte encore des entités ou des
-          emplois actifs ne peut pas être archivée — la réorganisation se fait explicitement,
-          en partant des feuilles.
+          emplois actifs ne peut pas être archivée — la réorganisation se fait explicitement, en
+          partant des feuilles.
         </CardBody>
       </Card>
     </div>

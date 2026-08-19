@@ -3,7 +3,15 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { loadDashboard } from '@/application/dashboard/kpis';
 import { canOpen } from '@/application/navigation/build-navigation';
-import { Card, CardBody, CardTitle, KpiTile, ProgressBar, SectionTitle, StatusBadge } from '@/components/ui';
+import {
+  Card,
+  CardBody,
+  CardTitle,
+  KpiTile,
+  ProgressBar,
+  SectionTitle,
+  StatusBadge,
+} from '@/components/ui';
 import { navItemByHref } from '@/domain/navigation/navigation';
 import { Link } from '@/i18n/navigation';
 import { getCurrentUser } from '@/infrastructure/auth/current-user';
