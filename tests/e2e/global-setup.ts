@@ -20,14 +20,26 @@ export default function globalSetup(): void {
   // `npx` is a .cmd shim on Windows and cannot be spawned without a shell, so each tool
   // is resolved from node_modules and run through the current Node binary instead.
   // Playwright loads this file as CommonJS, so `require` is the resolver available here.
-  const run = (cliSpecifier: string, args: string[]) => {
-    const result = spawnSync(process.execPath, [require.resolve(cliSpecifier), ...args], {
-      env,
-      stdio: 'inherit',
-    });
-    if (result.status !== 0) throw new Error(`${cliSpecifier} ${args.join(' ')} failed`);
+  const run = (cliSpecifier: string, args: string[], attempts = 1) => {
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      const result = spawnSync(process.execPath, [require.resolve(cliSpecifier), ...args], {
+        env,
+        stdio: 'inherit',
+      });
+      if (result.status === 0) return;
+      if (attempt === attempts) {
+        throw new Error(`${cliSpecifier} ${args.join(' ')} failed`);
+      }
+      console.warn(`${args.join(' ')} failed (attempt ${attempt}/${attempts}); retrying…`);
+      // Crude but effective: block the thread. Playwright's global setup is synchronous.
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5_000);
+    }
   };
 
-  run('prisma/build/index.js', ['migrate', 'deploy']);
-  run('tsx/cli', ['prisma/seed.ts']);
+  // `migrate deploy` takes a Postgres advisory lock. Against a pooled endpoint — Neon's,
+  // for instance — a connection left open by a previous run can still hold it for a few
+  // seconds, which fails the whole suite before a single test runs. Retried rather than
+  // treated as fatal; a genuinely unreachable database still fails after the last attempt.
+  run('prisma/build/index.js', ['migrate', 'deploy'], 3);
+  run('tsx/cli', ['prisma/seed.ts'], 2);
 }

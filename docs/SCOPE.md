@@ -159,7 +159,7 @@ All 24 sections plus the annex appear.
 | 5    | Application shell, navigation, component library     | Delivered   |
 | 6    | Business content pages                               | Delivered   |
 | 7    | Organization and org chart                           | Delivered   |
-| 8    | Kaizen tracking                                      | Delivered (read-only) |
+| 8    | Kaizen tracking                                      | Delivered   |
 | 9    | Onboarding engine                                    | Delivered   |
 | 10   | Remarks                                              | Delivered   |
 | 11   | Competency matrix                                    | Delivered   |
@@ -175,5 +175,4 @@ deliberate gaps remain, each with its reason:
 | Gap | Part | Why it is still open |
 | --- | ---- | -------------------- |
 | Job-description authoring and its §6.1 validation workflow | 11 / 13 | The schema, the state machine and its 12 tests exist (`src/domain/workflow/job-description.ts`, `JobDescriptionVersion`, `WorkflowAction`); the authoring screens are not built. The job description is displayed read-only, which is what the prototype offered. |
-| Kaizen action editing | 8 | The Kaizen pages render the two missions, their gaps and their 17 tracked actions from the database, but a pilot cannot yet update an action's status from the UI. |
 | Document upload, per-document ACLs, CSV/XLSX exports | 12 / 13 | Upload needs the storage decision (OQ-15: object storage, antivirus, retention). The remarks journal exports as text today; tabular CSV/XLSX exports await confirmation of which reports the business actually needs (OQ-17). |

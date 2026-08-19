@@ -159,10 +159,9 @@ authenticates, re-validates the payload with Zod, authorizes against the resolve
 and writes the audit row in the same transaction — so a new action cannot forget one of
 the four.
 
-Three gaps are deliberate and documented in `docs/SCOPE.md`: job-description authoring
-(the workflow state machine exists and is tested, the screens are not built), Kaizen
-action editing, and document upload with per-document ACLs, which awaits the storage
-decision (OQ-15).
+Two gaps are deliberate and documented in `docs/SCOPE.md`: job-description authoring
+(the workflow state machine exists and is tested, the screens are not built), and
+document upload with per-document ACLs, which awaits the storage decision (OQ-15).
 
 ## Data seeded from the prototype
 

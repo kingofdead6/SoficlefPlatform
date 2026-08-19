@@ -11,6 +11,7 @@ import { expect, test, type Page } from '@playwright/test';
 const PASSWORD = process.env.E2E_DEMO_PASSWORD ?? 'Soficlef-Test-2026!';
 
 const ROUTES = [
+  '/dashboard',
   '/welcome',
   '/company',
   '/strategy',
@@ -33,7 +34,8 @@ async function signIn(page: Page, email: string, locale = 'fr'): Promise<void> {
   await page.getByLabel(/e-?mail|البريد/i).fill(email);
   await page.locator('#password').fill(PASSWORD);
   await page.getByRole('button', { name: /connecter|sign in|تسجيل/i }).click();
-  await page.waitForURL(`**/${locale}/welcome`);
+  // Signing in lands on the dashboard: /welcome is one person's onboarding hero.
+  await page.waitForURL(`**/${locale}/dashboard`);
 }
 
 test.describe('authentication', () => {
@@ -52,7 +54,7 @@ test.describe('authentication', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
-  test('signing in lands on the welcome route inside the shell', async ({ page }) => {
+  test('signing in lands on the dashboard inside the shell', async ({ page }) => {
     await signIn(page, 'djaoudi@soficlef.local');
     await expect(page.getByRole('navigation', { name: /navigation/i })).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -60,7 +62,7 @@ test.describe('authentication', () => {
 });
 
 test.describe('every route is reachable and real', () => {
-  test('all fifteen routes render a named page with an empty state, not a placeholder', async ({
+  test('every route renders a named page with an empty state, not a placeholder', async ({
     page,
   }) => {
     await signIn(page, 'chanane@soficlef.local');
@@ -112,10 +114,20 @@ test.describe('navigation reflects the signed-in role', () => {
     await expect(nav.getByRole('link', { name: /remarques/i })).toHaveCount(0);
   });
 
-  test('a business administrator sees all fifteen', async ({ page }) => {
+  test('a business administrator sees every business route, but not administration', async ({
+    page,
+  }) => {
     await signIn(page, 'chanane@soficlef.local');
-    const links = page.getByRole('navigation', { name: /navigation/i }).getByRole('link');
-    await expect(links).toHaveCount(15);
+    const nav = page.getByRole('navigation', { name: /navigation/i });
+    // Sixteen of the seventeen: the administration section is TECH_ADMIN's.
+    await expect(nav.getByRole('link')).toHaveCount(16);
+    await expect(nav.getByRole('link', { name: /^administration$/i })).toHaveCount(0);
+  });
+
+  test('only the technical administrator sees the administration section', async ({ page }) => {
+    await signIn(page, 'tech.admin@soficlef.local');
+    const nav = page.getByRole('navigation', { name: /navigation/i });
+    await expect(nav.getByRole('link', { name: /^administration$/i })).toBeVisible();
   });
 
   test('a hidden route is still refused when typed directly', async ({ page }) => {

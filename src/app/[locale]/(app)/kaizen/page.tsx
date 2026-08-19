@@ -1,5 +1,8 @@
+import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
+import { canOpen } from '@/application/navigation/build-navigation';
+import { KaizenActionStatus } from '@/components/kaizen/action-status';
 import {
   Card,
   CardBody,
@@ -12,11 +15,22 @@ import {
   Timeline,
 } from '@/components/ui';
 import type { TimelineEntry } from '@/components/ui';
+import { can } from '@/domain/auth/authorization';
+import { navItemByHref } from '@/domain/navigation/navigation';
+import { getCurrentUser } from '@/infrastructure/auth/current-user';
 import { prisma } from '@/infrastructure/db/client';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // The page is the boundary, not the sidebar (ADR-020). This check was missing here
+  // while every other module route carried it.
+  const item = navItemByHref('/kaizen');
+  const user = await getCurrentUser();
+  if (!item || !user || !canOpen(user, item)) notFound();
+
+  const mayEdit = can(user, 'update', 'kaizen_action');
 
   let programme: Awaited<ReturnType<typeof loadProgramme>> = null;
 
@@ -56,7 +70,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             items={programme.missions.map((mission) => ({
               value: mission.id,
               label: `${mission.icon ?? ''} Mission ${mission.number}`.trim(),
-              content: <MissionPanel mission={mission} />,
+              content: <MissionPanel mission={mission} mayEdit={mayEdit} />,
             }))}
           />
         </section>
@@ -74,7 +88,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
 type Mission = NonNullable<Awaited<ReturnType<typeof loadProgramme>>>['missions'][number];
 
-function MissionPanel({ mission }: { mission: Mission }) {
+function MissionPanel({ mission, mayEdit }: { mission: Mission; mayEdit: boolean }) {
   const gapColumns: Column<Mission['gaps'][number]>[] = [
     { key: 'domain', header: 'Domaine', render: (row) => row.domainFr },
     { key: 'observed', header: 'Constat', render: (row) => row.observedFr },
@@ -91,7 +105,14 @@ function MissionPanel({ mission }: { mission: Mission }) {
       mono: true,
       render: (row) => row.deadlineFr,
     },
-    { key: 'status', header: 'Statut', align: 'end', render: (row) => row.statusFr },
+    {
+      key: 'status',
+      header: 'Statut',
+      align: 'end',
+      render: (row) => (
+        <KaizenActionStatus id={row.id} statusFr={row.statusFr} editable={mayEdit} />
+      ),
+    },
   ];
 
   return (

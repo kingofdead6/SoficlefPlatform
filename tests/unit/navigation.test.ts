@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { buildNavigation, canOpen } from '@/application/navigation/build-navigation';
 import type { AuthenticatedUser } from '@/domain/auth/authorization';
 import { NAV_ITEMS } from '@/domain/navigation/navigation';
-import type { RoleCode } from '@/domain/auth/roles';
+import { ROLE_CODES, type RoleCode } from '@/domain/auth/roles';
 
 /**
  * Navigation is filtered on the server from the same permissions the routes enforce
@@ -102,6 +102,16 @@ describe('entries a role cannot open are never sent', () => {
     expect(visible).toContain('remarks');
     expect(visible).toContain('onboardingChecklist');
     expect(visible).not.toContain('kaizen');
+  });
+
+  it('gives every signed-in role a landing page they may actually open', () => {
+    // The sign-in redirect sends everybody to /dashboard, so a role that cannot open it
+    // would land on a 404 the moment it signed in.
+    const dashboard = NAV_ITEMS.find((entry) => entry.id === 'dashboard')!;
+    for (const role of ROLE_CODES) {
+      const account = role === 'MANAGER' ? user(role, [FABRICATION]) : user(role);
+      expect(canOpen(account, dashboard), role).toBe(true);
+    }
   });
 
   it('shows nothing at all to a suspended account', () => {
