@@ -1,6 +1,10 @@
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 
+// Vitest does not read .env, so DATABASE_URL would be undefined and the suite would
+// refuse to start even against a perfectly reachable database.
+import 'dotenv/config';
+
 /**
  * Boots a real server for the API security suite: migrations, seed, then `next start`.
  *
@@ -14,10 +18,30 @@ export const DEMO_PASSWORD = 'Soficlef-Test-2026!';
 
 let server: ChildProcess | undefined;
 
-function run(command: string, args: string[], env: NodeJS.ProcessEnv): void {
-  const result = spawnSync(command, args, { env, stdio: 'inherit' });
-  if (result.status !== 0) {
-    throw new Error(`${command} ${args.join(' ')} failed with status ${result.status}`);
+/**
+ * Runs a node_modules CLI through the current Node binary.
+ *
+ * `npx` is a `.cmd` shim on Windows and cannot be spawned without a shell, so calling it
+ * directly fails with ENOENT — and `migrate deploy` takes a Postgres advisory lock that a
+ * connection left open by a previous run can still hold for a few seconds, hence the
+ * retry. A genuinely unreachable database still fails on the last attempt.
+ */
+function run(
+  cliSpecifier: string,
+  args: string[],
+  env: NodeJS.ProcessEnv,
+  attempts = 1,
+): void {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const result = spawnSync(process.execPath, [require.resolve(cliSpecifier), ...args], {
+      env,
+      stdio: 'inherit',
+    });
+    if (result.status === 0) return;
+    if (attempt === attempts) {
+      throw new Error(`${cliSpecifier} ${args.join(' ')} failed with status ${result.status}`);
+    }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5_000);
   }
 }
 
@@ -56,10 +80,10 @@ export async function setup(): Promise<void> {
     AUTH_LOGIN_WINDOW_SECONDS: '900',
   };
 
-  run('npx', ['prisma', 'migrate', 'deploy'], env);
-  run('npx', ['tsx', 'prisma/seed.ts'], env);
+  run('prisma/build/index.js', ['migrate', 'deploy'], env, 3);
+  run('tsx/cli', ['prisma/seed.ts'], env, 2);
 
-  server = spawn('npx', ['next', 'start', '--port', String(PORT)], {
+  server = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--port', String(PORT)], {
     env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
