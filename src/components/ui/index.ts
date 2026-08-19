@@ -5,6 +5,7 @@ export { EmptyState } from './empty-state';
 export { KpiTile } from './kpi-tile';
 export { LevelMeter } from './level-meter';
 export { Modal } from './modal';
+export { ProgressBar } from './progress-bar';
 export { SectionTitle } from './section-title';
 export { StatusBadge, type StatusTone } from './status-badge';
 export { Stepper, type Step } from './stepper';

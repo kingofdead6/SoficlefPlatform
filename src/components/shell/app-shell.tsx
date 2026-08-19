@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import type { AuthenticatedUser } from '@/domain/auth/authorization';
 import type { VisibleNavGroup } from '@/application/navigation/build-navigation';
+import { loadJourney } from '@/application/onboarding/journey';
 import { formatDate } from '@/lib/format';
 import type { Locale } from '@/i18n/config';
 
@@ -33,13 +34,25 @@ export async function AppShell({
   children: React.ReactNode;
 }) {
   const t = await getTranslations();
+
+  // The checklist counter reads the user's own journey. A failure here must not take the
+  // whole shell down with it, so the badge degrades to absent rather than throwing.
+  const needsProgress = navigation.some((group) =>
+    group.items.some((item) => item.badge === 'onboarding-progress'),
+  );
+  const journey = needsProgress
+    ? await loadJourney(user).catch(() => null)
+    : null;
+  const progressBadge = journey
+    ? `${journey.progress.completed}/${journey.progress.total}`
+    : null;
+
   const groups: NavGroupView[] = navigation.map((group) => ({
     id: group.id,
     items: group.items.map((item) => ({
       id: item.id,
       href: item.href,
-      // The checklist counter is 0/12 until Part 9 instantiates a journey.
-      badge: item.badge === 'onboarding-progress' ? '0/12' : null,
+      badge: item.badge === 'onboarding-progress' ? progressBadge : null,
     })),
   }));
 

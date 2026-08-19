@@ -1030,18 +1030,36 @@ model OnboardingInstance {
   @@map("onboarding_instance")
 }
 
+/// CDC v0.1 §9's task states. `BLOCKED` is a first-class state rather than a note,
+/// because §10's dashboard reports "étapes bloquées" and a free-text note cannot be
+/// counted. `VALIDATED` is the manager's sign-off on top of the collaborator's DONE.
+enum OnboardingTaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  VALIDATED
+}
+
 /// Per-milestone progress for one instance (resource "onboarding_task"). A null
 /// `completedAt` means still open; the checklist page's badge counts those.
 model OnboardingTaskCompletion {
-  id          String              @id @default(uuid()) @db.Uuid
-  instanceId  String              @db.Uuid
-  instance    OnboardingInstance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
-  milestoneId String              @db.Uuid
-  milestone   OnboardingMilestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  id          String               @id @default(uuid()) @db.Uuid
+  instanceId  String               @db.Uuid
+  instance    OnboardingInstance   @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  milestoneId String               @db.Uuid
+  milestone   OnboardingMilestone  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  status      OnboardingTaskStatus @default(TODO)
   completedAt DateTime?
   /// Kept as a plain id, like UserRole.grantedBy — see that field's note.
-  completedBy String?             @db.Uuid
-  noteFr      String?             @db.Text
+  completedBy String?              @db.Uuid
+  /// Manager sign-off, distinct from the collaborator ticking the task (§8 "Validation").
+  validatedBy String?              @db.Uuid
+  validatedAt DateTime?
+  noteFr      String?              @db.Text
+  /// Deadline for this task on this instance, derived from the milestone's dayOffset at
+  /// instantiation but editable, since a real journey slips (§8 "échéances").
+  dueDate     DateTime?            @db.Date
 
   @@unique([instanceId, milestoneId])
   @@index([milestoneId])
