@@ -1,9 +1,11 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 
 import { Link, usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/cn';
+import { DURATION, EASE_OUT, prefersReducedMotion } from '@/lib/motion';
 
 /**
  * The navigation list.
@@ -11,6 +13,11 @@ import { cn } from '@/lib/cn';
  * A client component only because the active entry depends on the current path; the
  * *contents* were decided on the server (ADR-031), so nothing here can widen what a user
  * sees.
+ *
+ * The active entry's tint is a shared layout element rather than a class on each link, so
+ * Framer Motion slides it between entries on navigation instead of having it disappear
+ * here and reappear there. This is the one place shared-layout animation earns its keep:
+ * the movement traces the path between where the reader was and where they now are.
  */
 export interface NavGroupView {
   id: string;
@@ -29,6 +36,7 @@ export function SidebarNav({
 }) {
   const t = useTranslations('nav');
   const pathname = usePathname();
+  const reduced = prefersReducedMotion();
 
   return (
     <nav aria-label={t('mainNavigation')} className={cn('flex-1 overflow-y-auto p-2.5', className)}>
@@ -49,19 +57,33 @@ export function SidebarNav({
                     onClick={onNavigate}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'mb-px flex items-center gap-2.5 rounded-md border border-transparent px-3 py-2 text-[12px] transition-colors',
+                      'relative mb-px flex items-center gap-2.5 rounded-md border border-transparent px-3 py-2 text-[12px] transition-colors',
                       isActive
-                        ? 'text-red-strong border-[rgba(139,105,20,0.2)] bg-(--red-dim) font-medium'
+                        ? 'text-red-strong font-medium'
                         : 'text-text-muted hover:text-text hover:bg-(--surface2)',
                     )}
                   >
-                    <span className="truncate">{t(`items.${item.id}`)}</span>
+                    {isActive ? (
+                      <motion.span
+                        // One id for the whole nav, so the tint is a single element that
+                        // moves rather than one that is destroyed and recreated.
+                        layoutId="nav-active"
+                        aria-hidden
+                        className="absolute inset-0 z-0 rounded-md border border-(--red-veil) bg-(--red-dim)"
+                        transition={
+                          reduced
+                            ? { duration: 0 }
+                            : { duration: DURATION.base, ease: EASE_OUT }
+                        }
+                      />
+                    ) : null}
+                    <span className="relative z-10 truncate">{t(`items.${item.id}`)}</span>
                     {item.badge ? (
                       <span
                         className={cn(
-                          'ms-auto rounded px-1.5 py-0.5 font-mono text-[9px] tabular-nums',
+                          'relative z-10 ms-auto rounded px-1.5 py-0.5 font-mono text-[9px] tabular-nums',
                           isActive
-                            ? 'text-red-strong bg-[rgba(139,105,20,0.15)]'
+                            ? 'text-red-strong bg-(--red-veil)'
                             : 'text-text-dim bg-(--surface2)',
                         )}
                       >

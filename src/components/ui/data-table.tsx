@@ -65,7 +65,16 @@ export function DataTable<Row>({
             </tr>
           ) : (
             rows.map((row, index) => (
-              <tr key={getRowKey(row, index)} className="even:bg-(--surface2)/60">
+              <tr
+                key={getRowKey(row, index)}
+                className={cn(
+                  'even:bg-(--surface2)/60',
+                  // A tinted row on hover: these tables are scanned across, and the tint
+                  // is what keeps the eye on one line in a wide table.
+                  'transition-colors duration-(--duration-fast) ease-(--ease-out)',
+                  'hover:bg-(--red-dim)',
+                )}
+              >
                 {columns.map((column) => (
                   <td
                     key={column.key}

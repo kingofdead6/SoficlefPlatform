@@ -78,6 +78,33 @@
     line-height: 1.25;
   }
 
+  /*
+   * Interactive affordances share one transition, so a button, a link and a row all
+   * respond at the same speed. Declared once here rather than repeated as utility
+   * classes on every control — a hover that is 180ms in one place and 240ms in another
+   * is the kind of inconsistency nobody names but everybody feels.
+   */
+  button,
+  a,
+  select,
+  [role='tab'],
+  summary {
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      opacity var(--duration-fast) var(--ease-out);
+  }
+
+  /*
+   * A pressed control dips very slightly. 1px, only on a real press — enough to feel
+   * mechanical on a workshop tablet, not enough to look like a toy.
+   */
+  button:not(:disabled):active,
+  [role='tab']:active {
+    transform: translateY(1px);
+  }
+
   /* Codes, extensions, KPIs and percentages are monospaced data, not prose. */
   code,
   kbd,
@@ -88,6 +115,12 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    /* The press-dip is movement too, and it is not covered by a duration of zero. */
+    button:not(:disabled):active,
+    [role='tab']:active {
+      transform: none;
+    }
+
     *,
     *::before,
     *::after {
@@ -96,5 +129,32 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+/*
+ * Dialog entrances. Radix drives these through `data-state`, and keeps the element
+ * mounted until the animation ends, so no JavaScript is involved in the timing.
+ *
+ * The content scales from 0.98, not from 0.9: a dialog that grows noticeably reads as a
+ * notification popping up rather than a panel arriving.
+ */
+@keyframes modal-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-content-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 6px)) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }

@@ -82,7 +82,7 @@ export async function AppShell({
       <aside className="hidden w-(--sidebar-w) min-w-(--sidebar-w) flex-col border-e border-(--border) bg-(--surface) lg:flex">
         <div className="border-b border-(--border) p-4.5">
           <Brand />
-          <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-[rgba(139,105,20,0.25)] bg-(--red-dim) px-3 py-2.5">
+          <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-(--red-veil) bg-(--red-dim) px-3 py-2.5">
             <span
               aria-hidden
               className="font-display flex size-8.5 shrink-0 items-center justify-center rounded-md bg-(--red-brand) text-[12px] font-bold text-white"
