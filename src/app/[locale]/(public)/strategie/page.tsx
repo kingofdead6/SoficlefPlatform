@@ -53,7 +53,7 @@ export default async function PublicStrategy({ params }: { params: Promise<{ loc
     <div className="space-y-10">
       <SectionTitle lead={t('strategy.lead')}>{t('strategy.title')}</SectionTitle>
 
-      <Card accent="gold">
+      <Card accent="brand">
         <CardTitle>{strategy.planFr}</CardTitle>
         <CardBody className="text-text mt-1">
           <SourceText>{strategy.globalObjectiveFr}</SourceText>

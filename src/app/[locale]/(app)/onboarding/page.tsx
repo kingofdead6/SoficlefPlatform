@@ -168,7 +168,7 @@ function Oversight({
               <StatusBadge label={`${row.progress.overdue} en retard`} tone="red" />
             ) : null}
             {row.progress.blocked > 0 ? (
-              <StatusBadge label={`${row.progress.blocked} bloquée(s)`} tone="gold" />
+              <StatusBadge label={`${row.progress.blocked} bloquée(s)`} tone="brand" />
             ) : null}
           </span>
         ),

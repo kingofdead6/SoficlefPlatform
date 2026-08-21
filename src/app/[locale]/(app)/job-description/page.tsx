@@ -43,7 +43,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="space-y-8">
-      <Card accent="gold">
+      <Card accent="brand">
         <CardTitle>
           {jobDescription.jobTitleFr} · {jobDescription.code}
         </CardTitle>

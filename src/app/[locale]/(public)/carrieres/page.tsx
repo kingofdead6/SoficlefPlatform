@@ -41,7 +41,7 @@ export default async function PublicCareers({ params }: { params: Promise<{ loca
       key: 'status',
       header: t('careers.status'),
       align: 'end',
-      render: (row) => <StatusBadge label={row.statusFr} tone="gold" />,
+      render: (row) => <StatusBadge label={row.statusFr} tone="brand" />,
     },
   ];
 

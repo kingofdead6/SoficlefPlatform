@@ -7,11 +7,11 @@ import { cn } from '@/lib/cn';
  * vacant post reads "Poste vacant" with a warning glyph, and stays legible in monochrome
  * print and to a colour-blind reader.
  */
-export type StatusTone = 'neutral' | 'gold' | 'blue' | 'green' | 'red';
+export type StatusTone = 'neutral' | 'brand' | 'blue' | 'green' | 'red';
 
 const TONES: Record<StatusTone, { className: string; glyph: string }> = {
   neutral: { className: 'border-(--border) bg-(--surface2) text-text-muted', glyph: '•' },
-  gold: { className: 'border-(--gold) bg-(--gold-dim) text-gold-strong', glyph: '◷' },
+  brand: { className: 'border-(--red-brand) bg-(--red-dim) text-red-strong', glyph: '◷' },
   blue: { className: 'border-(--blue) bg-(--blue-dim) text-blue', glyph: '▣' },
   green: { className: 'border-(--green) bg-white text-green', glyph: '✓' },
   red: { className: 'border-(--red) bg-white text-red', glyph: '⚠' },

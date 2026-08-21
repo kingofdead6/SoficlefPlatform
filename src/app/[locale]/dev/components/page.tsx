@@ -98,7 +98,7 @@ export default async function ComponentsPage({ params }: { params: Promise<{ loc
               <strong className="text-text">Fondée :</strong> 1994
             </CardBody>
           </Card>
-          <Card accent="gold">
+          <Card accent="brand">
             <CardTitle>Callout</CardTitle>
             <CardBody>
               Bordure d&apos;accent sur le bord de début : elle passe à droite en arabe.
@@ -122,7 +122,7 @@ export default async function ComponentsPage({ params }: { params: Promise<{ loc
         <div className="flex flex-wrap gap-2">
           <StatusBadge label={t('status.vacant')} tone="red" />
           <StatusBadge label={t('status.validated')} tone="green" />
-          <StatusBadge label={t('status.inProgress')} tone="gold" />
+          <StatusBadge label={t('status.inProgress')} tone="brand" />
           <StatusBadge label={t('status.draft')} tone="neutral" />
           <StatusBadge label={t('status.inReview')} tone="blue" />
         </div>
@@ -154,7 +154,7 @@ export default async function ComponentsPage({ params }: { params: Promise<{ loc
               id: '3',
               marker: 'J+30',
               title: 'Bilan au DG',
-              status: <StatusBadge label={t('status.recommended')} tone="gold" />,
+              status: <StatusBadge label={t('status.recommended')} tone="brand" />,
             },
           ]}
         />
@@ -200,7 +200,7 @@ export default async function ComponentsPage({ params }: { params: Promise<{ loc
             trigger={
               <button
                 type="button"
-                className="text-gold rounded-md border border-(--gold) bg-(--gold-dim) px-3 py-1.5 text-[13px]"
+                className="text-red-brand rounded-md border border-(--red-brand) bg-(--red-dim) px-3 py-1.5 text-[13px]"
               >
                 Ouvrir la modale
               </button>

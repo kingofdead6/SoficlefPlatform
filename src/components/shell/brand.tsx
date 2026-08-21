@@ -12,7 +12,7 @@ export async function Brand({ subtitle }: { subtitle?: string }) {
 
   return (
     <div>
-      <div dir="ltr" className="font-display text-gold text-xl font-bold tracking-[0.04em]">
+      <div dir="ltr" className="font-display text-red-brand text-xl font-bold tracking-[0.04em]">
         {t('name')}
       </div>
       <div className="text-text-dim mt-0.5 text-[9.5px] tracking-[0.14em] uppercase">

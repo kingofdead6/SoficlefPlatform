@@ -11,7 +11,7 @@ export default async function NotFound() {
       <h1 className="font-display text-text text-2xl">{t('notFound')}</h1>
       <p className="text-text-muted text-[13px]">{t('notFoundLead')}</p>
       <p>
-        <Link href="/welcome" className="text-gold underline underline-offset-4">
+        <Link href="/welcome" className="text-red-brand underline underline-offset-4">
           {t('backToHome')}
         </Link>
       </p>

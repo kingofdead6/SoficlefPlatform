@@ -55,7 +55,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="space-y-8">
-      <Card accent="gold">
+      <Card accent="brand">
         <CardTitle>{strategy.planFr}</CardTitle>
         <CardBody className="text-text text-[13.5px]">{strategy.globalObjectiveFr}</CardBody>
       </Card>
@@ -101,13 +101,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                     <p className="text-text text-[13.5px] font-medium">{contribution.labelFr}</p>
                     <p className="text-text-muted text-[12px]">Cible : {contribution.targetFr}</p>
                   </div>
-                  <span className="text-gold font-mono text-lg tabular-nums">
+                  <span className="text-red-brand font-mono text-lg tabular-nums">
                     {formatPercent(contribution.progressPercent, locale as Locale)}
                   </span>
                 </div>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-(--surface2)">
                   <div
-                    className="h-full rounded-full bg-(--gold)"
+                    className="h-full rounded-full bg-(--red-brand)"
                     style={{
                       width: `${Math.min(100, Math.max(0, contribution.progressPercent))}%`,
                     }}

@@ -89,7 +89,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             {remarks.map((remark) => (
               <li
                 key={remark.id}
-                className="rounded-(--radius) border border-s-4 border-(--border) border-s-(--gold-accent) bg-(--surface) px-4 py-3"
+                className="rounded-(--radius) border border-s-4 border-(--border) border-s-(--red-accent) bg-(--surface) px-4 py-3"
               >
                 <p className="text-text text-[13px] whitespace-pre-wrap">{remark.contentFr}</p>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">

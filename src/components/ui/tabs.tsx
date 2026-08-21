@@ -32,7 +32,7 @@ export function Tabs({
             className={cn(
               'text-text-muted rounded-t-md border border-b-0 border-transparent px-3 py-2 text-[13px]',
               'hover:text-text',
-              'data-[state=active]:text-gold data-[state=active]:border-(--border) data-[state=active]:bg-(--surface) data-[state=active]:font-medium',
+              'data-[state=active]:text-red-brand data-[state=active]:border-(--border) data-[state=active]:bg-(--surface) data-[state=active]:font-medium',
             )}
           >
             {item.label}

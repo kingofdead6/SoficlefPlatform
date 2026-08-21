@@ -58,11 +58,11 @@ export default async function PublicCompany({ params }: { params: Promise<{ loca
           <CardTitle>{t('company.visionMission')}</CardTitle>
           <CardBody className="text-text mt-1 space-y-3">
             <span className="block">
-              <strong className="text-gold-strong block text-[12px]">{t('company.vision')}</strong>
+              <strong className="text-red-strong block text-[12px]">{t('company.vision')}</strong>
               <SourceText>{company.visionFr}</SourceText>
             </span>
             <span className="block">
-              <strong className="text-gold-strong block text-[12px]">{t('company.mission')}</strong>
+              <strong className="text-red-strong block text-[12px]">{t('company.mission')}</strong>
               <SourceText>{company.missionFr}</SourceText>
             </span>
           </CardBody>
@@ -94,11 +94,11 @@ export default async function PublicCompany({ params }: { params: Promise<{ loca
                 key={value.rank}
                 className="flex items-start gap-4 rounded-(--radius) border border-(--border) bg-(--surface) px-4 py-3"
               >
-                <span className="text-gold font-mono text-xl leading-none">
+                <span className="text-red-brand font-mono text-xl leading-none">
                   {String(value.rank).padStart(2, '0')}
                 </span>
                 <span>
-                  <span dir="rtl" lang="ar" className="text-gold block text-[14px] font-semibold">
+                  <span dir="rtl" lang="ar" className="text-red-brand block text-[14px] font-semibold">
                     {value.nameAr}
                   </span>
                   <SourceText className="text-text mt-0.5 block text-[13px]">

@@ -1,7 +1,7 @@
 import { cn } from '@/lib/cn';
 
 /**
- * A section heading in the display face, optionally with a gold-accented fragment — the
+ * A section heading in the display face, optionally with a red-accented fragment — the
  * prototype's one flourish, used sparingly.
  */
 export function SectionTitle({
@@ -23,7 +23,7 @@ export function SectionTitle({
     <div className={cn('mb-5', className)}>
       <Heading className={cn('font-display text-text', level === 2 ? 'text-2xl' : 'text-lg')}>
         {children}
-        {accent ? <span className="text-gold"> {accent}</span> : null}
+        {accent ? <span className="text-red-brand"> {accent}</span> : null}
       </Heading>
       {lead ? <p className="text-text-muted mt-1.5 max-w-prose text-[13.5px]">{lead}</p> : null}
     </div>

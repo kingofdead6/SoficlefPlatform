@@ -37,11 +37,11 @@ export function Timeline({
               which mirrors on its own, unlike `left: -26px`. */}
           <span
             aria-hidden
-            className="absolute top-1.5 size-2.5 rounded-full border-2 border-(--surface) bg-(--gold)"
+            className="absolute top-1.5 size-2.5 rounded-full border-2 border-(--surface) bg-(--red-brand)"
             style={{ insetInlineStart: '-26px' }}
           />
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <span className="text-gold font-mono text-[11px] tabular-nums">{entry.marker}</span>
+            <span className="text-red-brand font-mono text-[11px] tabular-nums">{entry.marker}</span>
             <span className="text-text text-[13px] font-medium">{entry.title}</span>
             {entry.status}
           </div>

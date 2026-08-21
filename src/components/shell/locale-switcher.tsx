@@ -45,7 +45,7 @@ export function LocaleSwitcher({ current }: { current: Locale }) {
             className={cn(
               'rounded px-2 py-1 font-mono text-[11px] uppercase transition-colors',
               isCurrent
-                ? 'text-gold-strong bg-(--gold-dim) font-medium'
+                ? 'text-red-strong bg-(--red-dim) font-medium'
                 : 'text-text-dim hover:text-text hover:bg-(--surface2)',
             )}
           >

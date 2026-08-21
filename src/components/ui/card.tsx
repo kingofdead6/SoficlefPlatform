@@ -13,12 +13,12 @@ export function Card({
   children: React.ReactNode;
   className?: string;
   /** A start-edge accent bar, for callouts. Mirrors in RTL on its own. */
-  accent?: 'gold' | 'blue' | 'green' | 'red';
+  accent?: 'brand' | 'blue' | 'green' | 'red';
   as?: 'div' | 'section' | 'article' | 'li';
 }) {
   const accentClass = accent
     ? {
-        gold: 'border-s-4 border-s-(--gold)',
+        brand: 'border-s-4 border-s-(--red-brand)',
         blue: 'border-s-4 border-s-(--blue)',
         green: 'border-s-4 border-s-(--green)',
         red: 'border-s-4 border-s-(--red)',
@@ -38,7 +38,7 @@ export function Card({
   );
 }
 
-/** The small uppercase gold label the prototype puts at the top of a card. */
+/** The small uppercase red-brand label the prototype puts at the top of a card. */
 export function CardTitle({
   children,
   className,
@@ -49,7 +49,7 @@ export function CardTitle({
   return (
     <h3
       className={cn(
-        'text-gold mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase',
+        'text-red-brand mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase',
         className,
       )}
     >

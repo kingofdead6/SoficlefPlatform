@@ -57,7 +57,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="space-y-8">
-      <Card accent="gold">
+      <Card accent="brand">
         <CardTitle>Pilote interne : {programme.internalLeadFr}</CardTitle>
         <CardBody className="text-text text-[13.5px]">{programme.programmeFr}</CardBody>
       </Card>
@@ -129,7 +129,7 @@ function MissionPanel({ mission, mayEdit }: { mission: Mission; mayEdit: boolean
 
       {mission.results.length > 0 && (
         <div>
-          <h4 className="text-gold mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
+          <h4 className="text-red-brand mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
             Résultats
           </h4>
           <ul className="list-disc space-y-1.5 ps-5">
@@ -144,7 +144,7 @@ function MissionPanel({ mission, mayEdit }: { mission: Mission; mayEdit: boolean
 
       {mission.journal.length > 0 && (
         <div>
-          <h4 className="text-gold mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
+          <h4 className="text-red-brand mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
             Journal de mission
           </h4>
           <Timeline
@@ -161,7 +161,7 @@ function MissionPanel({ mission, mayEdit }: { mission: Mission; mayEdit: boolean
 
       {mission.gaps.length > 0 && (
         <div>
-          <h4 className="text-gold mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
+          <h4 className="text-red-brand mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
             Écarts constatés
           </h4>
           <DataTable
@@ -176,7 +176,7 @@ function MissionPanel({ mission, mayEdit }: { mission: Mission; mayEdit: boolean
 
       {mission.actions.length > 0 && (
         <div>
-          <h4 className="text-gold mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
+          <h4 className="text-red-brand mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
             Plan d&apos;actions
           </h4>
           <DataTable

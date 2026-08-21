@@ -55,7 +55,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                   <p className="text-text-muted text-[12.5px]">{member.scopeFr}</p>
                   <p className="text-text-muted text-[12px]">{member.tagFr}</p>
                   <p className="mt-2">{member.perimeterFr}</p>
-                  <p className="text-gold mt-1 text-[12.5px]">
+                  <p className="text-red-brand mt-1 text-[12.5px]">
                     Priorité 30 jours : {member.priorityJ30Fr}
                   </p>
                 </CardBody>

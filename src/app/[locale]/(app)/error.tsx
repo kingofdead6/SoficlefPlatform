@@ -32,7 +32,7 @@ export default function SegmentError({
       <button
         type="button"
         onClick={reset}
-        className="text-gold mt-5 rounded-md border border-(--gold) bg-(--gold-dim) px-3 py-1.5 text-[13px] hover:bg-(--gold-accent)/20"
+        className="text-red-brand mt-5 rounded-md border border-(--red-brand) bg-(--red-dim) px-3 py-1.5 text-[13px] hover:bg-(--red-accent)/20"
       >
         {common('retry')}
       </button>

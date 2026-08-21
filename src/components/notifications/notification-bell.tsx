@@ -77,7 +77,7 @@ export function NotificationBell({
               <button
                 type="button"
                 onClick={() => markRead()}
-                className="text-gold-strong rounded px-1 text-[11px]"
+                className="text-red-strong rounded px-1 text-[11px]"
               >
                 {t('markAllRead')}
               </button>
@@ -95,7 +95,7 @@ export function NotificationBell({
                     onClick={() => markRead(item.id)}
                     className={cn(
                       'block rounded px-2 py-2 hover:bg-(--surface2)',
-                      !item.read && 'bg-(--gold-dim)',
+                      !item.read && 'bg-(--red-dim)',
                     )}
                   >
                     <span className="text-text block text-[12px] font-medium">

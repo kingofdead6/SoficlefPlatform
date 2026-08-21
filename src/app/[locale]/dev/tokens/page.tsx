@@ -12,10 +12,10 @@ import { devPagesEnabled } from '@/lib/dev-pages';
  */
 
 const BRAND = [
-  { name: '--gold', use: 'Marque, boutons principaux, états actifs, titres de cartes' },
-  { name: '--gold-light', use: 'Variante claire de la marque' },
-  { name: '--gold-accent', use: 'Survol, barres de progression, fonds de callout' },
-  { name: '--gold-dim', use: 'Fond discret des éléments actifs' },
+  { name: '--red-brand', use: 'Marque, boutons principaux, états actifs, titres de cartes' },
+  { name: '--red-light', use: 'Variante claire de la marque' },
+  { name: '--red-accent', use: 'Survol, barres de progression, fonds de callout' },
+  { name: '--red-dim', use: 'Fond discret des éléments actifs' },
   { name: '--blue', use: 'En-têtes de tableaux, badges de structure, actions secondaires' },
   { name: '--blue-dim', use: 'Fond discret des badges de structure' },
 ];
@@ -124,7 +124,7 @@ export default async function TokensPage({ params }: { params: Promise<{ locale:
           <span className="inline-flex items-center gap-1.5 rounded-md border border-(--green) bg-white px-2 py-1 text-xs text-(--green)">
             <span aria-hidden>✓</span> Validée
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-(--gold) bg-(--gold-dim) px-2 py-1 text-xs text-(--gold)">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-(--red-brand) bg-(--red-dim) px-2 py-1 text-xs text-(--red-brand)">
             <span aria-hidden>◷</span> En cours
           </span>
         </div>
@@ -183,7 +183,7 @@ export default async function TokensPage({ params }: { params: Promise<{ locale:
                 Logical properties only: border-inline-start and padding-inline-start
                 mirror on their own, so this block needs no RTL-specific rule (ADR-029).
               */}
-              <div className="mt-2 border-s-4 border-s-(--gold) ps-3">
+              <div className="mt-2 border-s-4 border-s-(--red-brand) ps-3">
                 <p className="text-text text-sm">
                   {dir === 'rtl'
                     ? 'هيكل التصنيع — المسؤول شاغر'

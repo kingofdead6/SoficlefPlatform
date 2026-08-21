@@ -3,16 +3,19 @@
 
 /**
  * Tailwind's scales resolve to the tokens rather than to literals, so a utility class
- * and a raw CSS declaration can never disagree about what "gold" is (ADR-007).
+ * and a raw CSS declaration can never disagree about what "red-brand" is (ADR-007).
  * `inline` keeps the var() reference in the generated CSS instead of inlining the value,
  * which is what lets a locale or a future theme re-point a token at runtime.
  */
 @theme inline {
-  --color-gold: var(--gold);
-  --color-gold-strong: var(--gold-strong);
-  --color-gold-light: var(--gold-light);
-  --color-gold-accent: var(--gold-accent);
-  --color-gold-dim: var(--gold-dim);
+  --color-red-brand: var(--red-brand);
+  --color-red-strong: var(--red-strong);
+  --color-red-light: var(--red-light);
+  --color-red-accent: var(--red-accent);
+  --color-red-dim: var(--red-dim);
+  --color-red-deep: var(--red-deep);
+  --color-red-veil: var(--red-veil);
+  --color-amber: var(--amber);
   --color-blue: var(--blue);
   --color-blue-dim: var(--blue-dim);
   --color-bg: var(--bg);
@@ -27,6 +30,10 @@
 
   --radius-token: var(--radius);
   --shadow-token: var(--shadow);
+  --shadow-lifted: var(--shadow-lifted);
+
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
 
   --font-display: var(--type-display);
   --font-ui: var(--type-ui);
@@ -58,7 +65,7 @@
    * path does.
    */
   :focus-visible {
-    outline: 2px solid var(--gold);
+    outline: 2px solid var(--red-brand);
     outline-offset: 2px;
     border-radius: 4px;
   }

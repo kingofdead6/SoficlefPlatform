@@ -54,7 +54,7 @@ export function AssignRoleDialog({
       trigger={
         <button
           type="button"
-          className="text-gold-strong rounded border border-(--gold) bg-(--gold-dim) px-2 py-1 text-[11px] font-medium"
+          className="text-red-strong rounded border border-(--red-brand) bg-(--red-dim) px-2 py-1 text-[11px] font-medium"
         >
           Attribuer un rôle
         </button>
@@ -126,7 +126,7 @@ export function AssignRoleDialog({
           <button
             type="submit"
             disabled={pending}
-            className="rounded bg-(--gold) px-3 py-1.5 text-[12px] font-medium text-white disabled:opacity-50"
+            className="rounded bg-(--red-brand) px-3 py-1.5 text-[12px] font-medium text-white disabled:opacity-50"
           >
             {pending ? 'Attribution…' : 'Attribuer'}
           </button>

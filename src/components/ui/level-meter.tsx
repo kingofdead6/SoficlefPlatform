@@ -12,7 +12,7 @@ export function LevelMeter({
   value,
   max,
   label,
-  tone = 'gold',
+  tone = 'brand',
   className,
 }: {
   /** The attained level. Null renders the "never assessed" state rather than a zero. */
@@ -20,7 +20,7 @@ export function LevelMeter({
   max: number;
   /** What is being measured, for assistive technology. */
   label: string;
-  tone?: 'gold' | 'red' | 'green';
+  tone?: 'brand' | 'red' | 'green';
   className?: string;
 }) {
   const toneClass =
@@ -28,7 +28,7 @@ export function LevelMeter({
       ? 'bg-(--red) border-(--red)'
       : tone === 'green'
         ? 'bg-(--green) border-(--green)'
-        : 'bg-(--gold) border-(--gold)';
+        : 'bg-(--red-brand) border-(--red-brand)';
 
   if (value === null) {
     return (

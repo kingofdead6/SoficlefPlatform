@@ -31,10 +31,10 @@ import { getCurrentUser } from '@/infrastructure/auth/current-user';
 
 const STATUS_PRESENTATION: Record<
   GapStatus,
-  { label: string; tone: 'green' | 'gold' | 'red' | 'neutral' }
+  { label: string; tone: 'green' | 'brand' | 'red' | 'neutral' }
 > = {
   conforme: { label: 'Conforme', tone: 'green' },
-  'a-developper': { label: 'À développer', tone: 'gold' },
+  'a-developper': { label: 'À développer', tone: 'brand' },
   critique: { label: 'Critique', tone: 'red' },
   'non-evalue': { label: 'Non évalué', tone: 'neutral' },
 };
@@ -89,7 +89,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           value={row.requiredLevel}
           max={matrix.maxLevel}
           label={`${row.nameFr}, niveau attendu`}
-          tone="gold"
+          tone="brand"
         />
       ),
     },

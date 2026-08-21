@@ -17,11 +17,11 @@ import type { JobDescriptionStatus, WorkflowActionKind } from '@/domain/workflow
 
 const STATUS: Record<
   JobDescriptionStatus,
-  { label: string; tone: 'neutral' | 'gold' | 'blue' | 'green' | 'red' }
+  { label: string; tone: 'neutral' | 'brand' | 'blue' | 'green' | 'red' }
 > = {
   DRAFT: { label: 'Brouillon', tone: 'neutral' },
   IN_REVIEW: { label: 'En revue', tone: 'blue' },
-  CHANGES_REQUESTED: { label: 'À corriger', tone: 'gold' },
+  CHANGES_REQUESTED: { label: 'À corriger', tone: 'brand' },
   VALIDATED: { label: 'Validée', tone: 'green' },
   ARCHIVED: { label: 'Archivée', tone: 'neutral' },
 };
@@ -93,7 +93,7 @@ export function VersionPanel({
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-gold-strong rounded bg-(--gold-dim) px-1.5 py-0.5 font-mono text-[10px]">
+                  <span className="text-red-strong rounded bg-(--red-dim) px-1.5 py-0.5 font-mono text-[10px]">
                     v{version.versionNumber}
                   </span>
                   <StatusBadge
@@ -155,7 +155,7 @@ export function VersionPanel({
           <button
             type="submit"
             disabled={pending}
-            className="rounded bg-(--gold) px-3 py-2 text-[12px] font-medium text-white disabled:opacity-50"
+            className="rounded bg-(--red-brand) px-3 py-2 text-[12px] font-medium text-white disabled:opacity-50"
           >
             {pending ? 'En cours…' : 'Nouvelle version'}
           </button>

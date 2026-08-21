@@ -13,7 +13,7 @@ import { StatusBadge } from '@/components/ui';
  */
 const LABEL = {
   ACTIVE: { label: 'Actif', tone: 'green' as const },
-  SUSPENDED: { label: 'Suspendu', tone: 'gold' as const },
+  SUSPENDED: { label: 'Suspendu', tone: 'brand' as const },
   DISABLED: { label: 'Désactivé', tone: 'red' as const },
 };
 

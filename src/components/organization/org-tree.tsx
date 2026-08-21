@@ -23,7 +23,7 @@ export interface OrgNode {
 
 const OCCUPANCY = {
   VACANT: { label: 'Poste vacant', tone: 'red' as const },
-  TO_FILL: { label: 'À pourvoir', tone: 'gold' as const },
+  TO_FILL: { label: 'À pourvoir', tone: 'brand' as const },
   OCCUPIED: { label: 'Pourvu', tone: 'green' as const },
 };
 
@@ -83,7 +83,7 @@ export function OrgTree({
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-gold-strong rounded bg-(--gold-dim) px-1.5 py-0.5 font-mono text-[10px]">
+                  <span className="text-red-strong rounded bg-(--red-dim) px-1.5 py-0.5 font-mono text-[10px]">
                     {node.code}
                   </span>
                   <span className="text-text text-[13px] font-medium">{node.nameFr}</span>

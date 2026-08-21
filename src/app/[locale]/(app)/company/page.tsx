@@ -28,7 +28,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="space-y-8">
-      <Card accent="gold">
+      <Card accent="brand">
         <CardTitle>{company.legalName}</CardTitle>
         <CardBody className="text-text space-y-1 text-[13.5px]">
           <p>
@@ -86,7 +86,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             {company.values.map((value) => (
               <li key={value.id}>
                 <Card className="flex items-center gap-3">
-                  <span className="text-gold font-mono text-lg tabular-nums">{value.rank}</span>
+                  <span className="text-red-brand font-mono text-lg tabular-nums">{value.rank}</span>
                   <TranslatableText
                     field={{ fr: value.nameFr, ar: value.nameAr, en: value.nameEn }}
                     locale={locale as Locale}

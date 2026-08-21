@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="space-y-8">
-      <Card accent="gold">
+      <Card accent="brand">
         <CardTitle>
           {qms.standardFr} · Certifié depuis {qms.certifiedSinceFr}
         </CardTitle>
@@ -65,7 +65,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             .filter((category) => qms.processes.some((process) => process.category === category))
             .map((category) => (
               <div key={category} className="mb-5">
-                <h4 className="text-gold mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
+                <h4 className="text-red-brand mb-2 text-[11px] font-semibold tracking-[0.09em] uppercase">
                   {categoryLabels[category]}
                 </h4>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -78,7 +78,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                           <p className="text-text text-[13px]">{process.nameFr}</p>
                         </div>
                         {process.isOwnedByProductionDirector && (
-                          <StatusBadge label="Piloté par vous" tone="gold" />
+                          <StatusBadge label="Piloté par vous" tone="brand" />
                         )}
                       </Card>
                     ))}

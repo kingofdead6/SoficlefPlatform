@@ -36,7 +36,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       header: 'Priorité',
       align: 'end',
       render: (row) => (
-        <StatusBadge label={row.priorityFr} tone={row.priorityRank === 'S1' ? 'gold' : 'neutral'} />
+        <StatusBadge label={row.priorityFr} tone={row.priorityRank === 'S1' ? 'brand' : 'neutral'} />
       ),
     },
   ];

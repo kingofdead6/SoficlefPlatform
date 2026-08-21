@@ -33,7 +33,7 @@ export function Stepper({
               'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[12px]',
               step.state === 'done' && 'text-green border-(--green)',
               step.state === 'current' &&
-                'text-gold-strong border-(--gold) bg-(--gold-dim) font-medium',
+                'text-red-strong border-(--red-brand) bg-(--red-dim) font-medium',
               step.state === 'upcoming' && 'text-text-dim border-(--border)',
             )}
           >

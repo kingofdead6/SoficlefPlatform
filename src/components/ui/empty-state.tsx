@@ -31,7 +31,7 @@ export function EmptyState({
         className,
       )}
     >
-      <div aria-hidden className="text-gold mb-3 font-mono text-2xl">
+      <div aria-hidden className="text-red-brand mb-3 font-mono text-2xl">
         {glyph}
       </div>
       <h2 className="font-display text-text text-lg">{title}</h2>

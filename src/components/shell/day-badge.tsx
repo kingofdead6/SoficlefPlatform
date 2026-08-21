@@ -24,7 +24,7 @@ export async function DayBadge({ startDate, locale }: { startDate: Date | null; 
         : t('dayBadgeStart');
 
   return (
-    <span className="text-gold-strong rounded border border-[rgba(139,105,20,0.25)] bg-(--gold-dim) px-2.5 py-1 font-mono text-[10.5px] tabular-nums">
+    <span className="text-red-strong rounded border border-[rgba(139,105,20,0.25)] bg-(--red-dim) px-2.5 py-1 font-mono text-[10.5px] tabular-nums">
       {label} · {formatDate(startDate, locale)}
     </span>
   );

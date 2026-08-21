@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { loadDashboard } from '@/application/dashboard/kpis';
 import { canOpen } from '@/application/navigation/build-navigation';
+import { Stagger, StaggerItem } from '@/components/motion/stagger';
 import {
   Card,
   CardBody,
@@ -66,19 +67,27 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
       {data.onboarding ? (
         <section>
           <SectionTitle lead="Parcours d'intégration de votre périmètre.">Intégration</SectionTitle>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <KpiTile value={data.onboarding.journeys} label="Parcours suivis" />
-            <KpiTile value={`${data.onboarding.averagePercent}%`} label="Progression moyenne" />
-            <KpiTile value={data.onboarding.overdueTasks} label="Tâches en retard" />
-            <KpiTile value={data.onboarding.blockedTasks} label="Tâches bloquées" />
-          </div>
+          <Stagger className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <StaggerItem>
+              <KpiTile value={data.onboarding.journeys} label="Parcours suivis" />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile value={`${data.onboarding.averagePercent}%`} label="Progression moyenne" />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile value={data.onboarding.overdueTasks} label="Tâches en retard" />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile value={data.onboarding.blockedTasks} label="Tâches bloquées" />
+            </StaggerItem>
+          </Stagger>
           <ProgressBar
             className="mt-4"
             value={data.onboarding.averagePercent}
             label="Progression moyenne des parcours"
           />
           <p className="mt-3">
-            <Link href="/onboarding" className="text-gold-strong text-[12px] underline">
+            <Link href="/onboarding" className="text-red-strong text-[12px] underline">
               Voir les parcours
             </Link>
           </p>
@@ -90,20 +99,28 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <SectionTitle lead="Écarts entre les niveaux attendus et les niveaux acquis.">
             Compétences
           </SectionTitle>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <KpiTile value={data.competencies.total} label="Liens emploi–compétence" />
-            <KpiTile
+          <Stagger className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <StaggerItem>
+              <KpiTile value={data.competencies.total} label="Liens emploi–compétence" />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile
               value={
                 data.competencies.conformity === null ? '—' : `${data.competencies.conformity}%`
               }
               label="Conformité"
               hint="Sur les compétences évaluées"
             />
-            <KpiTile value={data.competencies.critical} label="Écarts critiques" />
-            <KpiTile value={data.competencies.unassessed} label="Non évaluées" />
-          </div>
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile value={data.competencies.critical} label="Écarts critiques" />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile value={data.competencies.unassessed} label="Non évaluées" />
+            </StaggerItem>
+          </Stagger>
           <p className="mt-3">
-            <Link href="/competencies" className="text-gold-strong text-[12px] underline">
+            <Link href="/competencies" className="text-red-strong text-[12px] underline">
               Voir la matrice
             </Link>
           </p>
@@ -115,18 +132,26 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <SectionTitle lead="Couverture et statut des fiches de poste.">
             Fiches de poste
           </SectionTitle>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <KpiTile value={data.jobDescriptions.total} label="Fiches" />
-            <KpiTile value={`${data.jobDescriptions.coverage}%`} label="Validées" />
-            <KpiTile value={data.jobDescriptions.draft} label="En cours de rédaction" />
+          <Stagger className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <StaggerItem>
+              <KpiTile value={data.jobDescriptions.total} label="Fiches" />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile value={`${data.jobDescriptions.coverage}%`} label="Validées" />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile value={data.jobDescriptions.draft} label="En cours de rédaction" />
+            </StaggerItem>
             {data.validation ? (
-              <KpiTile
-                value={data.validation.pendingJobDescriptions}
-                label="En attente de validation"
-                hint="Votre file"
-              />
+              <StaggerItem>
+                <KpiTile
+                  value={data.validation.pendingJobDescriptions}
+                  label="En attente de validation"
+                  hint="Votre file"
+                />
+              </StaggerItem>
             ) : null}
-          </div>
+          </Stagger>
         </section>
       ) : null}
 
@@ -139,7 +164,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <Card>
               <CardTitle>Structures sans responsable</CardTitle>
               <CardBody className="mt-1 flex items-center gap-3">
-                <span className="text-gold font-mono text-xl">{data.quality.unitsWithoutHead}</span>
+                <span className="text-red-brand font-mono text-xl">{data.quality.unitsWithoutHead}</span>
                 {data.quality.unitsWithoutHead > 0 ? (
                   <StatusBadge label="À pourvoir" tone="red" />
                 ) : (
@@ -150,11 +175,11 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <Card>
               <CardTitle>Emplois sans fiche de poste</CardTitle>
               <CardBody className="mt-1 flex items-center gap-3">
-                <span className="text-gold font-mono text-xl">
+                <span className="text-red-brand font-mono text-xl">
                   {data.quality.jobsWithoutDescription}
                 </span>
                 {data.quality.jobsWithoutDescription > 0 ? (
-                  <StatusBadge label="À documenter" tone="gold" />
+                  <StatusBadge label="À documenter" tone="brand" />
                 ) : (
                   <StatusBadge label="Complet" tone="green" />
                 )}

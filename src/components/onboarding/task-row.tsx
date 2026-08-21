@@ -104,7 +104,7 @@ export function TaskRow({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-gold-strong rounded bg-(--gold-dim) px-1.5 py-0.5 font-mono text-[10px]">
+            <span className="text-red-strong rounded bg-(--red-dim) px-1.5 py-0.5 font-mono text-[10px]">
               {dayLabelFr}
             </span>
             <label
@@ -129,7 +129,7 @@ export function TaskRow({
                     : current === 'BLOCKED'
                       ? 'red'
                       : current === 'IN_PROGRESS'
-                        ? 'gold'
+                        ? 'brand'
                         : 'neutral'
               }
             />
@@ -140,7 +140,7 @@ export function TaskRow({
                   overdue
                     ? 'text-red font-semibold'
                     : dueSoon
-                      ? 'text-gold-strong'
+                      ? 'text-red-strong'
                       : 'text-text-dim',
                 )}
               >

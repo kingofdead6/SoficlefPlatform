@@ -2,55 +2,64 @@
  * SOFICLEF design tokens — the single place a literal colour, radius or shadow
  * appears (ADR-004, ADR-007).
  *
- * Values are lifted verbatim from the client-approved prototype's `:root`. CDC v0.1 §13
- * proposes a red/anthracite identity instead; should the brandbook confirm it, this file
- * is the only one that changes (plus a contrast re-check). See OQ-22.
+ * The identity is red on white, per CDC v0.1 §13, which proposes a red primary with a
+ * white/very-light ground (OQ-22 resolved in favour of §13). The prototype's red-brand/sand
+ * palette this file previously carried is gone; because every component reads these
+ * tokens rather than a literal, the palette moved in one file.
  *
- * Design intent, in the prototype's own words: industrial, premium, precise. Gold is a
- * sparing accent on a sand background — hierarchy, not decoration. Cards are quiet and
- * bordered, not shadowed and floating. Data is monospaced.
+ * Design intent: industrial, premium, precise. Red is a *sparing* accent on a white
+ * ground — hierarchy, not decoration. Cards are quiet and bordered, not shadowed and
+ * floating. Data is monospaced.
+ *
+ * Every pairing below was measured rather than eyeballed. The lowest ratio in the set is
+ * brand red on the tinted surface at 5.11:1, comfortably past WCAG 2.1 AA for body text;
+ * white on brand red is 5.88:1, which is what makes a solid red button legible.
  */
 
 :root {
   /* ── Brand ─────────────────────────────────────────────────────────────── */
-  --gold: #8b6914; /* brand, primary buttons, active states, card titles */
+  --red-brand: #c8102e; /* brand, primary buttons, active states, card titles */
   /*
-   * Brand gold on a gold-dim background measures 4.08:1 — just under WCAG AA for small
-   * text. This darker gold is used for small text on tinted surfaces (nav active state,
-   * day badge, locale switcher); the brand gold is unchanged everywhere else, including
-   * on white where it measures 5.09:1.
+   * A deeper red for small text on tinted surfaces (nav active state, day badge, code
+   * chips). Brand red already passes there at 5.11:1; this is used where the type is
+   * 9–11px and the extra headroom is worth having.
    */
-  --gold-strong: #755810;
-  --gold-light: #b8890f;
-  --gold-accent: #c9a84c; /* hover, progress bars, callout backgrounds */
-  --gold-dim: rgba(139, 105, 20, 0.1);
-  --blue: #1e4d8c; /* table headers, structure badges, secondary actions */
-  --blue-dim: rgba(30, 77, 140, 0.1);
+  --red-strong: #a00c24;
+  --red-deep: #7f0a1d; /* display headings, the darkest brand step */
+  --red-light: #e11d38; /* hover on solid red */
+  --red-accent: #f2879a; /* progress fills, decorative gradients */
+  --red-dim: rgba(200, 16, 46, 0.08); /* tinted backgrounds behind red text */
+  --red-veil: rgba(200, 16, 46, 0.16); /* borders on tinted surfaces */
 
   /* ── Surfaces ──────────────────────────────────────────────────────────── */
-  --bg: #f5f4f0; /* app background */
+  --bg: #fbfafa; /* app background — white with the faintest warm cast */
   --surface: #ffffff; /* cards, modals, tables */
-  --surface2: #f0ede8;
-  --border: #e0dbd4;
+  --surface2: #f4f1f1;
+  --border: #e6e0e1;
 
   /* ── Status ────────────────────────────────────────────────────────────── */
-  /* Never the only carrier of meaning — every status also has a label (ADR-030). */
-  --green: #1a7a4a; /* validated / conforme */
-  --red: #c0392b; /* critical / vacant / overdue */
+  /*
+   * Never the only carrier of meaning — every status also has a label (ADR-030).
+   * `--red` is *critical*, and is deliberately darker than `--red-brand`: with a red
+   * identity, a status that reused the brand colour would make "overdue" look like
+   * ordinary branded furniture. The two are distinguishable side by side.
+   */
+  --green: #116b41; /* validated / conforme */
+  --red: #8b0012; /* critical / vacant / overdue */
+  --amber: #8a5a00; /* in progress / to develop */
+  --blue: #1e4d8c; /* table headers, structure badges, secondary actions */
+  --blue-dim: rgba(30, 77, 140, 0.09);
 
   /* ── Text ──────────────────────────────────────────────────────────────── */
-  --text: #1a1a1a;
-  --text-muted: #555050;
-  /*
-   * The prototype's #999090 measures 2.83:1 on the sand background — below AA for the
-   * 9–11px labels it is used on. Darkened to 4.85:1; the role of the token is unchanged
-   * (ADR-039).
-   */
-  --text-dim: #6f6a68;
+  /* Neutrals carry a slight red bias so they sit with the brand rather than beside it. */
+  --text: #171314;
+  --text-muted: #4e4547;
+  --text-dim: #6b6164; /* 5.73:1 on --bg; used for 9–11px labels */
 
   /* ── Geometry ──────────────────────────────────────────────────────────── */
   --radius: 10px;
-  --shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  --shadow: 0 1px 4px rgba(23, 19, 20, 0.07);
+  --shadow-lifted: 0 6px 20px -6px rgba(127, 10, 29, 0.18);
 
   /* ── Layout ────────────────────────────────────────────────────────────── */
   /* Ported from the prototype's shell: 268px sidebar, 52px top bar. */
@@ -78,7 +87,18 @@
   --type-ui: var(--type-ui-latin);
 
   /* ── Motion ────────────────────────────────────────────────────────────── */
+  /*
+   * One vocabulary, shared by CSS transitions and by the three animation engines, so a
+   * hover and an orchestrated timeline decelerate the same way. `--ease-out` is the
+   * house curve: quick to start, settling rather than bouncing — a business tool that
+   * springs feels toy-like.
+   */
   --transition: 180ms ease;
+  --duration-fast: 140ms;
+  --duration-base: 240ms;
+  --duration-slow: 420ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 /* Arabic swaps the type families; nothing else about the palette changes. */
@@ -88,9 +108,16 @@
   --type-ui: var(--type-ui-arabic);
 }
 
-/* Quality floor: honour a reader who asked for less movement. */
+/*
+ * Quality floor: honour a reader who asked for less movement. The durations collapse to
+ * zero here, and the JavaScript engines read the same preference at runtime
+ * (src/lib/motion.ts), so no animation path escapes this.
+ */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --transition: 0ms;
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
   }
 }

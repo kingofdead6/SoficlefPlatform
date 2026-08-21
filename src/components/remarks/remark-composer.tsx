@@ -58,7 +58,7 @@ export function RemarkComposer() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded bg-(--gold) px-3 py-1.5 text-[12px] font-medium text-white disabled:opacity-50"
+          className="rounded bg-(--red-brand) px-3 py-1.5 text-[12px] font-medium text-white disabled:opacity-50"
         >
           {pending ? 'Enregistrement…' : 'Ajouter'}
         </button>

@@ -44,7 +44,7 @@ export default async function PublicLayout({
     <div className="flex min-h-dvh flex-col bg-(--bg)">
       <a
         href="#public-content"
-        className="text-gold-strong sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded focus:bg-(--surface) focus:px-3 focus:py-2"
+        className="text-red-strong sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded focus:bg-(--surface) focus:px-3 focus:py-2"
       >
         {common('skipToContent')}
       </a>
@@ -69,7 +69,7 @@ export default async function PublicLayout({
             <LocaleSwitcher current={locale as Locale} />
             <Link
               href="/login"
-              className="rounded bg-(--gold) px-3 py-1.5 text-[12px] font-medium text-white"
+              className="rounded bg-(--red-brand) px-3 py-1.5 text-[12px] font-medium text-white"
             >
               {t('nav.signIn')}
             </Link>

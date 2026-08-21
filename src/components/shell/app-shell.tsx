@@ -5,6 +5,7 @@ import type { VisibleNavGroup } from '@/application/navigation/build-navigation'
 import { loadJourney } from '@/application/onboarding/journey';
 import { loadNotifications } from '@/application/notifications/inbox';
 import { NotificationBell } from '@/components/notifications/notification-bell';
+import { PageTransition } from '@/components/motion/page-transition';
 import { formatDate } from '@/lib/format';
 import type { Locale } from '@/i18n/config';
 
@@ -81,15 +82,15 @@ export async function AppShell({
       <aside className="hidden w-(--sidebar-w) min-w-(--sidebar-w) flex-col border-e border-(--border) bg-(--surface) lg:flex">
         <div className="border-b border-(--border) p-4.5">
           <Brand />
-          <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-[rgba(139,105,20,0.25)] bg-(--gold-dim) px-3 py-2.5">
+          <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-[rgba(139,105,20,0.25)] bg-(--red-dim) px-3 py-2.5">
             <span
               aria-hidden
-              className="font-display flex size-8.5 shrink-0 items-center justify-center rounded-md bg-(--gold) text-[12px] font-bold text-white"
+              className="font-display flex size-8.5 shrink-0 items-center justify-center rounded-md bg-(--red-brand) text-[12px] font-bold text-white"
             >
               {initials}
             </span>
             <div className="min-w-0">
-              <div className="text-gold-strong truncate text-[11.5px] font-semibold">
+              <div className="text-red-strong truncate text-[11.5px] font-semibold">
                 {user.displayName}
               </div>
               <div className="text-text-muted truncate text-[9.5px]">{roleLabel}</div>
@@ -103,7 +104,7 @@ export async function AppShell({
           {user.onboardingStartDate ? (
             <>
               {t('shell.onboardingContext')} :{' '}
-              <span className="text-gold font-mono font-semibold">
+              <span className="text-red-brand font-mono font-semibold">
                 {formatDate(user.onboardingStartDate, locale)}
               </span>
             </>
@@ -133,7 +134,9 @@ export async function AppShell({
         >
           {/* Capped so lines stay readable on a wide desktop; the shell itself fills the
               viewport. */}
-          <div className="mx-auto max-w-5xl">{children}</div>
+          <div className="mx-auto max-w-5xl">
+            <PageTransition>{children}</PageTransition>
+          </div>
         </main>
       </div>
     </div>

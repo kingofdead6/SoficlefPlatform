@@ -73,7 +73,7 @@ export function CreateUnitDialog({
       trigger={
         <button
           type="button"
-          className="rounded bg-(--gold) px-3 py-1.5 text-[12px] font-medium text-white"
+          className="rounded bg-(--red-brand) px-3 py-1.5 text-[12px] font-medium text-white"
         >
           Nouvelle structure
         </button>
@@ -342,7 +342,7 @@ function Buttons({
       <button
         type="submit"
         disabled={pending}
-        className="rounded bg-(--gold) px-3 py-1.5 text-[12px] font-medium text-white disabled:opacity-50"
+        className="rounded bg-(--red-brand) px-3 py-1.5 text-[12px] font-medium text-white disabled:opacity-50"
       >
         {pending ? 'En cours…' : submitLabel}
       </button>

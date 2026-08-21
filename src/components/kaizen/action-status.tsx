@@ -12,9 +12,9 @@ import { StatusBadge } from '@/components/ui';
  * Read-only for anybody without the permission, and the badge is the same in both cases,
  * so the page does not change shape depending on who is looking at it.
  */
-const TONE: Record<string, 'green' | 'gold' | 'blue'> = {
+const TONE: Record<string, 'green' | 'brand' | 'blue'> = {
   Clôturée: 'green',
-  'En cours': 'gold',
+  'En cours': 'brand',
   Planifiée: 'blue',
 };
 

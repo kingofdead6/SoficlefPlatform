@@ -51,7 +51,7 @@ export function SidebarNav({
                     className={cn(
                       'mb-px flex items-center gap-2.5 rounded-md border border-transparent px-3 py-2 text-[12px] transition-colors',
                       isActive
-                        ? 'text-gold-strong border-[rgba(139,105,20,0.2)] bg-(--gold-dim) font-medium'
+                        ? 'text-red-strong border-[rgba(139,105,20,0.2)] bg-(--red-dim) font-medium'
                         : 'text-text-muted hover:text-text hover:bg-(--surface2)',
                     )}
                   >
@@ -61,7 +61,7 @@ export function SidebarNav({
                         className={cn(
                           'ms-auto rounded px-1.5 py-0.5 font-mono text-[9px] tabular-nums',
                           isActive
-                            ? 'text-gold-strong bg-[rgba(139,105,20,0.15)]'
+                            ? 'text-red-strong bg-[rgba(139,105,20,0.15)]'
                             : 'text-text-dim bg-(--surface2)',
                         )}
                       >

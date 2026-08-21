@@ -34,7 +34,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
               <Card key={position.id}>
                 <div className="flex items-start justify-between gap-3">
                   <CardTitle>{position.titleFr}</CardTitle>
-                  <StatusBadge label={position.statusFr} tone="gold" />
+                  <StatusBadge label={position.statusFr} tone="brand" />
                 </div>
                 <CardBody className="text-text">{position.attachmentFr}</CardBody>
               </Card>
@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <CardBody className="text-text">{recruitment.internalMobilityNoteFr}</CardBody>
       </Card>
 
-      <Card accent="gold">
+      <Card accent="brand">
         <CardTitle>Action recommandée</CardTitle>
         <CardBody className="text-text">{recruitment.recommendedActionFr}</CardBody>
       </Card>
