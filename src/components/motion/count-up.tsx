@@ -1,9 +1,9 @@
 'use client';
 
-import { animate } from 'animejs';
+import { animate, cubicBezier } from 'animejs';
 import { useEffect, useRef } from 'react';
 
-import { ANIME_EASE_OUT, DURATION_MS, prefersReducedMotion } from '@/lib/motion';
+import { DURATION_MS, EASE_OUT, prefersReducedMotion } from '@/lib/motion';
 
 /**
  * Anime.js — a figure that counts up to its value.
@@ -69,7 +69,7 @@ export function CountUp({
         animate(counter, {
           n: value,
           duration: DURATION_MS.slow,
-          ease: ANIME_EASE_OUT,
+          ease: cubicBezier(...EASE_OUT),
           onUpdate: () => {
             node.textContent = format(counter.n);
           },

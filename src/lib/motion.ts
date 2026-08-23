@@ -38,8 +38,26 @@ export const EASE_IN_OUT = [0.65, 0, 0.35, 1] as const;
 /** GSAP names its eases as strings. Same curve, different notation. */
 export const GSAP_EASE_OUT = `cubic-bezier(${EASE_OUT.join(',')})`;
 
-/** Anime.js v4 takes the same notation. */
-export const ANIME_EASE_OUT = `cubicBezier(${EASE_OUT.join(', ')})`;
+/*
+ * Anime.js takes the curve as a *function*, not a string.
+ *
+ * `ease: 'cubicBezier(0.22, 1, 0.36, 1)'` was removed from the core in v4.5 — it still
+ * runs, but it warns on every single tween, which buries real messages in the dev server
+ * output. There is deliberately no `ANIME_EASE_OUT` constant here to replace it: building
+ * one would mean importing `animejs` into this module, and this module is also imported
+ * by the Framer Motion and GSAP components, which would then pull the whole Anime.js
+ * runtime into their bundles for a curve they never use.
+ *
+ * So Anime.js call sites import `cubicBezier` themselves — they already import from
+ * `animejs` — and spread the control points from `EASE_OUT` above:
+ *
+ *     import { animate, cubicBezier } from 'animejs';
+ *     import { EASE_OUT } from '@/lib/motion';
+ *
+ *     animate(target, { ease: cubicBezier(...EASE_OUT) });
+ *
+ * One source of truth for the curve, no runtime in the wrong bundle.
+ */
 
 /**
  * How far an element travels when it enters. Deliberately small — a card that flies in

@@ -1,0 +1,65 @@
+{
+  "fr": {
+    "public": {
+      "demos": {
+        "matrix": {
+          "eyebrow": "Compétences",
+          "title": "Chaque poste, chaque compétence, un niveau",
+          "body": "La matrice croise les emplois de la société avec le référentiel de compétences. Chaque case porte un niveau requis et un niveau évalué : l’écart entre les deux est ce qui déclenche un plan de développement."
+        },
+        "structure": {
+          "eyebrow": "Structures & emplois",
+          "title": "L’organisation, telle qu’elle est réellement",
+          "body": "Directions, départements, ateliers et postes sont saisis une fois, puis rattachés entre eux. Les fiches de poste, les rattachements hiérarchiques et les organigrammes en découlent automatiquement."
+        },
+        "journey": {
+          "eyebrow": "Parcours d’intégration",
+          "title": "Les quatre-vingt-dix premiers jours",
+          "body": "Un parcours est un modèle réutilisable, pas un portail figé : les étapes, les documents à lire et les personnes à rencontrer sont datés à partir de la prise de fonction. Faites glisser le repère."
+        }
+      }
+    }
+  },
+  "en": {
+    "public": {
+      "demos": {
+        "matrix": {
+          "eyebrow": "Competencies",
+          "title": "Every post, every competency, a level",
+          "body": "The matrix crosses the company’s jobs with the competency framework. Each cell carries a required level and an assessed one: the gap between them is what triggers a development plan."
+        },
+        "structure": {
+          "eyebrow": "Structures & jobs",
+          "title": "The organisation as it actually is",
+          "body": "Divisions, departments, workshops and posts are entered once, then attached to one another. Job descriptions, reporting lines and org charts follow automatically."
+        },
+        "journey": {
+          "eyebrow": "Onboarding journey",
+          "title": "The first ninety days",
+          "body": "A journey is a reusable template, not a fixed portal: steps, documents to read and people to meet are dated from the start date. Drag the marker."
+        }
+      }
+    }
+  },
+  "ar": {
+    "public": {
+      "demos": {
+        "matrix": {
+          "eyebrow": "الكفاءات",
+          "title": "لكل منصب، لكل كفاءة، مستوى",
+          "body": "تربط المصفوفة بين وظائف الشركة ومرجعية الكفاءات. تحمل كل خانة مستوى مطلوبًا ومستوى مُقيَّمًا: والفارق بينهما هو ما يستدعي خطة تطوير."
+        },
+        "structure": {
+          "eyebrow": "الهياكل والوظائف",
+          "title": "التنظيم كما هو فعلًا",
+          "body": "تُدخل المديريات والأقسام والورشات والمناصب مرة واحدة، ثم تُربط ببعضها. وتنتج عنها بطاقات المناصب والتبعية الهرمية والهياكل التنظيمية تلقائيًا."
+        },
+        "journey": {
+          "eyebrow": "مسار الإدماج",
+          "title": "الأيام التسعون الأولى",
+          "body": "المسار قالب قابل لإعادة الاستعمال، لا بوابة جامدة: تُؤرَّخ المراحل والوثائق والأشخاص انطلاقًا من تاريخ الالتحاق. اسحب المؤشر."
+        }
+      }
+    }
+  }
+}
