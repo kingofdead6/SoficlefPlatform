@@ -93,7 +93,9 @@
       "competencies": "Competency review",
       "remarks": "Remarks",
       "dashboard": "Dashboard",
-      "admin": "Administration"
+      "admin": "Administration",
+      "training": "Training",
+      "surveys": "Surveys"
     }
   },
   "shell": {
@@ -125,7 +127,9 @@
     "genericTitle": "Coming soon",
     "unblockedBy": "What unblocks this page",
     "dashboard": "Your dashboard fills up as journeys, job descriptions and assessments appear.",
-    "admin": "Platform administration is restricted to administrators."
+    "admin": "Platform administration is restricted to administrators.",
+    "training": "The training catalogue fills up once HR publishes modules.",
+    "surveys": "Your satisfaction surveys appear here at J+7, J+30, J+60 and J+90."
   },
   "components": {
     "dataTable": {
@@ -208,6 +212,23 @@
     "footer": {
       "rights": "All rights reserved.",
       "internal": "Internal Skills & Employment platform."
+    },
+    "demos": {
+      "matrix": {
+        "eyebrow": "Competencies",
+        "title": "What the job requires, what the person has",
+        "body": "Every job carries its expected competencies and their levels. The gap against the assessed level is computed, not entered: it updates the moment an assessment is recorded, and critical gaps surface on their own."
+      },
+      "structure": {
+        "eyebrow": "Organization",
+        "title": "A structure that stays true after a reorganization",
+        "body": "Structures, units and functional cells form a living tree. Nothing is deleted: an archived entity keeps its history and is still referenced by the jobs it once carried."
+      },
+      "journey": {
+        "eyebrow": "Onboarding",
+        "title": "A journey followed day by day, not a document",
+        "body": "Each step carries its deadline, its owner and its state. Lateness is derived from the date and the status at every read — a finished milestone stops being flagged, a blocked one reaches HR."
+      }
     }
   }
 }

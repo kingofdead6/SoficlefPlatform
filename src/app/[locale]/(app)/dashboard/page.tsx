@@ -155,6 +155,72 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         </section>
       ) : null}
 
+      {data.hr ? (
+        <section>
+          <SectionTitle lead="Les indicateurs RH du cahier des charges 2026 : durée d'intégration, validation des périodes d'essai, satisfaction et turnover.">
+            Indicateurs RH
+          </SectionTitle>
+          <Stagger className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <StaggerItem>
+              <KpiTile
+                value={
+                  data.hr.averageOnboardingDays === null
+                    ? '—'
+                    : `${data.hr.averageOnboardingDays} j`
+                }
+                label="Durée moyenne"
+                hint="Parcours terminés uniquement"
+              />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile
+                value={data.hr.completionRate === null ? '—' : `${data.hr.completionRate}%`}
+                label="Taux de complétion"
+              />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile
+                value={data.hr.satisfaction === null ? '—' : `${data.hr.satisfaction}%`}
+                label="Satisfaction"
+                hint="Plancher de recette 85%"
+              />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile
+                value={data.hr.trainingRate === null ? '—' : `${data.hr.trainingRate}%`}
+                label="Formations obligatoires"
+                hint="Collaborateurs à jour"
+              />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile
+                value={
+                  data.hr.confirmationRate === null ? '—' : `${data.hr.confirmationRate}%`
+                }
+                label="Périodes d'essai validées"
+                hint="Sur les périodes conclues"
+              />
+            </StaggerItem>
+            <StaggerItem>
+              <KpiTile
+                value={data.hr.turnoverRate === null ? '—' : `${data.hr.turnoverRate}%`}
+                label="Turnover 6 mois"
+                hint={
+                  data.hr.turnoverCohort === 0
+                    ? 'Aucun collaborateur avec 6 mois d’ancienneté'
+                    : `Cohorte de ${data.hr.turnoverCohort}`
+                }
+              />
+            </StaggerItem>
+          </Stagger>
+          <p className="mt-3">
+            <Link href="/surveys" className="text-red-strong text-[12px] underline">
+              Voir les enquêtes
+            </Link>
+          </p>
+        </section>
+      ) : null}
+
       {data.quality ? (
         <section>
           <SectionTitle lead="Ce qui manque au référentiel — chaque ligne est une action possible.">

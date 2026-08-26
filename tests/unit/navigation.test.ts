@@ -41,12 +41,13 @@ function user(role: RoleCode, scopeUnits?: string[]): AuthenticatedUser {
 const idsOf = (groups: ReturnType<typeof buildNavigation>) =>
   groups.flatMap((group) => group.items.map((item) => item.id));
 
-describe('navigation is seventeen routes in six groups', () => {
-  it('declares exactly the seventeen routes of the specification', () => {
-    // Fifteen content routes from the prototype, plus the role dashboard and the
-    // administration section of CDC v0.1 §4.
-    expect(NAV_ITEMS).toHaveLength(17);
-    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(17);
+describe('navigation is nineteen routes in six groups', () => {
+  it('declares exactly the nineteen routes of the specification', () => {
+    // Fifteen content routes from the prototype, the role dashboard and the
+    // administration section of CDC v0.1 §4, plus training and surveys from CDC-2026
+    // Modules 6 and 9.
+    expect(NAV_ITEMS).toHaveLength(19);
+    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(19);
   });
 
   it('does not include the AI assistant — phase 2 (ADR-003)', () => {
@@ -59,7 +60,7 @@ describe('navigation is seventeen routes in six groups', () => {
     const visible = idsOf(buildNavigation(user('BIZ_ADMIN_CE')));
     // Everything except the technical administration section, which is TECH_ADMIN's:
     // the business administrator manages the reference frame, not accounts and logs.
-    expect(visible).toHaveLength(16);
+    expect(visible).toHaveLength(18);
     expect(visible).not.toContain('admin');
     expect(visible).toContain('dashboard');
   });

@@ -153,6 +153,20 @@ export const NAV_ITEMS: NavItem[] = [
     deliveredIn: 11,
   },
   {
+    id: 'training',
+    href: '/training',
+    group: 'tools',
+    requires: { resource: 'training', action: 'read' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'surveys',
+    href: '/surveys',
+    group: 'tools',
+    requires: { resource: 'survey', action: 'read' },
+    deliveredIn: 15,
+  },
+  {
     id: 'remarks',
     href: '/remarks',
     group: 'tools',

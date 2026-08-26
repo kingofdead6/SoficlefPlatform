@@ -11,6 +11,7 @@ Emplois). See `DECISIONS.md` for the reasoning, `OPEN-QUESTIONS.md` for what is 
 | CDC v1    | `docs/sources/CDC-v1_Plateforme_SOFICLEF.pdf` — _CDC-SOFICLEF-DRH-2026-001 v1.0_ | Fixed onboarding portal for one person; 8 modules; AI agent with RAG; 4 one-week sprints                          |
 | CDC v0.1  | `docs/sources/CDC-v0.1_Competences_Emplois.pdf`                                  | Generic structures / jobs / competencies / onboarding platform; AI explicitly out of MVP; 24 sections; 9–16 weeks |
 | Prototype | `seed/source/SOFICLEF_Onboarding_Directeur_Production_.html`                     | Client-validated single-file HTML prototype, 15 pages, French only                                                |
+| CDC 2026  | `docs/sources/CDC-2026_Onboarding_Agents_IA.pdf`                                 | Third CDC: employee records, 3-phase lifecycle, five AI agents, surveys, training, HR KPIs; Microsoft/Azure stack |
 
 ---
 
@@ -166,6 +167,37 @@ All 24 sections plus the annex appear.
 | 12   | Document library                                     | Partial — listing only, no upload or per-document ACL |
 | 13   | Workflows, notifications, dashboards, administration | Partial — see below                                   |
 | 14   | AI agent — phase 2                                   | Not started                                           |
+
+### CDC 2026 — what was adopted, and what was not
+
+A third specification arrived after Parts 0–13 were delivered. Most of it is new scope
+and was built; three points conflict with the running platform and were not adopted
+silently.
+
+| CDC 2026 asks for                                                     | Status                                                                                 |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| §5 M1 employee record (hire date, direction, service, manager, phone) | **Built** — on `User`, since there is one person per account                           |
+| §2 three-phase lifecycle (pré-onboarding / Jour J / période d'essai)  | **Built** — `OnboardingPhase` on each milestone                                        |
+| §5 M2 per-task responsible department (RH, IT, HSE, Qualité…)         | **Built** — `TaskOwnerDepartment`, an enum because §10 counts by owner                 |
+| §5 M6 training, quizzes, certificates                                 | **Built** — 5 modules, 16 questions, server-side grading                               |
+| §5 M9 satisfaction surveys at J+7/30/60/90                            | **Built** — the five §9 indicators, aggregate-only reporting                           |
+| §5 M10 HR KPIs (time-to-onboard, essai validation, 6-month turnover)  | **Built** — on the dashboard                                                           |
+| §5 M3 document library with Word/Video/PPT                            | **Partial** — listing only; upload still awaits the storage decision (OQ-14, OQ-15)    |
+| §5 M4–M8 five AI agents                                               | **Deferred** — see below                                                               |
+| §7 Microsoft Entra ID / Active Directory                              | **Not adopted** — see below                                                            |
+| §7 ASP.NET Core / SQL Server                                          | **Not adopted** — §7 also permits Node.js and PostgreSQL, which is what runs           |
+| §3 four user profiles                                                 | **Superseded** — the seven profiles of CDC v0.1 §3 subsume them without loss (ADR-005) |
+
+**The five AI agents.** ADR-003 defers AI because CDC v0.1 §22 forbids the MVP depending
+on an AI provider, and no key or budget exists. CDC 2026's own §4 "Plug & Play" clause is
+the reconciliation: build the structure now, fill it with realistic data, chain the real
+source later without a rewrite. That is exactly the position — the assistant's retrieval
+runs over the seeded SOFICLEF data, and one server-side adapter is left for a provider.
+
+**Entra ID.** Requires a tenant, an app registration and IT-issued credentials that do not
+exist yet. This answers OQ-13's question — the target identity system is now known — but
+it cannot be implemented until SOFICLEF IT provisions it. Auth already sits behind one
+module (ADR-011), so an OIDC provider drops in without touching call sites.
 
 ### What remains inside the delivered Parts
 

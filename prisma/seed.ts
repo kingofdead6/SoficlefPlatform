@@ -1187,6 +1187,102 @@ async function seedCompetencyFrame(jobId: string | null): Promise<number> {
   return frame.competencies.length;
 }
 
+/**
+ * The training catalogue (CDC-2026 Module 6).
+ *
+ * Placeholder content under the §4 "Plug & Play" clause: the structure, the quizzes and
+ * the certification flow are complete, and every module carries `isPlaceholder` so the UI
+ * can say so. When SOFICLEF supplies its real HSE and Qualité supports they replace the
+ * `contentFr` and the questions in place — no schema change, no rewrite.
+ */
+async function seedTrainingCatalogue(): Promise<number> {
+  const catalogue = JSON.parse(
+    readFileSync(new URL('../seed/reference/training-catalogue.json', import.meta.url), 'utf8'),
+  ) as {
+    modules: {
+      code: string;
+      titleFr: string;
+      summaryFr: string;
+      contentFr: string;
+      passingScore: number;
+      order: number;
+      questions: {
+        promptFr: string;
+        options: { id: string; labelFr: string }[];
+        correctOption: string;
+        explanationFr?: string;
+      }[];
+    }[];
+  };
+
+  for (const entry of catalogue.modules) {
+    const row = await prisma.trainingModule.upsert({
+      where: { code: entry.code },
+      create: {
+        code: entry.code,
+        titleFr: entry.titleFr,
+        summaryFr: entry.summaryFr,
+        contentFr: entry.contentFr,
+        passingScore: entry.passingScore,
+        order: entry.order,
+        isPlaceholder: true,
+      },
+      update: {
+        titleFr: entry.titleFr,
+        summaryFr: entry.summaryFr,
+        contentFr: entry.contentFr,
+        passingScore: entry.passingScore,
+        order: entry.order,
+      },
+    });
+
+    // Questions are replaced wholesale rather than upserted: they have no business key,
+    // and a question removed from the catalogue must disappear rather than linger.
+    await prisma.trainingQuestion.deleteMany({ where: { moduleId: row.id } });
+    await prisma.trainingQuestion.createMany({
+      data: entry.questions.map((question, index) => ({
+        moduleId: row.id,
+        order: index + 1,
+        promptFr: question.promptFr,
+        options: question.options,
+        correctOption: question.correctOption,
+        explanationFr: question.explanationFr ?? null,
+      })),
+    });
+  }
+
+  return catalogue.modules.length;
+}
+
+/**
+ * Survey rounds for an existing journey (CDC-2026 Module 9).
+ *
+ * Created at instantiation rather than by a scheduler, so the four dates exist as data
+ * from day one: a dashboard can then show what is due and what is late without a job
+ * having run, and a missed scheduler tick cannot lose a round.
+ */
+async function seedSurveyRounds(): Promise<number> {
+  const instances = await prisma.onboardingInstance.findMany({
+    select: { id: true, startDate: true },
+  });
+
+  let created = 0;
+  for (const instance of instances) {
+    for (const dayOffset of [7, 30, 60, 90]) {
+      const dueDate = new Date(instance.startDate);
+      dueDate.setDate(dueDate.getDate() + dayOffset);
+
+      await prisma.surveyRound.upsert({
+        where: { instanceId_dayOffset: { instanceId: instance.id, dayOffset } },
+        create: { instanceId: instance.id, dayOffset, dueDate },
+        update: { dueDate },
+      });
+      created += 1;
+    }
+  }
+  return created;
+}
+
 async function main(): Promise<void> {
   const suppliedPassword = process.env.SEED_DEMO_PASSWORD;
   const wasGenerated = !suppliedPassword;
@@ -1209,6 +1305,8 @@ async function main(): Promise<void> {
   const templateId = await seedOnboardingTemplate(jobId);
   await seedWelcomeAndOnboardingInstance(templateId);
   const competencyCount = await seedCompetencyFrame(jobId);
+  const trainingCount = await seedTrainingCatalogue();
+  const surveyRoundCount = await seedSurveyRounds();
 
   // Legacy generic store, kept for pages not yet migrated off it (see file header).
   const payloads = seedDataFiles();
@@ -1226,6 +1324,8 @@ async function main(): Promise<void> {
   console.log('✔ company, values, strategy, job description, management team, org chart');
   console.log('✔ kaizen, qms, hse, contacts, documents, recruitment');
   console.log('✔ onboarding template + welcome content + onboarding instance');
+  console.log(`✔ training catalogue — ${trainingCount} modules, placeholder content`);
+  console.log(`✔ ${surveyRoundCount} survey rounds — J+7, J+30, J+60, J+90`);
   console.log(
     `✔ competency frame — ${competencyCount} competencies (proposal, awaiting validation)`,
   );

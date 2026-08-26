@@ -3,6 +3,15 @@ import 'server-only';
 import { scopeFilterFor, type AuthenticatedUser } from '@/domain/auth/authorization';
 import { computeGap, summarize } from '@/domain/competency/gap';
 import { isOverdue, type OnboardingTaskStatus } from '@/domain/onboarding/task';
+import {
+  averageOnboardingDays,
+  probation,
+  sixMonthTurnover,
+  volume,
+  type JourneyRecord,
+} from '@/domain/hr/indicators';
+import { loadSatisfaction } from '@/application/survey/rounds';
+import { loadTrainingCoverage } from '@/application/training/catalogue';
 import { dueDateFor } from '@/domain/onboarding/task';
 import { prisma } from '@/infrastructure/db/client';
 
@@ -31,18 +40,29 @@ export interface DashboardData {
   } | null;
   validation: { pendingJobDescriptions: number } | null;
   quality: { unitsWithoutHead: number; jobsWithoutDescription: number } | null;
+  /** CDC-2026 Module 10 — the HR performance indicators. */
+  hr: {
+    completionRate: number | null;
+    averageOnboardingDays: number | null;
+    confirmationRate: number | null;
+    turnoverRate: number | null;
+    turnoverCohort: number;
+    satisfaction: number | null;
+    trainingRate: number | null;
+  } | null;
 }
 
 export async function loadDashboard(user: AuthenticatedUser): Promise<DashboardData> {
-  const [jobDescriptions, competencies, onboarding, validation, quality] = await Promise.all([
+  const [jobDescriptions, competencies, onboarding, validation, quality, hr] = await Promise.all([
     jobDescriptionCoverage(user),
     competencyGaps(user),
     onboardingHealth(user),
     pendingValidation(user),
     dataQuality(user),
+    hrIndicators(user),
   ]);
 
-  return { jobDescriptions, competencies, onboarding, validation, quality };
+  return { jobDescriptions, competencies, onboarding, validation, quality, hr };
 }
 
 async function jobDescriptionCoverage(user: AuthenticatedUser) {
@@ -213,4 +233,67 @@ async function dataQuality(user: AuthenticatedUser) {
   ]);
 
   return { unitsWithoutHead, jobsWithoutDescription };
+}
+
+/**
+ * CDC-2026 Module 10 — the HR performance indicators.
+ *
+ * Scoped like every other block: a manager's figures cover their structures, HR's cover
+ * the organization. Each rate distinguishes "zero" from "not measurable", so an empty
+ * cohort shows an em dash rather than a flattering 0%.
+ */
+async function hrIndicators(user: AuthenticatedUser): Promise<DashboardData['hr']> {
+  const scope = scopeFilterFor(user, 'read', 'onboarding_instance');
+  if (scope.kind === 'none') return null;
+
+  const instances = await prisma.onboardingInstance.findMany({
+    where:
+      scope.kind === 'self'
+        ? { userId: user.id }
+        : scope.kind === 'units'
+          ? {
+              user: {
+                userRoles: {
+                  some: { scope: { organizationUnitId: { in: scope.organizationUnitIds } } },
+                },
+              },
+            }
+          : {},
+    select: {
+      startDate: true,
+      completedAt: true,
+      probationOutcome: true,
+      outcomeRecordedAt: true,
+      template: { select: { _count: { select: { milestones: true } } } },
+      taskCompletions: { select: { status: true } },
+    },
+  });
+
+  const journeys: JourneyRecord[] = instances.map((instance) => ({
+    startDate: instance.startDate,
+    completedAt: instance.completedAt,
+    probationOutcome: instance.probationOutcome,
+    outcomeRecordedAt: instance.outcomeRecordedAt,
+    tasksTotal: instance.template._count.milestones,
+    tasksDone: instance.taskCompletions.filter(
+      (task) => task.status === 'DONE' || task.status === 'VALIDATED',
+    ).length,
+  }));
+
+  const [satisfaction, training] = await Promise.all([
+    loadSatisfaction(user).catch(() => null),
+    loadTrainingCoverage(user).catch(() => null),
+  ]);
+
+  const turnover = sixMonthTurnover(journeys);
+
+  return {
+    completionRate: volume(journeys).completionRate,
+    averageOnboardingDays: averageOnboardingDays(journeys),
+    confirmationRate: probation(journeys).confirmationRate,
+    turnoverRate: turnover.rate,
+    turnoverCohort: turnover.cohort,
+    satisfaction: satisfaction?.score ?? null,
+    trainingRate: training?.rate ?? null,
+  };
 }

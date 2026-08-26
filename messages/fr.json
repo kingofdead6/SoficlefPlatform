@@ -93,7 +93,9 @@
       "competencies": "Bilan Compétences",
       "remarks": "Remarques",
       "dashboard": "Tableau de bord",
-      "admin": "Administration"
+      "admin": "Administration",
+      "training": "Formations",
+      "surveys": "Enquêtes"
     }
   },
   "shell": {
@@ -125,7 +127,9 @@
     "genericTitle": "Bientôt disponible",
     "unblockedBy": "Ce qui débloque cette page",
     "dashboard": "Votre tableau de bord se remplit dès que des parcours, des fiches et des évaluations existent.",
-    "admin": "L'administration de la plateforme est réservée aux administrateurs."
+    "admin": "L'administration de la plateforme est réservée aux administrateurs.",
+    "training": "Le catalogue de formations se remplit dès que la DRH publie des modules.",
+    "surveys": "Vos enquêtes de satisfaction apparaîtront ici à J+7, J+30, J+60 et J+90."
   },
   "components": {
     "dataTable": {
@@ -208,6 +212,23 @@
     "footer": {
       "rights": "Tous droits réservés.",
       "internal": "Plateforme interne Compétences & Emplois."
+    },
+    "demos": {
+      "matrix": {
+        "eyebrow": "Compétences",
+        "title": "Ce que le poste demande, ce que la personne maîtrise",
+        "body": "Chaque emploi porte ses compétences attendues et leur niveau. L'écart avec le niveau évalué est calculé, pas saisi : il se met à jour dès qu'une évaluation est enregistrée, et les écarts critiques remontent d'eux-mêmes."
+      },
+      "structure": {
+        "eyebrow": "Organisation",
+        "title": "Une structure qui reste vraie après une réorganisation",
+        "body": "Structures, unités et cellules forment une arborescence vivante. Rien n'est supprimé : une entité archivée conserve son historique et reste citée par les emplois qui l'ont portée."
+      },
+      "journey": {
+        "eyebrow": "Intégration",
+        "title": "Un parcours suivi jour par jour, pas un document",
+        "body": "Chaque étape porte son échéance, son responsable et son état. Le retard est déduit de la date et du statut à chaque affichage — un jalon terminé cesse d'être signalé, un jalon bloqué remonte à la DRH."
+      }
     }
   }
 }

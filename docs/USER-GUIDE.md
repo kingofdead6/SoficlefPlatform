@@ -217,6 +217,8 @@ Read this alongside the scope column: two roles with `R` see different amounts o
 | Kaizen actions       | —           | R + **W**     | —          | R             | **W**      | —      | —             |
 | Documents            | R           | R             | **W**      | R             | **W**      | R      | — (no access) |
 | Dashboard & reports  | R           | R             | R + export | R + export    | R + export | R      | R + export    |
+| Training modules     | R + sit     | R             | R          | R             | **W**      | —      | —             |
+| Satisfaction surveys | R + answer  | R agg         | **W**      | R agg         | R agg      | R agg  | —             |
 | Users & roles        | —           | —             | —          | —             | —          | —      | **W**         |
 | Audit log            | —           | —             | —          | —             | —          | —      | R             |
 | Settings             | —           | —             | —          | —             | R          | —      | **W**         |
@@ -226,6 +228,11 @@ Three separations are worth stating plainly, because they are the point of the m
 1. **Writing ≠ validating.** The business administrator drafts; Head C&E and HR validate.
 2. **Business ≠ technical.** The technical administrator manages accounts and cannot sign off a job description or rate a competency.
 3. **Nobody escalates their own access.** Self-assignment of a role is refused and audited.
+
+A fourth follows from CDC 2026's surveys: **nobody but the author reads an individual
+answer.** Managers, HR and the DG see the consolidated score, the per-indicator averages
+and the response rate; the query that produces them returns counts and means, never rows.
+An honest answer at J+30 depends on that being true.
 
 ---
 
@@ -251,6 +258,8 @@ route agree by construction.
 | Référentiels   | Documents                 | all but technical admin                 | The reference document library                                       |
 | Outils         | Checklist 30 jours        | all but technical admin and reader      | The interactive journey, plus oversight for managers and HR          |
 | Outils         | Bilan Compétences         | all but technical admin                 | The job↔competency matrix and gaps                                   |
+| Outils         | Formations                | all but technical admin                 | Training modules, quizzes and certificates (CDC 2026 Module 6)       |
+| Outils         | Enquêtes                  | all but technical admin                 | Satisfaction surveys at J+7/30/60/90, and the consolidated score     |
 | Outils         | Remarques                 | employee, HR, Head C&E, business admin  | The observations journal, with export                                |
 | Administration | Administration            | technical admin only                    | Accounts, roles, audit trail                                         |
 

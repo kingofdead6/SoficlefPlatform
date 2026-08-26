@@ -137,9 +137,29 @@ model User {
   /// badge counts from it — forward once the journey has started, down before it (OQ-26).
   /// Part 9's onboarding engine reads the same field.
   onboardingStartDate DateTime?
-  lastLoginAt         DateTime?
-  createdAt           DateTime   @default(now())
-  updatedAt           DateTime   @updatedAt
+
+  /**
+   * The employee record of CDC-2026 Module 1. These live on `User` rather than in a
+   * separate `Employee` table because the platform has exactly one person per account and
+   * a second table would mean every read joining to reach a phone number. `hireDate` is
+   * distinct from `onboardingStartDate`: a contract can start before the journey does.
+   */
+  hireDate        DateTime? @db.Date
+  /// Business phone or internal extension, as the directory writes it.
+  phone           String?
+  /// Direction / service, as free text until the client confirms the list (OQ-01).
+  directionFr     String?
+  serviceFr       String?
+  /// Job title as written on the contract, distinct from the `Job` reference entity.
+  positionTitleFr String?
+  /// The manager this person reports to. Self-relation: a manager is a user.
+  managerId       String?   @db.Uuid
+  manager         User?     @relation("UserManager", fields: [managerId], references: [id], onDelete: SetNull)
+  reports         User[]    @relation("UserManager")
+
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   sessions            Session[]
   userRoles           UserRole[]
@@ -149,8 +169,11 @@ model User {
   remarks             Remark[]
   welcome             Welcome?
   notifications       Notification[]
+  surveyResponses     SurveyResponse[]
+  trainingAttempts    TrainingAttempt[]
 
   @@index([status])
+  @@index([managerId])
   @@map("user")
 }
 
@@ -992,6 +1015,28 @@ model OnboardingTemplate {
 
 /// A milestone of the 30-day checklist. `order` preserves the prototype's sequence;
 /// several milestones share a day.
+/// CDC-2026 §2 divides the journey into three phases. A task belongs to exactly one.
+enum OnboardingPhase {
+  /// Before the arrival: workstation, paperwork, contact with the future colleague.
+  PRE_ONBOARDING
+  /// The first day: welcome, access, equipment, contract signature.
+  DAY_ONE
+  /// The probationary period: follow-up, training, evaluations, feedback.
+  PROBATION
+}
+
+/// Who owns a task (CDC-2026 §5 Module 2's flow: RH → Informatique → HSE → Qualité …).
+/// An enum rather than free text because §10's reporting counts tasks by owner, and a
+/// count over free text is a count over spellings.
+enum TaskOwnerDepartment {
+  HR
+  IT
+  HSE
+  QUALITY
+  MANAGER
+  EMPLOYEE
+}
+
 model OnboardingMilestone {
   id            String             @id @default(uuid()) @db.Uuid
   slug          String             @unique
@@ -1005,6 +1050,14 @@ model OnboardingMilestone {
   detailFr      String             @db.Text
   isRecommended Boolean
 
+  /**
+   * Phase and owner (CDC-2026 §2, Module 2). Both are nullable so the twelve milestones
+   * extracted from the prototype — which predate this CDC and state neither — stay valid;
+   * the seed derives a phase from `dayOffset` where the client has not said otherwise.
+   */
+  phase           OnboardingPhase?
+  ownerDepartment TaskOwnerDepartment?
+
   completions OnboardingTaskCompletion[]
 
   @@index([templateId])
@@ -1013,6 +1066,21 @@ model OnboardingMilestone {
 
 /// One person's run through a template — the thing /welcome and the app layout's
 /// permission check are actually gating on (resource "onboarding_instance").
+/// How a probationary period ended (CDC-2026 §10: "taux de validation définitive des
+/// périodes d'essai", "taux de turnover mesuré sur les 6 premiers mois").
+enum ProbationOutcome {
+  /// Still running.
+  ONGOING
+  /// Confirmed in post.
+  CONFIRMED
+  /// Extended for a further period.
+  EXTENDED
+  /// Ended by the company.
+  TERMINATED
+  /// Ended by the collaborator — what the turnover figure actually counts.
+  RESIGNED
+}
+
 model OnboardingInstance {
   id         String             @id @default(uuid()) @db.Uuid
   userId     String             @db.Uuid
@@ -1020,10 +1088,25 @@ model OnboardingInstance {
   templateId String             @db.Uuid
   template   OnboardingTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
   startDate  DateTime           @db.Date
+
+  /*
+   * The probation outcome (§10). Kept on the journey rather than on the user because a
+   * person can be onboarded more than once — a return, or a change of post — and each
+   * journey has its own outcome.
+   *
+   * `completedAt` is when the journey finished, which is what "temps moyen d'onboarding"
+   * measures; it is deliberately not the same as the probation ending.
+   */
+  completedAt      DateTime?
+  probationOutcome ProbationOutcome @default(ONGOING)
+  probationEndsOn  DateTime?        @db.Date
+  outcomeRecordedAt DateTime?
+
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
 
   taskCompletions OnboardingTaskCompletion[]
+  surveyRounds    SurveyRound[]
 
   @@index([userId])
   @@index([templateId])
@@ -1219,4 +1302,148 @@ model Notification {
 
   @@index([userId, readAt])
   @@map("notification")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CDC-2026 Module 9 — satisfaction surveys.
+//
+// §9 fixes both the milestones (J+7, J+30, J+60, J+90) and the five indicators, so both
+// are modelled rather than left free-form: a survey whose questions vary per instance
+// cannot be averaged across the organization, which is the whole point of §10's
+// "score de satisfaction globale, filtres par direction et par manager".
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The five indicators of §9. Fixed by the CDC, so an enum rather than a question table.
+enum SurveyIndicator {
+  /// Qualité de l'accueil.
+  WELCOME_QUALITY
+  /// Niveau de l'accompagnement.
+  SUPPORT_LEVEL
+  /// Niveau de compréhension du poste assigné.
+  ROLE_CLARITY
+  /// Relationnel manager.
+  MANAGER_RELATIONSHIP
+  /// Ergonomie des conditions de travail.
+  WORKING_CONDITIONS
+}
+
+/// One survey due at one milestone of one person's journey.
+model SurveyRound {
+  id         String             @id @default(uuid()) @db.Uuid
+  instanceId String             @db.Uuid
+  instance   OnboardingInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  /// 7, 30, 60 or 90 — the J+n of §9, kept as a number so a client who adds J+180 needs
+  /// no migration.
+  dayOffset  Int
+  /// Derived from the journey's start date at instantiation; the reminder job reads it.
+  dueDate    DateTime           @db.Date
+  /// Set when the collaborator submits. Null means still outstanding.
+  answeredAt DateTime?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  responses SurveyResponse[]
+
+  /// One round per milestone per journey: re-sending J+30 must update, not duplicate.
+  @@unique([instanceId, dayOffset])
+  @@index([dueDate, answeredAt])
+  @@map("survey_round")
+}
+
+/// One indicator's score within one round.
+model SurveyResponse {
+  id        String          @id @default(uuid()) @db.Uuid
+  roundId   String          @db.Uuid
+  round     SurveyRound     @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  /// Denormalised from the round's instance so §10's "filtres par direction et par
+  /// manager" is one join rather than three.
+  userId    String          @db.Uuid
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  indicator SurveyIndicator
+  /// 1–5. The scale is asserted in the domain, not by a database constraint, so the
+  /// message a user sees comes from the same place as every other validation.
+  score     Int
+  commentFr String?         @db.Text
+  createdAt DateTime        @default(now())
+
+  @@unique([roundId, indicator])
+  @@index([userId])
+  @@map("survey_response")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CDC-2026 Module 6 — training, quizzes and certificates.
+//
+// Per §4's Plug & Play clause the structure is built now and seeded with realistic
+// placeholder content; when SOFICLEF supplies the real HSE and Qualité material it is
+// chained to these tables without a rewrite.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// A mandatory training module (HSE, Qualité, Règlement intérieur, Politique RH,
+/// Sécurité informatique — §5 Module 6).
+model TrainingModule {
+  id            String    @id @default(uuid()) @db.Uuid
+  code          String    @unique
+  titleFr       String
+  summaryFr     String    @db.Text
+  /// Micro-learning body. Markdown-ish plain text until the client supplies real supports.
+  contentFr     String    @db.Text
+  /// Whether every collaborator must pass it.
+  isMandatory   Boolean   @default(true)
+  /// Percentage needed to pass, 0–100.
+  passingScore  Int       @default(70)
+  order         Int       @default(0)
+  /// True while the content is placeholder rather than SOFICLEF's own material. Shown in
+  /// the UI, so nobody mistakes seeded text for an approved HSE procedure.
+  isPlaceholder Boolean   @default(true)
+  archivedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  questions TrainingQuestion[]
+  attempts  TrainingAttempt[]
+
+  @@map("training_module")
+}
+
+/// One multiple-choice question. `options` is JSON — a table of answer rows would buy
+/// nothing, since an option is never queried on its own.
+model TrainingQuestion {
+  id            String         @id @default(uuid()) @db.Uuid
+  moduleId      String         @db.Uuid
+  module        TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  order         Int
+  promptFr      String         @db.Text
+  /// `[{ "id": "a", "labelFr": "…" }, …]`
+  options       Json
+  /// The `id` of the correct option. Never sent to the browser with the question.
+  correctOption String
+  explanationFr String?        @db.Text
+
+  @@index([moduleId])
+  @@map("training_question")
+}
+
+/// One person's attempt at one module. Append-only: a retake is a new row, so the
+/// history of how somebody got there survives, as with `Assessment`.
+model TrainingAttempt {
+  id          String         @id @default(uuid()) @db.Uuid
+  moduleId    String         @db.Uuid
+  module      TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  userId      String         @db.Uuid
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// 0–100.
+  score       Int
+  passed      Boolean
+  /// What they answered, `{ questionId: optionId }`, so a review can show the mistakes.
+  answers     Json
+  startedAt   DateTime       @default(now())
+  completedAt DateTime?
+  /// Set on the first passing attempt. The certificate is this row, not a stored file:
+  /// a PDF would be a copy that can drift from the record it claims to prove.
+  certifiedAt DateTime?
+
+  @@index([userId, moduleId])
+  @@index([moduleId, passed])
+  @@map("training_attempt")
 }

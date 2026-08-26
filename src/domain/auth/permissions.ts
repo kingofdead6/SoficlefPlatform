@@ -24,6 +24,8 @@ export const RESOURCES = [
   'report',
   'dashboard',
   'notification',
+  'survey',
+  'training',
   'user',
   'role',
   'audit_log',
@@ -59,6 +61,10 @@ const READ_ONLY_EVERYTHING: PermissionCode[] = [
   'dashboard:read',
   'document:read',
   'notification:read',
+  // The DG reads the aggregate satisfaction score of §10. Individual answers stay out of
+  // reach: `survey:read` is filtered by scope in the query, and a reader holds no scope
+  // over another person's responses.
+  'survey:read',
 ];
 
 /**
@@ -132,6 +138,10 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'setting:read',
     'notification:read',
     'notification:update',
+    'survey:read',
+    'training:read',
+    'training:create',
+    'training:update',
   ],
   HEAD_CE: [
     'organization_unit:read',
@@ -156,6 +166,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'dashboard:read',
     'notification:read',
     'notification:update',
+    'survey:read',
+    'training:read',
   ],
   HR: [
     'organization_unit:read',
@@ -178,6 +190,10 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'dashboard:read',
     'notification:read',
     'notification:update',
+    'survey:read',
+    'survey:create',
+    'survey:update',
+    'training:read',
   ],
   MANAGER: [
     'organization_unit:read',
@@ -200,6 +216,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'dashboard:read',
     'notification:read',
     'notification:update',
+    'survey:read',
+    'training:read',
   ],
   EMPLOYEE: [
     'organization_unit:read',
@@ -219,6 +237,10 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'dashboard:read',
     'notification:read',
     'notification:update',
+    'survey:read',
+    'survey:update',
+    'training:read',
+    'training:update',
   ],
   VIEWER: [...READ_ONLY_EVERYTHING],
 };
