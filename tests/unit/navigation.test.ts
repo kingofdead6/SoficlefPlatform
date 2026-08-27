@@ -58,24 +58,22 @@ describe('navigation is twenty routes in six groups', () => {
     expect(NAV_ITEMS.map((item) => item.id)).not.toContain('assistant');
   });
 
-  it('shows every business entry to the business administrator', () => {
-    const visible = idsOf(buildNavigation(user('BIZ_ADMIN_CE')));
-    // Everything except the technical administration section, which is TECH_ADMIN's:
-    // the business administrator manages the reference frame, not accounts and logs.
-    expect(visible).toHaveLength(18);
-    expect(visible).not.toContain('admin');
-    expect(visible).toContain('dashboard');
+  it('shows the administrator every entry, business and technical alike', () => {
     /*
-     * Nor personnel administration. The business administrator defines what a post *is*;
-     * putting a person in one is HR's act, and `/hr` is gated on performing it rather
-     * than on reading it.
+     * ADMIN absorbed the previous TECH_ADMIN, BIZ_ADMIN_CE, HEAD_CE and VIEWER, so it now
+     * sees both the business reference frame and the administration screen. The earlier
+     * model deliberately kept those apart; folding them is the trade the four-role
+     * simplification makes, and this test says so rather than hiding it.
      */
-    expect(visible).not.toContain('hr');
+    const visible = idsOf(buildNavigation(user('ADMIN')));
+    expect(visible).toContain('admin');
+    expect(visible).toContain('dashboard');
+    expect(visible).toContain('organization');
   });
 
-  it('reserves the administration section for the technical administrator', () => {
-    expect(idsOf(buildNavigation(user('TECH_ADMIN')))).toContain('admin');
-    for (const role of ['HEAD_CE', 'HR', 'MANAGER', 'EMPLOYEE', 'VIEWER'] as RoleCode[]) {
+  it('reserves the administration section for the administrator', () => {
+    expect(idsOf(buildNavigation(user('ADMIN')))).toContain('admin');
+    for (const role of ['HR', 'MANAGER', 'EMPLOYEE'] as RoleCode[]) {
       const account = role === 'MANAGER' ? user(role, [FABRICATION]) : user(role);
       expect(idsOf(buildNavigation(account)), role).not.toContain('admin');
     }
@@ -83,16 +81,18 @@ describe('navigation is twenty routes in six groups', () => {
 });
 
 describe('entries a role cannot open are never sent', () => {
-  it('hides Kaizen, the checklist and remarks from a VIEWER', () => {
-    const visible = idsOf(buildNavigation(user('VIEWER')));
+  it('hides Kaizen and personnel administration from a collaborator', () => {
+    const visible = idsOf(buildNavigation(user('EMPLOYEE')));
     expect(visible).not.toContain('kaizen');
-    expect(visible).not.toContain('onboardingChecklist');
-    expect(visible).not.toContain('remarks');
+    expect(visible).not.toContain('hr');
+    expect(visible).not.toContain('admin');
+    // The reference frame stays visible: a new arrival is meant to read it.
     expect(visible).toContain('organization');
+    expect(visible).toContain('onboardingChecklist');
   });
 
   it('drops a group entirely rather than leaving an empty heading', () => {
-    const groups = buildNavigation(user('VIEWER'));
+    const groups = buildNavigation(user('EMPLOYEE'));
     expect(groups.every((group) => group.items.length > 0)).toBe(true);
   });
 
@@ -124,14 +124,14 @@ describe('entries a role cannot open are never sent', () => {
   });
 
   it('shows nothing at all to a suspended account', () => {
-    const suspended = { ...user('BIZ_ADMIN_CE'), status: 'SUSPENDED' as const };
+    const suspended = { ...user('ADMIN'), status: 'SUSPENDED' as const };
     expect(buildNavigation(suspended)).toEqual([]);
   });
 });
 
 describe('canOpen agrees with the menu', () => {
   it('is true for every visible entry and false for every hidden one', () => {
-    for (const role of ['VIEWER', 'MANAGER', 'EMPLOYEE', 'HR', 'TECH_ADMIN'] as RoleCode[]) {
+    for (const role of ROLE_CODES) {
       const account = role === 'MANAGER' ? user(role, [FABRICATION]) : user(role);
       const visible = new Set(idsOf(buildNavigation(account)));
 
@@ -152,7 +152,7 @@ describe('a unit-scoped role can actually load what the menu offers it', () => {
    *
    * `canAnyScope` is now the single question both sides ask.
    */
-  const UNIT_SCOPED: RoleCode[] = ['HR', 'MANAGER', 'HEAD_CE', 'BIZ_ADMIN_CE'];
+  const UNIT_SCOPED: RoleCode[] = ['HR', 'MANAGER', 'ADMIN'];
 
   it('grants shared reference content to unit-scoped and self-scoped roles alike', () => {
     for (const role of UNIT_SCOPED) {
@@ -175,39 +175,43 @@ describe('a unit-scoped role can actually load what the menu offers it', () => {
   });
 });
 
-describe('the provisioning chain is split across two screens', () => {
+describe('the provisioning chain, under the four-role model', () => {
   /*
-   * SI creates accounts, HR places them. The split is the control: neither role can put
-   * a working account into the platform on its own, so `/admin` and `/hr` must never
-   * collapse into one another.
+   * This suite used to assert a separation of duties: SI created accounts, HR placed
+   * them, and neither could do the other's half. Collapsing seven roles into four ended
+   * that — ADMIN now holds `user:create` *and* `assignment:create`.
    *
-   * This caught a real mistake — giving HR `user:read` so it could "see names" handed it
-   * the whole SI console, because that is the permission `/admin` is gated on.
+   * The tests are rewritten rather than deleted, because what they pin down still matters:
+   * the chain is still two *steps*, HR still cannot create accounts, and an unplaced
+   * account still reaches nothing. What is gone is the guarantee that two people were
+   * required, and that is stated here so it is not later mistaken for still holding.
    */
+  it('gives ADMIN both halves of the chain — no longer a separation of duties', () => {
+    const admin = user('ADMIN');
+    expect(canAnyScope(admin, 'create', 'user')).toBe(true);
+    expect(canAnyScope(admin, 'create', 'assignment')).toBe(true);
+  });
+
+  it('still keeps HR out of account creation', () => {
+    const hr = user('HR');
+    // HR places people; it does not create or delete the accounts. This half of the
+    // original split survives the collapse.
+    expect(canAnyScope(hr, 'create', 'user')).toBe(false);
+    expect(canAnyScope(hr, 'delete', 'user')).toBe(false);
+    expect(canAnyScope(hr, 'create', 'assignment')).toBe(true);
+  });
+
+  it('offers the personnel screen only to those who may assign', () => {
+    // Both roles that hold `assignment:create` see it; neither of the other two does.
+    expect(idsOf(buildNavigation(user('HR')))).toContain('hr');
+    expect(idsOf(buildNavigation(user('ADMIN')))).toContain('hr');
+    expect(idsOf(buildNavigation(user('EMPLOYEE')))).not.toContain('hr');
+    expect(idsOf(buildNavigation(user('MANAGER', [FABRICATION])))).not.toContain('hr');
+  });
+
   it('keeps HR out of the SI console', () => {
     const visible = idsOf(buildNavigation(user('HR')));
     expect(visible).toContain('hr');
     expect(visible).not.toContain('admin');
-  });
-
-  it('keeps the technical administrator out of personnel administration', () => {
-    const visible = idsOf(buildNavigation(user('TECH_ADMIN')));
-    expect(visible).toContain('admin');
-    // TECH_ADMIN reads posts and assignments but writes neither, and the screen that
-    // writes them is not offered.
-    expect(visible).not.toContain('hr');
-  });
-
-  it('lets neither role perform the other half of the chain', () => {
-    const si = user('TECH_ADMIN');
-    const hr = user('HR');
-
-    // SI creates the account; HR cannot.
-    expect(canAnyScope(si, 'create', 'user')).toBe(true);
-    expect(canAnyScope(hr, 'create', 'user')).toBe(false);
-
-    // HR gives it a post; SI cannot.
-    expect(canAnyScope(hr, 'create', 'assignment')).toBe(true);
-    expect(canAnyScope(si, 'create', 'assignment')).toBe(false);
   });
 });

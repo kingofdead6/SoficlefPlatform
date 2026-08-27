@@ -169,6 +169,70 @@ async function seedPermissionsAndRoles(): Promise<void> {
   }
 }
 
+/**
+ * Removes accounts and roles that the code no longer knows about.
+ *
+ * Upserts create and update but never delete, so an earlier cast survives every reseed —
+ * and after the seven-role model collapsed to four, those leftovers held role rows that no
+ * longer exist in `ROLES`. An account carrying a role the permission table cannot resolve
+ * is worse than no account: it signs in and then behaves unpredictably.
+ *
+ * Only seeded, fictional accounts are touched. A row created through the administration
+ * screens is left alone: this function exists to keep the demonstration data honest, not to
+ * prune real users.
+ */
+async function pruneRetiredSeedData(): Promise<{ users: number; roles: number }> {
+  const keep = [...DEMO_USERS, ...TEST_USERS].map((demo) => demo.email);
+
+  const stale = await prisma.user.findMany({
+    where: {
+      email: { notIn: keep, endsWith: '@soficlef.local' },
+    },
+    select: { id: true, email: true },
+  });
+
+  const staleTestAccounts = await prisma.user.findMany({
+    where: { email: { endsWith: '@test.soficlef.local' } },
+    select: { id: true, email: true },
+  });
+
+  const doomed = [...stale, ...staleTestAccounts];
+
+  if (doomed.length > 0) {
+    const ids = doomed.map((user) => user.id);
+
+    /*
+     * Assignments and journeys are removed first: `Assignment.position` is `Restrict`, so
+     * the user delete would fail against them, and an audit row referencing a deleted
+     * actor is set null rather than cascaded — the trail outlives the account by design.
+     */
+    await prisma.assignment.deleteMany({ where: { userId: { in: ids } } });
+    await prisma.onboardingInstance.deleteMany({ where: { userId: { in: ids } } });
+    await prisma.user.deleteMany({ where: { id: { in: ids } } });
+
+    // Seats those people held are vacant again.
+    await prisma.position.updateMany({
+      where: { assignments: { none: { endDate: null } }, archivedAt: null },
+      data: { isVacant: true, occupancy: 'VACANT' },
+    });
+  }
+
+  const liveRoles = Object.keys(ROLES);
+  const retired = await prisma.role.findMany({
+    where: { code: { notIn: liveRoles } },
+    select: { id: true, code: true },
+  });
+
+  if (retired.length > 0) {
+    const ids = retired.map((role) => role.id);
+    await prisma.rolePermission.deleteMany({ where: { roleId: { in: ids } } });
+    await prisma.userRole.deleteMany({ where: { roleId: { in: ids } } });
+    await prisma.role.deleteMany({ where: { id: { in: ids } } });
+  }
+
+  return { users: doomed.length, roles: retired.length };
+}
+
 async function seedOrganization(): Promise<Map<string, string>> {
   const ids = new Map<string, string>();
   for (const unit of organizationSkeleton()) {
@@ -224,12 +288,6 @@ async function scopeFor(unitId: string | null): Promise<string | null> {
  * would all render their empty state. Fourteen days back puts J+7 open and one milestone
  * overdue, which is what somebody testing actually needs to see.
  */
-const TEST_JOURNEY_START = (() => {
-  const start = new Date();
-  start.setDate(start.getDate() - 14);
-  return start.toISOString().slice(0, 10);
-})();
-
 interface DemoUser {
   email: string;
   displayName: string;
@@ -260,207 +318,151 @@ interface DemoUser {
 }
 
 /**
- * Demo accounts mirroring the real cast, so the role model can be walked through with
- * the client. Real accounts are created through the administration screens.
+ * Journey start dates for the four recruits, staggered so every screen has something real
+ * to show: one just arrived, one mid-checklist, one past the J+30 survey, and one whose
+ * probation is effectively over.
  *
- * They share one password, set by SEED_DEMO_PASSWORD; nothing is hardcoded here
- * (ADR-023). See `TEST_USERS` below for the parallel set used to exercise each role.
+ * Computed from today rather than written as fixed dates, because a seed with hardcoded
+ * dates renders correctly the week it is written and progressively wronger afterwards.
+ */
+const daysAgo = (days: number): string => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString().slice(0, 10);
+};
+
+/**
+ * The cast: one account per role, plus the several new hires the onboarding module exists
+ * to serve.
+ *
+ * Deliberately fictional and visibly so, at `@soficlef.local`, so a demonstration action is
+ * never one careless click from a real person's record. Real accounts are created through
+ * the administration screens.
+ *
+ * They share one password, set by SEED_DEMO_PASSWORD; nothing is hardcoded here (ADR-023).
  */
 const DEMO_USERS: DemoUser[] = [
   {
-    email: 'tech.admin@soficlef.local',
-    reportsToEmail: 'charikhi@soficlef.local',
-    displayName: 'Administrateur technique',
+    email: 'admin@soficlef.local',
+    displayName: 'Administrateur',
     locale: 'fr',
-    roles: [{ code: 'TECH_ADMIN' }],
-    positionTitleFr: 'Administrateur technique',
-  },
-  {
-    email: 'mostafa@soficlef.local',
-    reportsToEmail: 'drh@soficlef.local',
-    displayName: 'M. Mostafa — Responsable Compétences & Emplois',
-    locale: 'fr',
-    roles: [{ code: 'HEAD_CE' }],
-    positionTitleFr: 'Responsable Compétences & Emplois',
-  },
-  {
-    email: 'chanane@soficlef.local',
-    reportsToEmail: 'mostafa@soficlef.local',
-    displayName: 'CHANANE Mohamed Rafik — Emploi & Compétences',
-    locale: 'fr',
-    roles: [{ code: 'BIZ_ADMIN_CE' }],
-    positionTitleFr: 'Chargé Emploi & Compétences',
-  },
-  {
-    email: 'drh@soficlef.local',
-    reportsToEmail: 'charikhi@soficlef.local',
-    displayName: 'Direction des Ressources Humaines',
-    locale: 'fr',
-    roles: [{ code: 'HR' }],
-    positionTitleFr: 'Direction des Ressources Humaines',
-  },
-  {
-    // The pilot user is both the subject of an onboarding journey and the head of a
-    // structure — two assignments, which is exactly why CDC v1's DIR_PROD maps onto two
-    // of CDC v0.1's profiles (ADR-005).
-    email: 'djaoudi@soficlef.local',
-    reportsToEmail: 'charikhi@soficlef.local',
-    displayName: 'DJAOUDI Farid — Directeur de Production',
-    locale: 'fr',
-    roles: [{ code: 'EMPLOYEE' }, { code: 'MANAGER', unitCode: 'DPR' }],
-    // Taken from the extracted prototype data, not retyped.
-    onboardingStartDate: WELCOME.startDate,
-    positionTitleFr: 'Directeur de Production',
-  },
-  {
-    // A collaborator with no managerial breadth: their rights end at their own records,
-    // which is what CDC v0.1 §3's "Collaborateur" profile means.
-    email: 'boubenia@soficlef.local',
-    reportsToEmail: 'oudni@soficlef.local',
-    displayName: 'BOUBENIA Ahmed — Référent Production',
-    locale: 'fr',
-    roles: [{ code: 'EMPLOYEE' }],
-    positionTitleFr: 'Référent Production',
-  },
-  {
-    email: 'oudni@soficlef.local',
-    reportsToEmail: 'djaoudi@soficlef.local',
-    displayName: 'OUDNI Yassine — Responsable Fabrication',
-    locale: 'fr',
-    roles: [{ code: 'MANAGER', unitCode: 'DPR-FABRICATION' }],
-    positionTitleFr: 'Responsable Fabrication',
-  },
-  {
-    email: 'charikhi@soficlef.local',
-    displayName: 'M. CHARIKHI Sofiane — Directeur Général',
-    locale: 'fr',
-    roles: [{ code: 'VIEWER' }],
-    positionTitleFr: 'Directeur Général',
-  },
-];
-
-/**
- * A parallel cast for testing — exactly one account per role, and nothing else.
- *
- * The accounts above mirror the real SOFICLEF people, which makes them the right set to
- * demonstrate the product with and the wrong set to test rights with: DJAOUDI holds two
- * roles, so "log in as the collaborator" and "log in as the manager" are the same login,
- * and any confusion between a test action and a real person's record is one careless
- * click away.
- *
- * These are deliberately, visibly fictional — `@test.soficlef.local`, and names that read
- * as placeholders — so nobody mistakes a test account for a colleague. Each holds one
- * role, so opening a page as `manager@test.soficlef.local` tells you exactly what a
- * MANAGER sees, with nothing borrowed from a second assignment.
- *
- * They carry the CDC-2026 Module 1 employee record too (hire date, service, manager,
- * phone), which the original cast predates — so those fields have real values to show.
- */
-const TEST_USERS: DemoUser[] = [
-  {
-    email: 'admin.tech@test.soficlef.local',
-    reportsToEmail: 'lecteur@test.soficlef.local',
-    displayName: 'TEST — Administrateur technique',
-    locale: 'fr',
-    roles: [{ code: 'TECH_ADMIN' }],
-    hireDate: '2024-01-15',
+    roles: [{ code: 'ADMIN' }],
+    hireDate: '2019-01-07',
     phone: '150',
-    directionFr: 'Direction des Systèmes d’Information',
-    serviceFr: 'Infrastructure & Sécurité',
-    positionTitleFr: 'Administrateur systèmes',
+    directionFr: 'Direction Générale',
+    serviceFr: 'Systèmes d’Information',
+    positionTitleFr: 'Administrateur de la plateforme',
   },
   {
-    email: 'admin.metier@test.soficlef.local',
-    reportsToEmail: 'responsable.ce@test.soficlef.local',
-    displayName: 'TEST — Administrateur métier C&E',
-    locale: 'fr',
-    roles: [{ code: 'BIZ_ADMIN_CE' }],
-    hireDate: '2023-09-04',
-    phone: '432',
-    directionFr: 'Direction des Ressources Humaines',
-    serviceFr: 'Structure Compétences & Emplois',
-    positionTitleFr: 'Chargé du référentiel emplois',
-  },
-  {
-    email: 'responsable.ce@test.soficlef.local',
-    reportsToEmail: 'rh@test.soficlef.local',
-    displayName: 'TEST — Responsable Compétences & Emplois',
-    locale: 'fr',
-    roles: [{ code: 'HEAD_CE' }],
-    hireDate: '2019-03-11',
-    phone: '430',
-    directionFr: 'Direction des Ressources Humaines',
-    serviceFr: 'Structure Compétences & Emplois',
-    positionTitleFr: 'Responsable Compétences & Emplois',
-  },
-  {
-    email: 'rh@test.soficlef.local',
-    reportsToEmail: 'lecteur@test.soficlef.local',
-    displayName: 'TEST — Chargée RH',
+    email: 'rh@soficlef.local',
+    displayName: 'Responsable RH',
     locale: 'fr',
     roles: [{ code: 'HR' }],
-    hireDate: '2022-06-20',
+    hireDate: '2021-03-15',
     phone: '434',
     directionFr: 'Direction des Ressources Humaines',
     serviceFr: 'Administration du personnel',
-    positionTitleFr: 'Chargée des ressources humaines',
+    positionTitleFr: 'Responsable des Ressources Humaines',
+    reportsToEmail: 'admin@soficlef.local',
   },
   {
-    // Scoped to Fabrication, which has two units beneath it — so this account also
-    // demonstrates that a manager's perimeter includes what hangs under it.
-    email: 'manager@test.soficlef.local',
-    reportsToEmail: 'lecteur@test.soficlef.local',
-    displayName: 'TEST — Responsable de structure',
+    /*
+     * Scoped to Fabrication, which has two units beneath it — so this account also
+     * demonstrates that a manager's perimeter includes what hangs under it, rather than
+     * stopping at their own structure.
+     */
+    email: 'manager@soficlef.local',
+    displayName: 'Responsable Fabrication',
     locale: 'fr',
     roles: [{ code: 'MANAGER', unitCode: 'DPR-FABRICATION' }],
-    hireDate: '2021-02-01',
+    hireDate: '2020-09-01',
     phone: '210',
     directionFr: 'Direction de Production',
     serviceFr: 'Structure Fabrication',
     positionTitleFr: 'Responsable Fabrication',
+    reportsToEmail: 'admin@soficlef.local',
   },
+
+  /*
+   * The new hires. Four rather than one, staggered across the 90-day journey: a single
+   * recruit would leave the checklist, the survey rounds and the probation reporting each
+   * showing one row in one state, which demonstrates none of them.
+   */
   {
-    // Reports to the manager above, and starts an onboarding journey today, so the
-    // checklist, the surveys and the training all have somewhere to land.
-    email: 'collaborateur@test.soficlef.local',
-    reportsToEmail: 'manager@test.soficlef.local',
-    displayName: 'TEST — Collaborateur',
+    email: 'nouveau.1@soficlef.local',
+    displayName: 'AMRANI Sofiane — Technicien de fabrication',
     locale: 'fr',
     roles: [{ code: 'EMPLOYEE' }],
-    hireDate: TEST_JOURNEY_START,
-    onboardingStartDate: TEST_JOURNEY_START,
+    hireDate: daysAgo(5),
+    onboardingStartDate: daysAgo(5),
     phone: '211',
     directionFr: 'Direction de Production',
     serviceFr: 'Structure Fabrication',
     positionTitleFr: 'Technicien de fabrication',
-    managerEmail: 'manager@test.soficlef.local',
+    managerEmail: 'manager@soficlef.local',
+    reportsToEmail: 'manager@soficlef.local',
   },
   {
-    email: 'lecteur@test.soficlef.local',
-    displayName: 'TEST — Lecteur / Direction',
+    email: 'nouveau.2@soficlef.local',
+    displayName: 'BENALI Yacine — Agent de maintenance',
     locale: 'fr',
-    roles: [{ code: 'VIEWER' }],
-    hireDate: '2018-05-02',
-    phone: '145',
-    directionFr: 'Direction Générale',
-    serviceFr: 'Direction Générale',
-    positionTitleFr: 'Membre de la direction',
+    roles: [{ code: 'EMPLOYEE' }],
+    hireDate: daysAgo(20),
+    onboardingStartDate: daysAgo(20),
+    phone: '212',
+    directionFr: 'Direction de Production',
+    serviceFr: 'Structure Fabrication',
+    positionTitleFr: 'Agent de maintenance',
+    managerEmail: 'manager@soficlef.local',
+    reportsToEmail: 'manager@soficlef.local',
+  },
+  {
+    email: 'nouveau.3@soficlef.local',
+    displayName: 'CHERIF Amina — Contrôleuse qualité',
+    locale: 'fr',
+    roles: [{ code: 'EMPLOYEE' }],
+    hireDate: daysAgo(45),
+    onboardingStartDate: daysAgo(45),
+    phone: '213',
+    directionFr: 'Direction de Production',
+    serviceFr: 'Structure Fabrication',
+    positionTitleFr: 'Contrôleuse qualité',
+    managerEmail: 'manager@soficlef.local',
+    reportsToEmail: 'manager@soficlef.local',
+  },
+  {
+    email: 'nouveau.4@soficlef.local',
+    displayName: 'DAHMANI Karim — Magasinier',
+    locale: 'fr',
+    roles: [{ code: 'EMPLOYEE' }],
+    hireDate: daysAgo(95),
+    onboardingStartDate: daysAgo(95),
+    phone: '214',
+    directionFr: 'Direction de Production',
+    serviceFr: 'Structure Fabrication',
+    positionTitleFr: 'Magasinier',
+    managerEmail: 'manager@soficlef.local',
+    reportsToEmail: 'manager@soficlef.local',
   },
   {
     /*
-     * The provisioning chain's first step, left standing: SI has created the account,
-     * HR has not yet placed it. Signing in reaches `/pending` and nothing else, which is
-     * the state the platform must handle gracefully rather than a defect to fix in seed.
+     * Left unplaced on purpose: the provisioning chain's resting state. The account exists
+     * and can sign in, but reaches `/pending` and nothing else until it is given a post.
      */
-    email: 'attente.affectation@test.soficlef.local',
-    displayName: 'TEST — Compte en attente d’affectation',
+    email: 'attente@soficlef.local',
+    displayName: 'Compte en attente d’affectation',
     locale: 'fr',
     roles: [{ code: 'EMPLOYEE' }],
-    hireDate: '2026-08-24',
+    hireDate: daysAgo(2),
     pendingAssignment: true,
   },
 ];
 
+/**
+ * Kept as an empty list rather than removed: the seeding code walks
+ * `[...DEMO_USERS, ...TEST_USERS]` in four places, and a separate test cast may return.
+ */
+const TEST_USERS: DemoUser[] = [];
 
 /**
  * Administrable parameters, seeded with the documented defaults.
@@ -1388,11 +1390,16 @@ async function seedOnboardingTemplate(positionId: string): Promise<string> {
  * first instance of a reusable template, not a hardcoded page.
  */
 async function seedWelcomeAndOnboardingInstance(templateId: string): Promise<void> {
-  const djaoudi = await prisma.user.findUnique({
-    where: { email: 'djaoudi@soficlef.local' },
-    select: { id: true },
-  });
-  if (!djaoudi) throw new Error('djaoudi@soficlef.local must be seeded before welcome content');
+  /*
+   * The prototype's welcome letter, addressed to the first recruit. It used to name a
+   * specific seeded person; that account went with the four-role cast, and hardcoding
+   * another email would only move the same breakage one rename away.
+   */
+  const recipientEmail = DEMO_USERS.find((demo) => demo.onboardingStartDate)?.email;
+  const djaoudi = recipientEmail
+    ? await prisma.user.findUnique({ where: { email: recipientEmail }, select: { id: true } })
+    : null;
+  if (!djaoudi) throw new Error('a recruit must be seeded before welcome content');
 
   const welcome = await prisma.welcome.upsert({
     where: { slug: 'bienvenue-djaoudi' },
@@ -1478,53 +1485,70 @@ async function seedWelcomeAndOnboardingInstance(templateId: string): Promise<voi
 }
 
 /**
- * An onboarding journey for the test collaborator.
+ * Onboarding journeys for the four recruits.
  *
- * Separate from the pilot's journey above, and deliberately dated a fortnight back, so a
- * tester signing in as `collaborateur@test.soficlef.local` lands on a checklist with a
- * live deadline, an overdue step and an open J+7 survey — rather than on four empty
- * states that demonstrate nothing.
+ * Each is dated from that person's own `onboardingStartDate`, so the set spans the whole
+ * 90-day arc at once: D+5 has a live deadline and an open J+7 survey, D+20 is mid-checklist,
+ * D+45 is past J+30, and D+95 has finished. One recruit on day one would leave the
+ * checklist, the survey rounds and the probation reporting each showing a single empty
+ * state, which demonstrates none of them.
  *
- * The task rows are left open. Completion is recorded through the app, which is the
- * behaviour being tested; seeding it would hide whether it works.
+ * Task rows are created but left open. Completion is recorded through the app, which is
+ * the behaviour being tested; seeding it would hide whether it works.
  */
-async function seedTestJourney(templateId: string): Promise<boolean> {
-  const collaborator = await prisma.user.findUnique({
-    where: { email: 'collaborateur@test.soficlef.local' },
-    select: { id: true },
-  });
-  if (!collaborator) return false;
-
-  const startDate = new Date(TEST_JOURNEY_START);
-
-  let instance = await prisma.onboardingInstance.findFirst({
-    where: { userId: collaborator.id, templateId },
-    select: { id: true },
-  });
-  if (!instance) {
-    instance = await prisma.onboardingInstance.create({
-      data: { userId: collaborator.id, templateId, startDate },
-      select: { id: true },
-    });
-  }
-
+async function seedRecruitJourneys(templateId: string): Promise<number> {
   const milestones = await prisma.onboardingMilestone.findMany({
     where: { templateId },
     select: { id: true },
   });
-  for (const milestone of milestones) {
-    const existing = await prisma.onboardingTaskCompletion.findUnique({
-      where: { instanceId_milestoneId: { instanceId: instance.id, milestoneId: milestone.id } },
+
+  let created = 0;
+
+  for (const demo of DEMO_USERS) {
+    if (!demo.onboardingStartDate) continue;
+
+    const recruit = await prisma.user.findUnique({
+      where: { email: demo.email },
       select: { id: true },
     });
-    if (!existing) {
-      await prisma.onboardingTaskCompletion.create({
-        data: { instanceId: instance.id, milestoneId: milestone.id },
+    if (!recruit) continue;
+
+    const startDate = new Date(demo.onboardingStartDate);
+
+    let instance = await prisma.onboardingInstance.findFirst({
+      where: { userId: recruit.id, templateId },
+      select: { id: true },
+    });
+    if (!instance) {
+      instance = await prisma.onboardingInstance.create({
+        data: { userId: recruit.id, templateId, startDate },
+        select: { id: true },
+      });
+    } else {
+      await prisma.onboardingInstance.update({
+        where: { id: instance.id },
+        data: { startDate },
       });
     }
+
+    for (const milestone of milestones) {
+      const existing = await prisma.onboardingTaskCompletion.findUnique({
+        where: { instanceId_milestoneId: { instanceId: instance.id, milestoneId: milestone.id } },
+        select: { id: true },
+      });
+      if (!existing) {
+        await prisma.onboardingTaskCompletion.create({
+          data: { instanceId: instance.id, milestoneId: milestone.id },
+        });
+      }
+    }
+
+    // Survey rounds are not created here: `seedSurveyRounds` walks every instance later
+    // in the run and dates them from each instance's own start.
+    created += 1;
   }
 
-  return true;
+  return created;
 }
 
 /**
@@ -1703,6 +1727,10 @@ async function main(): Promise<void> {
   const unitIds = await seedOrganization();
   await seedDemoUsers(unitIds, password);
 
+  // After the new cast exists, never before: pruning first would leave a window with no
+  // accounts at all if a later step failed.
+  const pruned = await pruneRetiredSeedData();
+
   await seedCompanyAndValues();
   await seedStrategy();
   const jobId = await seedPositionAndDescription(unitIds);
@@ -1715,7 +1743,7 @@ async function main(): Promise<void> {
   await seedRecruitment();
   const templateId = await seedOnboardingTemplate(jobId);
   await seedWelcomeAndOnboardingInstance(templateId);
-  const testJourney = await seedTestJourney(templateId);
+  const journeyCount = await seedRecruitJourneys(templateId);
   const competencyCount = await seedCompetencyFrame(jobId);
   const assignmentCount = await seedAssignments(unitIds);
   const settingCount = await seedAppSettings();
@@ -1725,21 +1753,24 @@ async function main(): Promise<void> {
   console.log(`✔ ${ALL_PERMISSIONS.length} permissions, ${Object.keys(ROLES).length} roles`);
   console.log(`✔ ${unitIds.size} organization units`);
   console.log(
-    `✔ ${DEMO_USERS.length} demo users + ${TEST_USERS.length} test users (one per role)`,
+    `✔ ${DEMO_USERS.length} accounts — one per role, plus four recruits and one unplaced`,
   );
   console.log('✔ company, values, strategy, job description, management team, org chart');
   console.log('✔ kaizen, qms, hse, contacts, documents, recruitment');
   console.log('✔ onboarding template + welcome content + onboarding instance');
   console.log(`✔ training catalogue — ${trainingCount} modules, placeholder content`);
   console.log(`✔ ${surveyRoundCount} survey rounds — J+7, J+30, J+60, J+90`);
+  console.log(`✔ ${journeyCount} recruit journeys — D+5, D+20, D+45 and D+95`);
+  if (pruned.users > 0 || pruned.roles > 0) {
+    console.log(
+      `✔ pruned ${pruned.users} retired seed accounts and ${pruned.roles} retired roles`,
+    );
+  }
   console.log(`✔ ${settingCount} administrable settings (defaults; existing values kept)`);
   console.log(
     `✔ ${assignmentCount} assignments — one open post each; ` +
-      'attente.affectation@test.soficlef.local left PENDING_ASSIGNMENT on purpose',
+      'attente@soficlef.local left PENDING_ASSIGNMENT on purpose',
   );
-  if (testJourney) {
-    console.log(`✔ test journey for collaborateur@test.soficlef.local (start ${TEST_JOURNEY_START})`);
-  }
   console.log(
     `✔ competency frame — ${competencyCount} competencies (proposal, awaiting validation)`,
   );

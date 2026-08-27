@@ -56,13 +56,10 @@
     "signedInAs": "Connecté en tant que"
   },
   "roles": {
-    "TECH_ADMIN": "Administrateur technique",
-    "BIZ_ADMIN_CE": "Administrateur métier C&E",
-    "HEAD_CE": "Responsable Compétences & Emplois",
+    "ADMIN": "Administrateur",
     "HR": "Direction des Ressources Humaines",
     "MANAGER": "Responsable de structure",
-    "EMPLOYEE": "Collaborateur",
-    "VIEWER": "Lecteur"
+    "EMPLOYEE": "Collaborateur"
   },
   "nav": {
     "openMenu": "Ouvrir le menu",

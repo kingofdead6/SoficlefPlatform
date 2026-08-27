@@ -61,23 +61,6 @@ export type PermissionCode = `${Resource}:${Action}`;
 export const permission = (resource: Resource, action: Action): PermissionCode =>
   `${resource}:${action}`;
 
-const READ_ONLY_EVERYTHING: PermissionCode[] = [
-  'organization_unit:read',
-  'position:read',
-  'assignment:read',
-  'job:read',
-  'job_description:read',
-  'competency:read',
-  'onboarding_instance:read',
-  'report:read',
-  'dashboard:read',
-  'document:read',
-  'notification:read',
-  // The DG reads the aggregate satisfaction score of §10. Individual answers stay out of
-  // reach: `survey:read` is filtered by scope in the query, and a reader holds no scope
-  // over another person's responses.
-  'survey:read',
-];
 
 /**
  * Role → permissions. Scope is a separate axis: holding `job:read` says *what* a role
@@ -86,115 +69,81 @@ const READ_ONLY_EVERYTHING: PermissionCode[] = [
  */
 export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   /**
-   * The technical administrator runs the platform, not the business reference frame:
-   * accounts, roles, settings, logs, notifications. Deliberately no `job_description:validate`
-   * and no `assessment:assess` — signing off a job description or rating a competency is a
-   * business act, and CDC v0.1 §3 gives it to HEAD_CE and the managers, not to IT.
+   * One administrator, holding what the previous TECH_ADMIN, BIZ_ADMIN_CE, HEAD_CE and
+   * VIEWER held between them: the platform (accounts, roles, settings, logs), the business
+   * reference frame (structures, posts, competencies, templates), and validation.
+   *
+   * Note what this now includes that no single role held before: `user:create` *and*
+   * `assignment:create` are both here, so one person can create an account and place it.
+   * The earlier split existed to prevent exactly that. It was traded away deliberately for
+   * a simpler four-role model; `/pending` still exists, but as a state rather than a
+   * control.
    */
-  TECH_ADMIN: [
-    'user:read',
-    'user:create',
-    'user:update',
-    'user:delete',
-    'user:assign_role',
-    'role:read',
-    'role:create',
-    'role:update',
-    'role:delete',
-    'audit_log:read',
-    'audit_log:export',
-    'setting:read',
-    'setting:update',
-    'organization_unit:read',
-    /*
-     * Read-only on both halves of the org model. SI creates the account; giving it a post
-     * is HR's act and defining the post is the business administrator's, so neither
-     * `assignment:create` nor `position:create` belongs here however tempting the
-     * "administrator can do anything" reading is.
-     */
-    'position:read',
-    'assignment:read',
-    'onboarding_instance:read',
-    'notification:read',
-    'notification:update',
-    'dashboard:read',
-    'report:read',
-    'report:export',
-  ],
-  BIZ_ADMIN_CE: [
-    'organization_unit:read',
-    'organization_unit:create',
-    'organization_unit:update',
-    'organization_unit:delete',
-    'position:read',
-    'position:create',
-    'position:update',
-    'position:delete',
-    'assignment:read',
-    'job:read',
-    'job:create',
-    'job:update',
-    'job:delete',
-    'job_description:read',
-    'job_description:create',
-    'job_description:update',
-    'competency:read',
-    'competency:create',
-    'competency:update',
-    'competency:delete',
-    'onboarding_template:read',
-    'onboarding_template:create',
-    'onboarding_template:update',
-    'onboarding_instance:read',
-    'onboarding_instance:create',
-    'onboarding_instance:update',
-    'onboarding_task:read',
-    'onboarding_task:update',
-    'kaizen_action:read',
-    'kaizen_action:create',
-    'kaizen_action:update',
-    'document:read',
-    'document:create',
-    'document:update',
-    'remark:read',
-    'report:read',
-    'report:export',
-    'dashboard:read',
-    'setting:read',
-    'notification:read',
-    'notification:update',
-    'survey:read',
-    'training:read',
-    'training:create',
-    'training:update',
-  ],
-  HEAD_CE: [
-    'organization_unit:read',
-    'position:read',
-    'assignment:read',
-    'job:read',
-    'job:update',
-    'job_description:read',
-    'job_description:update',
-    'job_description:validate',
-    'competency:read',
-    'competency:validate',
-    'assessment:read',
-    'onboarding_template:read',
-    'onboarding_instance:read',
-    'onboarding_instance:validate',
-    'onboarding_task:read',
-    'onboarding_task:validate',
-    'kaizen_action:read',
-    'document:read',
-    'remark:read',
-    'report:read',
-    'report:export',
-    'dashboard:read',
-    'notification:read',
-    'notification:update',
-    'survey:read',
-    'training:read',
+  ADMIN: [
+  'assessment:read',
+  'assignment:read',
+  'audit_log:export',
+  'audit_log:read',
+  'competency:create',
+  'competency:delete',
+  'competency:read',
+  'competency:update',
+  'competency:validate',
+  'dashboard:read',
+  'document:create',
+  'document:read',
+  'document:update',
+  'job:create',
+  'job:delete',
+  'job:read',
+  'job:update',
+  'job_description:create',
+  'job_description:read',
+  'job_description:update',
+  'job_description:validate',
+  'kaizen_action:create',
+  'kaizen_action:read',
+  'kaizen_action:update',
+  'notification:read',
+  'notification:update',
+  'onboarding_instance:create',
+  'onboarding_instance:read',
+  'onboarding_instance:update',
+  'onboarding_instance:validate',
+  'onboarding_task:read',
+  'onboarding_task:update',
+  'onboarding_task:validate',
+  'onboarding_template:create',
+  'onboarding_template:read',
+  'onboarding_template:update',
+  'organization_unit:create',
+  'organization_unit:delete',
+  'organization_unit:read',
+  'organization_unit:update',
+  'position:create',
+  'position:delete',
+  'position:read',
+  'position:update',
+  'remark:read',
+  'report:export',
+  'report:read',
+  'role:create',
+  'role:delete',
+  'role:read',
+  'role:update',
+  'setting:read',
+  'setting:update',
+  'survey:read',
+  'training:create',
+  'training:read',
+  'training:update',
+  'user:assign_role',
+  'user:create',
+  'user:delete',
+  'user:read',
+  'user:update',
+    'assignment:create',
+    'assignment:update',
   ],
   HR: [
     'organization_unit:read',
@@ -289,7 +238,6 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'training:read',
     'training:update',
   ],
-  VIEWER: [...READ_ONLY_EVERYTHING],
 };
 
 /** Every permission any role holds — the set seeded into the `permission` table. */

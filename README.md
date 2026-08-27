@@ -301,3 +301,10 @@ Counts are asserted by the extractor and re-asserted in CI.
   roles: [{ code: 'VIEWER' }],
   },
   ];
+
+
+
+admin@soficlef.local — ADMIN
+rh@soficlef.local — HR
+manager@soficlef.local — MANAGER
+nouveau.1@ through nouveau.4@soficlef.local — four EMPLOYEE recruits, plus attente@soficlef.local

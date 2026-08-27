@@ -56,13 +56,10 @@
     "signedInAs": "Signed in as"
   },
   "roles": {
-    "TECH_ADMIN": "Technical administrator",
-    "BIZ_ADMIN_CE": "Skills & Employment business administrator",
-    "HEAD_CE": "Head of Skills & Employment",
+    "ADMIN": "Administrator",
     "HR": "Human Resources",
     "MANAGER": "Structure head",
-    "EMPLOYEE": "Employee",
-    "VIEWER": "Reader"
+    "EMPLOYEE": "Employee"
   },
   "nav": {
     "openMenu": "Open menu",

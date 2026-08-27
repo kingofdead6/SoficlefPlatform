@@ -66,13 +66,28 @@ export class ApiClient {
 
 export const DEMO_PASSWORD = 'Soficlef-Test-2026!';
 
+/**
+ * The seeded cast, by intent rather than by address.
+ *
+ * Several keys now point at the same account: collapsing seven roles into four means the
+ * former technical administrator, business administrator, Head C&E and reader are one
+ * `ADMIN`. The keys are kept so the suites still read as "what this role may do" — and so
+ * a future split does not have to touch every call site again.
+ */
 export const USERS = {
-  techAdmin: 'tech.admin@soficlef.local',
-  headCe: 'mostafa@soficlef.local',
-  bizAdmin: 'chanane@soficlef.local',
-  hr: 'drh@soficlef.local',
-  managerFabrication: 'oudni@soficlef.local',
-  employee: 'boubenia@soficlef.local',
-  pilotUser: 'djaoudi@soficlef.local',
-  viewer: 'charikhi@soficlef.local',
+  admin: 'admin@soficlef.local',
+  hr: 'rh@soficlef.local',
+  managerFabrication: 'manager@soficlef.local',
+  employee: 'nouveau.1@soficlef.local',
+  /** A recruit far enough in that the J+30 survey and mid-journey tasks exist. */
+  employeeMidJourney: 'nouveau.3@soficlef.local',
+  /** Created but never given a post: reaches `/pending` and nothing else. */
+  unassigned: 'attente@soficlef.local',
+
+  // Aliases from the seven-role model, so existing assertions keep their meaning.
+  techAdmin: 'admin@soficlef.local',
+  headCe: 'admin@soficlef.local',
+  bizAdmin: 'admin@soficlef.local',
+  viewer: 'admin@soficlef.local',
+  pilotUser: 'nouveau.1@soficlef.local',
 } as const;

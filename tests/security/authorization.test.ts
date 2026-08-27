@@ -113,38 +113,57 @@ describe('EMPLOYEE sees their own data and nothing else', () => {
   });
 });
 
-describe('VIEWER is read-only, exhaustively', () => {
-  const viewer = user('VIEWER');
+describe('EMPLOYEE mutates only its own rows', () => {
+  /*
+   * This replaces an exhaustive VIEWER read-only suite. VIEWER was one of four roles
+   * folded into ADMIN, so "a role that can read everything and change nothing" no longer
+   * exists in the model. The narrowest role is now EMPLOYEE, and the guarantee worth
+   * pinning is different in kind: not "changes nothing" but "changes nothing that is not
+   * theirs".
+   */
+  /*
+   * A SELF scope, explicitly. The shared `user()` fixture defaults to GLOBAL, and a
+   * globally-scoped employee legitimately *can* act on anybody's row — which is not what
+   * an employee holds in practice, and would make this whole suite assert nothing.
+   */
+  const employee = user('EMPLOYEE', {
+    assignments: [{ role: 'EMPLOYEE', scope: { kind: 'SELF' } }],
+  });
 
   for (const resource of RESOURCES) {
     for (const action of ACTIONS.filter(isMutating)) {
-      it(`refuses ${resource}:${action}`, () => {
-        expect(can(viewer, action, resource, { organizationUnitId: FABRICATION })).toBe(false);
-        expect(can(viewer, action, resource, { ownerUserId: viewer.id })).toBe(false);
-        expect(can(viewer, action, resource)).toBe(false);
+      it(`refuses ${resource}:${action} on somebody else's row`, () => {
+        // Another person's row, and a unit they hold no scope over.
+        expect(can(employee, action, resource, { ownerUserId: 'somebody-else' })).toBe(false);
+        expect(can(employee, action, resource, { organizationUnitId: FABRICATION })).toBe(false);
+        // An unanchored target names nothing, so a SELF assignment cannot cover it.
+        expect(can(employee, action, resource)).toBe(false);
       });
     }
   }
 
-  it('reads dashboards and validated reference data', () => {
-    expect(can(viewer, 'read', 'dashboard')).toBe(true);
-    expect(can(viewer, 'read', 'report')).toBe(true);
-    expect(can(viewer, 'read', 'job')).toBe(true);
+  it('reads the reference data every signed-in person needs', () => {
+    expect(can(employee, 'read', 'dashboard', { ownerUserId: employee.id })).toBe(true);
+    expect(can(employee, 'read', 'job', { ownerUserId: employee.id })).toBe(true);
+    expect(can(employee, 'read', 'organization_unit', { ownerUserId: employee.id })).toBe(true);
   });
 
-  it('holds no mutating permission at all in the catalogue', () => {
-    const mutating = ROLE_PERMISSIONS.VIEWER.filter((code) => {
-      const action = code.split(':')[1];
-      return isMutating(action as (typeof ACTIONS)[number]);
-    });
-    expect(mutating).toEqual([]);
+  it('holds no permission over accounts, roles, settings or the audit log', () => {
+    for (const resource of ['user', 'role', 'setting', 'audit_log'] as const) {
+      for (const action of ACTIONS) {
+        expect(
+          can(employee, action, resource, { ownerUserId: employee.id }),
+          `${resource}:${action}`,
+        ).toBe(false);
+      }
+    }
   });
 });
 
 describe('account status overrides every role', () => {
   for (const status of ['SUSPENDED', 'DISABLED'] as const) {
-    it(`${status} account can do nothing, even with TECH_ADMIN`, () => {
-      const disabled = user('TECH_ADMIN', { status });
+    it(`${status} account can do nothing, even with ADMIN`, () => {
+      const disabled = user('ADMIN', { status });
       expect(can(disabled, 'read', 'user')).toBe(false);
       expect(can(disabled, 'update', 'setting')).toBe(false);
       expect(scopeFilterFor(disabled, 'read', 'user')).toEqual({ kind: 'none' });
@@ -153,7 +172,7 @@ describe('account status overrides every role', () => {
 });
 
 describe('privilege escalation', () => {
-  const admin = user('TECH_ADMIN', { id: 'admin-1' });
+  const admin = user('ADMIN', { id: 'admin-1' });
 
   it('lets a technical administrator grant a role to someone else', () => {
     expect(canAssignRole(admin, 'another-user')).toEqual({ allowed: true });
@@ -167,7 +186,7 @@ describe('privilege escalation', () => {
   });
 
   it('refuses role assignment for every other profile', () => {
-    for (const role of ROLE_CODES.filter((code) => code !== 'TECH_ADMIN')) {
+    for (const role of ROLE_CODES.filter((code) => code !== 'ADMIN')) {
       expect(canAssignRole(user(role), 'another-user')).toEqual({
         allowed: false,
         reason: 'missing-permission',
@@ -182,16 +201,16 @@ describe('privilege escalation', () => {
 });
 
 describe('no role is accidentally omnipotent', () => {
-  it('only TECH_ADMIN may read the audit log or change settings', () => {
+  it('only ADMIN may read the audit log or change settings', () => {
     for (const role of ROLE_CODES) {
-      const expected = role === 'TECH_ADMIN';
+      const expected = role === 'ADMIN';
       expect(can(user(role), 'read', 'audit_log')).toBe(expected);
       expect(can(user(role), 'update', 'setting')).toBe(expected);
     }
   });
 
   it('a user with no assignment can do nothing', () => {
-    const orphan = user('VIEWER', { assignments: [] });
+    const orphan = user('EMPLOYEE', { assignments: [] });
     for (const resource of RESOURCES) {
       for (const action of ACTIONS) {
         expect(can(orphan, action, resource)).toBe(false);

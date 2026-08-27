@@ -1,24 +1,3 @@
-// SOFICLEF platform — database schema.
-//
-// Migrations are versioned and applied with `prisma migrate` (ADR-010). `prisma db push`
-// is permitted only against a throwaway local database, never against a shared one, and
-// CI fails when this file and prisma/migrations/ diverge.
-//
-// The authentication, RBAC and audit tables land in Part 3. This first migration proves
-// the pipeline end to end and creates the settings table that the password policy and
-// other administrable parameters will use (ADR-012, CDC v0.1 §11).
-//
-// Everything below "Part 6+ — content domains" is a real relational table, one per
-// prototype page (ADR-001: v0.1 is a superset of v1, every v1 module maps onto a v0.1
-// entity — SCOPE.md §4). The generic `SeedContent` JSON blob these replaced has been
-// removed now that every page reads its own table.
-//
-// Modelling follows §16.1's principles, consistent with Part 3's tables: a uuid surrogate
-// key on every row, the prototype's own business code or slug kept as a separate unique
-// column where the source data carries one, ordering preserved with an explicit `order`
-// column (array order is not guaranteed by a database), and `archivedAt` rather than
-// deletion wherever a client edit must not erase history.
-
 generator client {
   provider = "prisma-client"
   output   = "../src/infrastructure/db/generated"
@@ -28,15 +7,10 @@ datasource db {
   provider = "postgresql"
 }
 
-/// An administrable platform parameter. CDC v0.1 §2.1 and §11 require values the
-/// business may change to be configuration rather than hardcoded constants.
 model AppSetting {
   id        String   @id @default(uuid()) @db.Uuid
-  /// Stable business key, e.g. "auth.password.minLength".
   key       String   @unique
-  /// JSON so a setting can hold a scalar, a list or an object without a migration.
   value     Json
-  /// What this parameter controls, for the administration screen.
   labelFr   String
   labelAr   String?
   labelEn   String?
@@ -46,85 +20,48 @@ model AppSetting {
   @@map("app_setting")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 3 — authentication, RBAC with organizational scope, and audit.
-//
-// Rights are role + scope, never role alone: no user sees the whole reference frame
-// merely by being authenticated (CDC v0.1 §3). Scope filtering happens in the query
-// layer, not in the UI (ADR-021), and every sensitive mutation writes an audit row in
-// the same transaction as the change (ADR-022).
-// ─────────────────────────────────────────────────────────────────────────────
-
 enum UserStatus {
   ACTIVE
   SUSPENDED
   DISABLED
 }
 
-/// Where the account sits in the provisioning chain, which is a different question from
-/// `UserStatus`.
-///
-/// `UserStatus` answers "may this account be used at all"; `LifecycleState` answers "has
-/// HR placed this person yet". Collapsing the two would make a suspended-but-assigned
-/// employee unrepresentable, so both axes are kept.
 enum LifecycleState {
-  /// SI has created the account; HR has not yet given it a post. The holder can sign in
-  /// and reaches `/pending` only.
   PENDING_ASSIGNMENT
-  /// HR has attached an open assignment. The platform proper is available.
   ASSIGNED
-  /// The person has left. Retained, never deleted: the history is the turnover record.
   ARCHIVED
 }
 
 enum ScopeType {
-  /// The whole organization. Held by TECH_ADMIN, BIZ_ADMIN_CE, HEAD_CE, HR, VIEWER.
   GLOBAL
-  /// One organizational unit and, unless stated otherwise, its descendants.
   ORGANIZATION_UNIT
-  /// The user's own records only. Held by EMPLOYEE.
   SELF
 }
 
-/// Whether a post is filled, per prototype pages "structures" and "recrutements".
-/// `VACANT` is stated by the prototype, never inferred (seed/schemas/organization.ts).
 enum Occupancy {
   VACANT
   TO_FILL
   OCCUPIED
 }
 
-/// Structure / department / service. The scope anchor for MANAGER rights, and the
-/// foundation the organization module (Part 7) builds on. The descriptive columns below
-/// (icon…staffingFr) are Part 7's addition: the same row that anchors RBAC scope also
-/// carries what the "structures" page displays about it, so the org chart is a query
-/// over this table rather than a duplicate of it.
 model OrganizationUnit {
   id       String             @id @default(uuid()) @db.Uuid
-  /// Stable business code, e.g. "DPR" or "DPR-FAB".
   code     String             @unique
   nameFr   String
   nameAr   String?
   nameEn   String?
-  /// Free-form for now; Part 7 turns this into an administrable list of values.
   type     String
   parentId String?            @db.Uuid
   parent   OrganizationUnit?  @relation("OrganizationUnitTree", fields: [parentId], references: [id], onDelete: Restrict)
   children OrganizationUnit[] @relation("OrganizationUnitTree")
 
-  /// Decorative glyph the prototype prefixes to the name; kept out of the label itself.
   icon           String?
   descriptionFr  String?
-  /// Whether the unit's head post is filled. Null for units that display no head status
-  /// (functional cells use `staffingFr` free text instead).
   headOccupancy  Occupancy?
   headLabelFr    String?
   criticalNoteFr String?
-  /// Free-form staffing note, used by functional cells instead of a head/occupancy pair.
   staffingFr     String?
 
-  /// Archival rather than deletion: history must survive a reorganization
-  /// (CDC v0.1 §16.1).
   archivedAt DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -141,40 +78,18 @@ model OrganizationUnit {
 model User {
   id                  String     @id @default(uuid()) @db.Uuid
   email               String     @unique
-  /// Argon2id (ADR-012). Never a plaintext or reversible value.
   passwordHash        String
   displayName         String
-  /// Preferred interface locale; falls back to the platform default (fr).
   locale              String     @default("fr")
   status              UserStatus @default(ACTIVE)
-  /// Provisioning state, orthogonal to `status` -- see `LifecycleState`.
   lifecycleState      LifecycleState @default(PENDING_ASSIGNMENT)
-  /// Start date of this person's onboarding journey, when they have one. The shell's day
-  /// badge counts from it — forward once the journey has started, down before it (OQ-26).
-  /// Part 9's onboarding engine reads the same field.
   onboardingStartDate DateTime?
 
-  /**
-   * The employee record of CDC-2026 Module 1. These live on `User` rather than in a
-   * separate `Employee` table because the platform has exactly one person per account and
-   * a second table would mean every read joining to reach a phone number. `hireDate` is
-   * distinct from `onboardingStartDate`: a contract can start before the journey does.
-   */
   hireDate        DateTime? @db.Date
-  /// Business phone or internal extension, as the directory writes it.
   phone           String?
-  /// Direction / service, as free text until the client confirms the list (OQ-01).
   directionFr     String?
   serviceFr       String?
-  /**
-   * Job title as written on the contract.
-   *
-   * Superseded by `Assignment` -> `Position.titleFr` for anything structural, and kept
-   * only because a contract title and a post title are not always the same words. Read
-   * the assignment first; fall back to this. (Open question Q6.)
-   */
   positionTitleFr String?
-  /// The manager this person reports to. Self-relation: a manager is a user.
   managerId       String?   @db.Uuid
   manager         User?     @relation("UserManager", fields: [managerId], references: [id], onDelete: SetNull)
   reports         User[]    @relation("UserManager")
@@ -202,9 +117,6 @@ model User {
   @@map("user")
 }
 
-/// Server-side session. The cookie carries an opaque token; only its hash is stored,
-/// so a database leak does not yield usable sessions. Revocation takes effect on the
-/// next request because the row is read on every request (ADR-011).
 model Session {
   id         String    @id @default(uuid()) @db.Uuid
   userId     String    @db.Uuid
@@ -215,7 +127,6 @@ model Session {
   userAgent  String?
   revokedAt  DateTime?
   createdAt  DateTime  @default(now())
-  /// Sliding expiry: renewed at most once per renewal window.
   lastSeenAt DateTime  @default(now())
 
   @@index([userId])
@@ -225,7 +136,6 @@ model Session {
 
 model Role {
   id          String  @id @default(uuid()) @db.Uuid
-  /// One of the seven profiles of CDC v0.1 §3.
   code        String  @unique
   nameFr      String
   nameAr      String?
@@ -240,7 +150,6 @@ model Role {
 
 model Permission {
   id       String @id @default(uuid()) @db.Uuid
-  /// "resource:action", e.g. "job_description:validate".
   code     String @unique
   resource String
   action   String
@@ -262,7 +171,6 @@ model RolePermission {
   @@map("role_permission")
 }
 
-/// An organizational boundary a role assignment applies within.
 model Scope {
   id                 String            @id @default(uuid()) @db.Uuid
   type               ScopeType
@@ -271,14 +179,10 @@ model Scope {
 
   userRoles UserRole[]
 
-  /// One row per boundary: a GLOBAL or SELF scope carries no unit, and an
-  /// ORGANIZATION_UNIT scope is unique per unit.
   @@unique([type, organizationUnitId])
   @@map("scope")
 }
 
-/// A role granted to a user, optionally narrowed to a scope. A null scope means the
-/// role's natural breadth — global for the administrative profiles.
 model UserRole {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @db.Uuid
@@ -288,8 +192,6 @@ model UserRole {
   role      Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
   scope     Scope?   @relation(fields: [scopeId], references: [id], onDelete: Restrict)
   grantedAt DateTime @default(now())
-  /// Who granted it. Kept as a plain id: the granting account may later be deleted,
-  /// and the audit trail is the authoritative record.
   grantedBy String?  @db.Uuid
 
   @@unique([userId, roleId, scopeId])
@@ -297,14 +199,10 @@ model UserRole {
   @@map("user_role")
 }
 
-/// Append-only from the application's point of view: no update path, no delete path
-/// (ADR-022). Retention is a business decision and is not implemented here (OQ-16).
 model AuditLog {
   id         String   @id @default(uuid()) @db.Uuid
-  /// Null for a failed login with an unknown e-mail — the attempt is still recorded.
   actorId    String?  @db.Uuid
   actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
-  /// Who was acting, as written at the time; survives the account being renamed.
   actorLabel String
   action     String
   entityType String
@@ -321,19 +219,8 @@ model AuditLog {
   @@map("audit_log")
 }
 
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 6 — Company & institutional pages: /company, /strategy.
-//
-// "entreprise" and "strategie" in the prototype (seed/schemas/company.ts, strategy.ts,
-// values.ts). One row each, in practice — there is one company — but modelled as a
-// normal table rather than a hardcoded singleton so a second tenant costs configuration,
-// not a migration (ADR-001).
-// ─────────────────────────────────────────────────────────────────────────────
-
 model Company {
   id             String   @id @default(uuid()) @db.Uuid
-  /// The prototype's own slug, e.g. "soficlef".
   slug           String   @unique
   legalName      String
   legalForm      String
@@ -367,9 +254,6 @@ model CompanyActivity {
   @@map("company_activity")
 }
 
-/// The four pillars of the Charte de Management — prototype page "entreprise".
-/// Arabic strings are taken from the prototype (good copy) rather than CDC v1's PDF,
-/// which has a font-encoding fault (ADR-026, OQ-21); pending client confirmation.
 model CompanyValue {
   id     String  @id @default(uuid()) @db.Uuid
   slug   String  @unique
@@ -396,7 +280,6 @@ model Strategy {
   @@map("strategy")
 }
 
-/// One row of the 2024–2026 market objectives table.
 model MarketObjective {
   id                  String   @id @default(uuid()) @db.Uuid
   slug                String   @unique
@@ -412,10 +295,8 @@ model MarketObjective {
   @@map("market_objective")
 }
 
-/// A strategic project PS-01 … PS-04.
 model StrategicProject {
   id            String   @id @default(uuid()) @db.Uuid
-  /// Business code, e.g. "PS-01".
   code          String   @unique
   strategyId    String   @db.Uuid
   strategy      Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
@@ -427,7 +308,6 @@ model StrategicProject {
   @@map("strategic_project")
 }
 
-/// A progress row of the "Contribution DPR aux objectifs" block.
 model StrategyContribution {
   id              String   @id @default(uuid()) @db.Uuid
   slug            String   @unique
@@ -442,49 +322,20 @@ model StrategyContribution {
   @@map("strategy_contribution")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 6/11 — Jobs, job descriptions & competencies: /job-description, /competencies.
-//
-// `Job` is the post/position (resource "job"); `JobDescription` is the formal document
-// bound to one job (resource "job_description", currently only EN-012-DRH exists).
-// `Competency` and `JobCompetency` are Part 11's job–competency matrix (CDC v0.1 §7);
-// `Assessment` is a manager's evaluation of an employee against one competency
-// (resource "assessment", action "assess" — held by MANAGER only).
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// A **post**, not a person: the seat on the org chart that somebody may or may not
-/// currently occupy. This is the former `Job` renamed rather than replaced — it already
-/// carried code, title, unit and vacancy — plus the two things it lacked: a reporting
-/// parent (`parentPositionId`) and a history of who has held it (`Assignment`).
-///
-/// The distinction `Position` + `Assignment` draws is the one the old `OrgChartNode`
-/// conflated, where `labelFr` held a person's name when the post was filled and a post
-/// title when it was not. A title belongs to the post; a name belongs to an assignment.
 model Position {
   id                 String            @id @default(uuid()) @db.Uuid
-  /// Business code where the client has one, a slug otherwise.
   code               String            @unique
   titleFr            String
   missionFr          String?
   organizationUnitId String?           @db.Uuid
   organizationUnit   OrganizationUnit? @relation(fields: [organizationUnitId], references: [id], onDelete: SetNull)
 
-  /// The reporting line, post to post. Restrict rather than cascade: deleting a post that
-  /// others report to would silently orphan a branch of the chart.
   parentPositionId String?    @db.Uuid
   parentPosition   Position?  @relation("PositionTree", fields: [parentPositionId], references: [id], onDelete: Restrict)
   childPositions   Position[] @relation("PositionTree")
 
-  /// Display order among siblings, carried over from the org-chart rows.
   order Int @default(0)
 
-  /**
-   * Whether the post is currently unfilled, and how it is described when so.
-   *
-   * Derivable from `assignments` — a post with no open assignment is vacant — but kept as
-   * a column because the source data distinguishes "VACANT" from "à pourvoir", a business
-   * distinction no join can reconstruct.
-   */
   isVacant     Boolean    @default(false)
   occupancy    Occupancy?
   occupancyFr  String?
@@ -504,11 +355,6 @@ model Position {
   @@map("position")
 }
 
-/// Who holds which post, over which dates.
-///
-/// Never hard-deleted: a reassignment closes the current row with an `endDate` and opens
-/// a new one. The history is not bookkeeping for its own sake — it is what the turnover
-/// KPI reads, and it is what lets a post be reassigned without rebuilding the tree.
 model Assignment {
   id         String    @id @default(uuid()) @db.Uuid
   userId     String    @db.Uuid
@@ -517,20 +363,11 @@ model Assignment {
   position   Position  @relation(fields: [positionId], references: [id], onDelete: Restrict)
 
   startDate DateTime  @db.Date
-  /// Null means current. At most one open assignment per user is enforced in the
-  /// application layer; Postgres cannot express a partial uniqueness over a null here
-  /// without a raw partial index, which the migration adds.
   endDate   DateTime? @db.Date
 
-  /**
-   * The manager for this assignment, when it is not simply the holder of the parent post.
-   * A secondment reports somewhere other than where the chart says, and overriding here
-   * keeps that exception on the assignment instead of distorting the position tree.
-   */
   managerOverrideId String? @db.Uuid
   managerOverride   User?   @relation("AssignmentManagerOverride", fields: [managerOverrideId], references: [id], onDelete: SetNull)
 
-  /// The onboarding template this assignment triggered, when one applied.
   templateId String?             @db.Uuid
   template   OnboardingTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
 
@@ -543,13 +380,8 @@ model Assignment {
   @@map("assignment")
 }
 
-/// The official job description of the Directeur de Production — prototype page "poste".
-/// Document code EN-012-DRH, application date 19.08.2018. `positioning*` and
-/// `requirement*` are the zod schema's nested objects, flattened into columns so the
-/// document stays queryable rather than living in a JSON blob (§16.1).
 model JobDescription {
   id                               String   @id @default(uuid()) @db.Uuid
-  /// Document code, e.g. "EN-012-DRH".
   code                             String   @unique
   positionId                       String?   @unique @db.Uuid
   position                         Position? @relation(fields: [positionId], references: [id], onDelete: SetNull)
@@ -613,11 +445,8 @@ model JobDescriptionResponsibility {
 
 model Competency {
   id            String            @id @default(uuid()) @db.Uuid
-  /// Business code, when the client provides one.
   code          String?           @unique
   nameFr        String
-  /// Legacy free-text category from the prototype extraction. `familyId` supersedes it;
-  /// kept so nothing extracted is silently dropped before the client validates families.
   categoryFr    String?
   familyId      String?           @db.Uuid
   family        CompetencyFamily? @relation(fields: [familyId], references: [id], onDelete: SetNull)
@@ -632,13 +461,11 @@ model Competency {
   @@map("competency")
 }
 
-/// The job–competency matrix (CDC v0.1 §7.1). One row per (job, competency) pair.
 model JobCompetency {
   positionId    String     @db.Uuid
   competencyId  String     @db.Uuid
   position      Position   @relation(fields: [positionId], references: [id], onDelete: Cascade)
   competency    Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
-  /// Target proficiency level, on whatever scale the client's matrix defines.
   requiredLevel Int
   notesFr       String?
 
@@ -647,7 +474,6 @@ model JobCompetency {
   @@map("job_competency")
 }
 
-/// A manager's evaluation of an employee against one competency.
 model Assessment {
   id           String     @id @default(uuid()) @db.Uuid
   userId       String     @db.Uuid
@@ -655,8 +481,6 @@ model Assessment {
   competencyId String     @db.Uuid
   competency   Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
   level        Int
-  /// Kept as a plain id, like UserRole.grantedBy: the assessor's account may later be
-  /// deleted, and the audit trail is the authoritative record of who assessed whom.
   assessedBy   String     @db.Uuid
   assessedAt   DateTime   @default(now())
   notesFr      String?    @db.Text
@@ -666,15 +490,6 @@ model Assessment {
   @@map("assessment")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 7 — Organization & dynamic org chart: /organization, /management.
-//
-// The org chart is a separate rendering-tree from `OrganizationUnit.parentId`: the
-// prototype's "structures" page draws nodes (with their own role/occupancy) that do not
-// always coincide 1:1 with the RBAC scope tree, so it gets its own self-relation.
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// A structure head or other named manager — prototype page "encadrement".
 model ManagementMember {
   id                 String            @id @default(uuid()) @db.Uuid
   slug               String            @unique
@@ -693,8 +508,6 @@ model ManagementMember {
   @@map("management_member")
 }
 
-/// A recommended first-contact action, keyed by its onboarding day offset. Independent
-/// of any one member — it is the general "who to see when" list on the same page.
 model ManagementRecommendedAction {
   id         String @id @default(uuid()) @db.Uuid
   slug       String @unique
@@ -706,21 +519,6 @@ model ManagementRecommendedAction {
   @@map("management_recommended_action")
 }
 
-/// A node of the org chart rendered on the "structures" page. Self-referencing tree,
-/// independent of `OrganizationUnit.parentId` (see note above); `organizationUnitId`
-/// links back to the RBAC/scope row when the node represents a real unit.
-// `OrgChartNode` lived here. It was a second reporting tree whose `labelFr` held a
-// person's name when a post was filled and a post title when it was not -- the exact
-// conflation `Position` + `Assignment` exists to separate. Its rows migrate into
-// `position`, so nothing is lost; see migration `20260827_positions_and_assignments`.
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 8 — Kaizen & operational excellence: /kaizen.
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// The Kaizen programme itself — one row, in practice. Owns the missions and the
-/// cross-mission "priority actions, first 30 days" list.
 model KaizenProgramme {
   id             String   @id @default(uuid()) @db.Uuid
   slug           String   @unique
@@ -741,7 +539,6 @@ model KaizenMission {
   programmeId    String          @db.Uuid
   programme      KaizenProgramme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
   number         Int
-  /// Decorative glyph; kept out of the title itself.
   icon           String?
   titleFr        String
   periodFr       String
@@ -798,8 +595,6 @@ model KaizenGap {
   @@map("kaizen_gap")
 }
 
-/// A tracked action with owner, deadline and status, exactly as written (free-text
-/// deadline/status — the prototype does not use structured dates or an enum here).
 model KaizenAction {
   id         String        @id @default(uuid()) @db.Uuid
   slug       String        @unique
@@ -828,10 +623,6 @@ model KaizenPriorityActionJ30 {
   @@map("kaizen_priority_action_j30")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 6 — QMS ISO 9001 & HSE: /qms, /hse.
-// ─────────────────────────────────────────────────────────────────────────────
-
 model Qms {
   id                   String   @id @default(uuid()) @db.Uuid
   slug                 String   @unique
@@ -839,10 +630,8 @@ model Qms {
   certificationBodyFr  String
   certifiedSinceFr     String
   certificationScopeFr String   @db.Text
-  /// Business code of the process this job owns, e.g. "PR02".
   ownedProcessCode     String
   ownedProcessNoteFr   String   @db.Text
-  /// Business code of the process map document, e.g. "ID-03-DG".
   processMapCode       String
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -871,10 +660,8 @@ enum QmsProcessCategory {
   SUPPORT
 }
 
-/// A process of the ISO 9001 process map — e.g. "PM01", "PR02", "PS03".
 model QmsProcess {
   id                          String             @id @default(uuid()) @db.Uuid
-  /// Business code, e.g. "PR02".
   code                        String             @unique
   qmsId                       String             @db.Uuid
   qms                         Qms                @relation(fields: [qmsId], references: [id], onDelete: Cascade)
@@ -888,9 +675,6 @@ model QmsProcess {
   @@map("qms_process")
 }
 
-/// Site safety rules for Si Mustapha — prototype page "hse". One row in practice; the
-/// two rule lists (traffic rules, mandatory PPE) share one child table distinguished by
-/// `kind`, since both are just an ordered list of short French sentences.
 model Hse {
   id                    String   @id @default(uuid()) @db.Uuid
   slug                  String   @unique
@@ -925,20 +709,13 @@ model HseRule {
   @@map("hse_rule")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 6 — Directory & document library: /contacts, /documents.
-// ─────────────────────────────────────────────────────────────────────────────
-
 enum ContactPriority {
   S1
   S2
 }
 
-/// Internal directory entry — prototype page "interlocuteurs". The extension number is
-/// the prototype's own business key.
 model Contact {
   id           String          @id @default(uuid()) @db.Uuid
-  /// Three-digit phone extension, e.g. "042".
   extension    String          @unique
   initials     String
   nameFr       String
@@ -955,9 +732,6 @@ enum DocumentAvailability {
   PENDING
 }
 
-/// A reference document, available or still pending from the business — prototype page
-/// "docs". `fileName` and `detailFr` are only ever set once `availability` is
-/// AVAILABLE (see seed/schemas/documents.ts); a PENDING row has neither yet.
 model Document {
   id           String               @id @default(uuid()) @db.Uuid
   slug         String               @unique
@@ -973,10 +747,6 @@ model Document {
   @@map("document")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 6 — Recruitment: /recruitment.
-// ─────────────────────────────────────────────────────────────────────────────
-
 model Recruitment {
   id                     String   @id @default(uuid()) @db.Uuid
   slug                   String   @unique
@@ -990,7 +760,6 @@ model Recruitment {
   @@map("recruitment")
 }
 
-/// An open post under the Direction de Production.
 model OpenPosition {
   id            String      @id @default(uuid()) @db.Uuid
   slug          String      @unique
@@ -1005,20 +774,6 @@ model OpenPosition {
   @@map("open_position")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 6/9 — Welcome & onboarding: /welcome, /onboarding.
-//
-// `Welcome` is display content for one recipient's landing page. `OnboardingTemplate` /
-// `OnboardingMilestone` are the reusable 30-day checklist (resource "onboarding_template");
-// `OnboardingInstance` is one person's run through a template (resource
-// "onboarding_instance" — what /welcome and the layout's permission check gate on);
-// `OnboardingTaskCompletion` is that person's per-milestone progress (resource
-// "onboarding_task"). This is ADR-001's example made concrete: M. Djaoudi's onboarding
-// becomes the first instance of a reusable template attached to job EN-012-DRH, not a
-// hardcoded page.
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Welcome/landing content for one onboarding recipient — prototype page "bienvenue".
 model Welcome {
   id                String   @id @default(uuid()) @db.Uuid
   slug              String   @unique
@@ -1029,8 +784,6 @@ model Welcome {
   startDate         DateTime @db.Date
   startDateSourceFr String
   greetingFr        String
-  /// Rich text, rendered with dangerouslySetInnerHTML by the page — sanitize on write,
-  /// not just on read.
   messageFr         String   @db.Text
   signatureFr       String
   createdAt         DateTime @default(now())
@@ -1068,7 +821,6 @@ model WelcomeAgendaItem {
   @@map("welcome_agenda_item")
 }
 
-/// A reusable 30-day checklist, optionally attached to the job it onboards someone into.
 model OnboardingTemplate {
   id        String   @id @default(uuid()) @db.Uuid
   slug      String   @unique
@@ -1086,21 +838,12 @@ model OnboardingTemplate {
   @@map("onboarding_template")
 }
 
-/// A milestone of the 30-day checklist. `order` preserves the prototype's sequence;
-/// several milestones share a day.
-/// CDC-2026 §2 divides the journey into three phases. A task belongs to exactly one.
 enum OnboardingPhase {
-  /// Before the arrival: workstation, paperwork, contact with the future colleague.
   PRE_ONBOARDING
-  /// The first day: welcome, access, equipment, contract signature.
   DAY_ONE
-  /// The probationary period: follow-up, training, evaluations, feedback.
   PROBATION
 }
 
-/// Who owns a task (CDC-2026 §5 Module 2's flow: RH → Informatique → HSE → Qualité …).
-/// An enum rather than free text because §10's reporting counts tasks by owner, and a
-/// count over free text is a count over spellings.
 enum TaskOwnerDepartment {
   HR
   IT
@@ -1116,18 +859,12 @@ model OnboardingMilestone {
   templateId    String             @db.Uuid
   template      OnboardingTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   order         Int
-  /// e.g. "J+1".
   dayLabelFr    String
   dayOffset     Int
   titleFr       String
   detailFr      String             @db.Text
   isRecommended Boolean
 
-  /**
-   * Phase and owner (CDC-2026 §2, Module 2). Both are nullable so the twelve milestones
-   * extracted from the prototype — which predate this CDC and state neither — stay valid;
-   * the seed derives a phase from `dayOffset` where the client has not said otherwise.
-   */
   phase           OnboardingPhase?
   ownerDepartment TaskOwnerDepartment?
 
@@ -1137,20 +874,11 @@ model OnboardingMilestone {
   @@map("onboarding_milestone")
 }
 
-/// One person's run through a template — the thing /welcome and the app layout's
-/// permission check are actually gating on (resource "onboarding_instance").
-/// How a probationary period ended (CDC-2026 §10: "taux de validation définitive des
-/// périodes d'essai", "taux de turnover mesuré sur les 6 premiers mois").
 enum ProbationOutcome {
-  /// Still running.
   ONGOING
-  /// Confirmed in post.
   CONFIRMED
-  /// Extended for a further period.
   EXTENDED
-  /// Ended by the company.
   TERMINATED
-  /// Ended by the collaborator — what the turnover figure actually counts.
   RESIGNED
 }
 
@@ -1162,14 +890,6 @@ model OnboardingInstance {
   template   OnboardingTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
   startDate  DateTime           @db.Date
 
-  /*
-   * The probation outcome (§10). Kept on the journey rather than on the user because a
-   * person can be onboarded more than once — a return, or a change of post — and each
-   * journey has its own outcome.
-   *
-   * `completedAt` is when the journey finished, which is what "temps moyen d'onboarding"
-   * measures; it is deliberately not the same as the probation ending.
-   */
   completedAt      DateTime?
   probationOutcome ProbationOutcome @default(ONGOING)
   probationEndsOn  DateTime?        @db.Date
@@ -1186,9 +906,6 @@ model OnboardingInstance {
   @@map("onboarding_instance")
 }
 
-/// CDC v0.1 §9's task states. `BLOCKED` is a first-class state rather than a note,
-/// because §10's dashboard reports "étapes bloquées" and a free-text note cannot be
-/// counted. `VALIDATED` is the manager's sign-off on top of the collaborator's DONE.
 enum OnboardingTaskStatus {
   TODO
   IN_PROGRESS
@@ -1197,8 +914,6 @@ enum OnboardingTaskStatus {
   VALIDATED
 }
 
-/// Per-milestone progress for one instance (resource "onboarding_task"). A null
-/// `completedAt` means still open; the checklist page's badge counts those.
 model OnboardingTaskCompletion {
   id          String               @id @default(uuid()) @db.Uuid
   instanceId  String               @db.Uuid
@@ -1207,28 +922,16 @@ model OnboardingTaskCompletion {
   milestone   OnboardingMilestone  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   status      OnboardingTaskStatus @default(TODO)
   completedAt DateTime?
-  /// Kept as a plain id, like UserRole.grantedBy — see that field's note.
   completedBy String?              @db.Uuid
-  /// Manager sign-off, distinct from the collaborator ticking the task (§8 "Validation").
   validatedBy String?              @db.Uuid
   validatedAt DateTime?
   noteFr      String?              @db.Text
-  /// Deadline for this task on this instance, derived from the milestone's dayOffset at
-  /// instantiation but editable, since a real journey slips (§8 "échéances").
   dueDate     DateTime?            @db.Date
 
   @@unique([instanceId, milestoneId])
   @@index([milestoneId])
   @@map("onboarding_task_completion")
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 10 — Integration tools: /remarks.
-//
-// The remarks journal is the collaborator's own observations to HR and the DG. Per
-// OQ-12's working default, visibility is confined to the author, the HR chain and
-// HEAD_CE — enforced by `can()` and `scopeFilterFor()`, not by a column here.
-// ─────────────────────────────────────────────────────────────────────────────
 
 model Remark {
   id        String   @id @default(uuid()) @db.Uuid
@@ -1242,16 +945,6 @@ model Remark {
   @@map("remark")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 11 — Competency reference frame: families, a configurable level scale, and the
-// job↔competency matrix with gap computation (CDC v0.1 §7).
-//
-// The level scale is a table rather than a hardcoded 1–4: §7 says the scale is
-// configurable and §11 says a value the business may change is configuration, not a
-// constant. A gap is therefore never "level − 4"; it is computed against the scale.
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// A competency family — technique, comportementale, management, sécurité… (§7).
 model CompetencyFamily {
   id            String    @id @default(uuid()) @db.Uuid
   code          String    @unique
@@ -1269,9 +962,6 @@ model CompetencyFamily {
   @@map("competency_family")
 }
 
-/// One rung of the proficiency scale. `value` is the number stored on assessments and
-/// required levels; the label and definition are what a human reads (§7 "libellé +
-/// définition par niveau").
 model CompetencyLevel {
   id           String   @id @default(uuid()) @db.Uuid
   value        Int      @unique
@@ -1285,15 +975,6 @@ model CompetencyLevel {
   @@map("competency_level")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 11/13 — Job-description versioning and the validation workflow
-// (CDC v0.1 §6.1, §9).
-//
-// A validated job description may not be edited in place; editing forks a new DRAFT
-// version and the validated one is archived (§19.1). The state lives on the version,
-// not on the document, so the history reads as a sequence of states.
-// ─────────────────────────────────────────────────────────────────────────────
-
 enum JobDescriptionStatus {
   DRAFT
   IN_REVIEW
@@ -1302,19 +983,13 @@ enum JobDescriptionStatus {
   ARCHIVED
 }
 
-/// One version of a job description. `content` holds the whole §6.2 field set as JSON so
-/// a version is an immutable snapshot: a later change to the live tables can never
-/// rewrite what somebody validated.
 model JobDescriptionVersion {
   id               String               @id @default(uuid()) @db.Uuid
   jobDescriptionId String               @db.Uuid
   jobDescription   JobDescription       @relation(fields: [jobDescriptionId], references: [id], onDelete: Cascade)
-  /// 1, 2, 3… unique per document.
   versionNumber    Int
   status           JobDescriptionStatus @default(DRAFT)
-  /// Immutable snapshot of the §6.2 content at this version.
   content          Json
-  /// Why this version was created, shown in the history (§6 "motif").
   reasonFr         String?
   authorId         String?              @db.Uuid
   validatedBy      String?              @db.Uuid
@@ -1327,19 +1002,10 @@ model JobDescriptionVersion {
   @@map("job_description_version")
 }
 
-/// One step in a validation workflow — who did what to which object, and what they said.
-/// Generic over the object type so §9's other workflows (competency, onboarding) reuse it.
-///
-/// `entityId` deliberately carries no foreign key: the row is polymorphic, and an FK to
-/// any single table would make it impossible to record an action against the others.
-/// Referential integrity is the writing use case's job; the history is append-only and
-/// must outlive the object it describes, exactly as the audit log does.
 model WorkflowAction {
   id         String   @id @default(uuid()) @db.Uuid
-  /// e.g. "job_description_version", "onboarding_instance".
   entityType String
   entityId   String   @db.Uuid
-  /// submit | approve | request_changes | archive.
   action     String
   fromStatus String?
   toStatus   String?
@@ -1352,23 +1018,13 @@ model WorkflowAction {
   @@map("workflow_action")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Part 13 — Notification centre (CDC v0.1 §9).
-//
-// In-app is mandatory; e-mail is "recommended" and deferred with the SMTP decision
-// (OQ-15). A notification therefore has no delivery channel column yet: adding one later
-// does not change what is stored here.
-// ─────────────────────────────────────────────────────────────────────────────
-
 model Notification {
   id        String    @id @default(uuid()) @db.Uuid
   userId    String    @db.Uuid
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  /// e.g. "onboarding.task.due", "job_description.validated".
   kind      String
   titleFr   String
   bodyFr    String?   @db.Text
-  /// Where clicking the notification takes the reader, locale prefix excluded.
   href      String?
   readAt    DateTime?
   createdAt DateTime  @default(now())
@@ -1377,64 +1033,38 @@ model Notification {
   @@map("notification")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CDC-2026 Module 9 — satisfaction surveys.
-//
-// §9 fixes both the milestones (J+7, J+30, J+60, J+90) and the five indicators, so both
-// are modelled rather than left free-form: a survey whose questions vary per instance
-// cannot be averaged across the organization, which is the whole point of §10's
-// "score de satisfaction globale, filtres par direction et par manager".
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// The five indicators of §9. Fixed by the CDC, so an enum rather than a question table.
 enum SurveyIndicator {
-  /// Qualité de l'accueil.
   WELCOME_QUALITY
-  /// Niveau de l'accompagnement.
   SUPPORT_LEVEL
-  /// Niveau de compréhension du poste assigné.
   ROLE_CLARITY
-  /// Relationnel manager.
   MANAGER_RELATIONSHIP
-  /// Ergonomie des conditions de travail.
   WORKING_CONDITIONS
 }
 
-/// One survey due at one milestone of one person's journey.
 model SurveyRound {
   id         String             @id @default(uuid()) @db.Uuid
   instanceId String             @db.Uuid
   instance   OnboardingInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
-  /// 7, 30, 60 or 90 — the J+n of §9, kept as a number so a client who adds J+180 needs
-  /// no migration.
   dayOffset  Int
-  /// Derived from the journey's start date at instantiation; the reminder job reads it.
   dueDate    DateTime           @db.Date
-  /// Set when the collaborator submits. Null means still outstanding.
   answeredAt DateTime?
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
 
   responses SurveyResponse[]
 
-  /// One round per milestone per journey: re-sending J+30 must update, not duplicate.
   @@unique([instanceId, dayOffset])
   @@index([dueDate, answeredAt])
   @@map("survey_round")
 }
 
-/// One indicator's score within one round.
 model SurveyResponse {
   id        String          @id @default(uuid()) @db.Uuid
   roundId   String          @db.Uuid
   round     SurveyRound     @relation(fields: [roundId], references: [id], onDelete: Cascade)
-  /// Denormalised from the round's instance so §10's "filtres par direction et par
-  /// manager" is one join rather than three.
   userId    String          @db.Uuid
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   indicator SurveyIndicator
-  /// 1–5. The scale is asserted in the domain, not by a database constraint, so the
-  /// message a user sees comes from the same place as every other validation.
   score     Int
   commentFr String?         @db.Text
   createdAt DateTime        @default(now())
@@ -1444,30 +1074,15 @@ model SurveyResponse {
   @@map("survey_response")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CDC-2026 Module 6 — training, quizzes and certificates.
-//
-// Per §4's Plug & Play clause the structure is built now and seeded with realistic
-// placeholder content; when SOFICLEF supplies the real HSE and Qualité material it is
-// chained to these tables without a rewrite.
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// A mandatory training module (HSE, Qualité, Règlement intérieur, Politique RH,
-/// Sécurité informatique — §5 Module 6).
 model TrainingModule {
   id            String    @id @default(uuid()) @db.Uuid
   code          String    @unique
   titleFr       String
   summaryFr     String    @db.Text
-  /// Micro-learning body. Markdown-ish plain text until the client supplies real supports.
   contentFr     String    @db.Text
-  /// Whether every collaborator must pass it.
   isMandatory   Boolean   @default(true)
-  /// Percentage needed to pass, 0–100.
   passingScore  Int       @default(70)
   order         Int       @default(0)
-  /// True while the content is placeholder rather than SOFICLEF's own material. Shown in
-  /// the UI, so nobody mistakes seeded text for an approved HSE procedure.
   isPlaceholder Boolean   @default(true)
   archivedAt    DateTime?
   createdAt     DateTime  @default(now())
@@ -1479,17 +1094,13 @@ model TrainingModule {
   @@map("training_module")
 }
 
-/// One multiple-choice question. `options` is JSON — a table of answer rows would buy
-/// nothing, since an option is never queried on its own.
 model TrainingQuestion {
   id            String         @id @default(uuid()) @db.Uuid
   moduleId      String         @db.Uuid
   module        TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   order         Int
   promptFr      String         @db.Text
-  /// `[{ "id": "a", "labelFr": "…" }, …]`
   options       Json
-  /// The `id` of the correct option. Never sent to the browser with the question.
   correctOption String
   explanationFr String?        @db.Text
 
@@ -1497,23 +1108,17 @@ model TrainingQuestion {
   @@map("training_question")
 }
 
-/// One person's attempt at one module. Append-only: a retake is a new row, so the
-/// history of how somebody got there survives, as with `Assessment`.
 model TrainingAttempt {
   id          String         @id @default(uuid()) @db.Uuid
   moduleId    String         @db.Uuid
   module      TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   userId      String         @db.Uuid
   user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  /// 0–100.
   score       Int
   passed      Boolean
-  /// What they answered, `{ questionId: optionId }`, so a review can show the mistakes.
   answers     Json
   startedAt   DateTime       @default(now())
   completedAt DateTime?
-  /// Set on the first passing attempt. The certificate is this row, not a stored file:
-  /// a PDF would be a copy that can drift from the record it claims to prove.
   certifiedAt DateTime?
 
   @@index([userId, moduleId])

@@ -46,7 +46,7 @@ test.describe('authentication', () => {
 
   test('a wrong password is refused, and says so out loud', async ({ page }) => {
     await page.goto('/fr/login');
-    await page.locator('#email').fill('djaoudi@soficlef.local');
+    await page.locator('#email').fill('nouveau.1@soficlef.local');
     await page.locator('#password').fill('definitely-not-the-password');
     await page.getByRole('button', { name: /connecter/i }).click();
 
@@ -55,7 +55,7 @@ test.describe('authentication', () => {
   });
 
   test('signing in lands on the dashboard inside the shell', async ({ page }) => {
-    await signIn(page, 'djaoudi@soficlef.local');
+    await signIn(page, 'nouveau.1@soficlef.local');
     await expect(page.getByRole('navigation', { name: /navigation/i })).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
@@ -65,7 +65,7 @@ test.describe('every route is reachable and real', () => {
   test('every route renders a named page with an empty state, not a placeholder', async ({
     page,
   }) => {
-    await signIn(page, 'chanane@soficlef.local');
+    await signIn(page, 'admin@soficlef.local');
 
     for (const route of ROUTES) {
       const response = await page.goto(`/fr${route}`);
@@ -91,7 +91,7 @@ test.describe('every route is reachable and real', () => {
   test('the active entry is marked for assistive technology, not only in colour', async ({
     page,
   }) => {
-    await signIn(page, 'chanane@soficlef.local');
+    await signIn(page, 'admin@soficlef.local');
     await page.goto('/fr/kaizen');
 
     const current = page.locator('nav a[aria-current="page"]');
@@ -100,7 +100,7 @@ test.describe('every route is reachable and real', () => {
   });
 
   test('navigating resets the scroll position', async ({ page }) => {
-    await signIn(page, 'chanane@soficlef.local');
+    await signIn(page, 'admin@soficlef.local');
     await page.goto('/fr/documents');
     await page.locator('#main-content').evaluate((element) => element.scrollTo(0, 400));
     await page.getByRole('link', { name: /interlocuteurs/i }).click();
@@ -113,7 +113,7 @@ test.describe('every route is reachable and real', () => {
 
 test.describe('navigation reflects the signed-in role', () => {
   test('a reader does not see the routes they cannot open', async ({ page }) => {
-    await signIn(page, 'charikhi@soficlef.local');
+    await signIn(page, 'admin@soficlef.local');
 
     const nav = page.getByRole('navigation', { name: /navigation/i });
     await expect(nav.getByRole('link', { name: /structures/i })).toBeVisible();
@@ -124,7 +124,7 @@ test.describe('navigation reflects the signed-in role', () => {
   test('a business administrator sees every business route, but not administration', async ({
     page,
   }) => {
-    await signIn(page, 'chanane@soficlef.local');
+    await signIn(page, 'admin@soficlef.local');
     const nav = page.getByRole('navigation', { name: /navigation/i });
     // Sixteen of the seventeen: the administration section is TECH_ADMIN's.
     await expect(nav.getByRole('link')).toHaveCount(16);
@@ -132,13 +132,13 @@ test.describe('navigation reflects the signed-in role', () => {
   });
 
   test('only the technical administrator sees the administration section', async ({ page }) => {
-    await signIn(page, 'tech.admin@soficlef.local');
+    await signIn(page, 'admin@soficlef.local');
     const nav = page.getByRole('navigation', { name: /navigation/i });
     await expect(nav.getByRole('link', { name: /^administration$/i })).toBeVisible();
   });
 
   test('a hidden route is still refused when typed directly', async ({ page }) => {
-    await signIn(page, 'charikhi@soficlef.local');
+    await signIn(page, 'admin@soficlef.local');
     const response = await page.goto('/fr/remarks');
     // Hiding the link is a courtesy; the route is the boundary (ADR-020, ADR-031).
     expect(response?.status()).toBe(404);
@@ -147,7 +147,7 @@ test.describe('navigation reflects the signed-in role', () => {
 
 test.describe('locale switching', () => {
   test('keeps the page and applies RTL', async ({ page }) => {
-    await signIn(page, 'djaoudi@soficlef.local');
+    await signIn(page, 'nouveau.1@soficlef.local');
     await page.goto('/fr/organization');
 
     await page.getByRole('button', { name: /العربية/ }).click();
@@ -160,7 +160,7 @@ test.describe('locale switching', () => {
   });
 
   test('works in all three locales without horizontal overflow', async ({ page }) => {
-    await signIn(page, 'djaoudi@soficlef.local');
+    await signIn(page, 'nouveau.1@soficlef.local');
 
     for (const locale of ['fr', 'ar', 'en']) {
       await page.goto(`/${locale}/welcome`);
@@ -176,7 +176,7 @@ test.describe('locale switching', () => {
 
 test.describe('keyboard and accessibility', () => {
   test('focus is always visible and the skip link comes first', async ({ page }) => {
-    await signIn(page, 'djaoudi@soficlef.local');
+    await signIn(page, 'nouveau.1@soficlef.local');
 
     await page.keyboard.press('Tab');
     const firstFocused = await page.evaluate(() => document.activeElement?.textContent?.trim());
@@ -190,7 +190,7 @@ test.describe('keyboard and accessibility', () => {
   });
 
   test('the navigation can be walked with the keyboard alone', async ({ page }) => {
-    await signIn(page, 'djaoudi@soficlef.local');
+    await signIn(page, 'nouveau.1@soficlef.local');
 
     const firstLink = page
       .getByRole('navigation', { name: /navigation/i })
@@ -206,7 +206,7 @@ test.describe('keyboard and accessibility', () => {
 
   for (const locale of ['fr', 'ar']) {
     test(`no accessibility violations on the shell · ${locale}`, async ({ page }) => {
-      await signIn(page, 'djaoudi@soficlef.local', 'fr');
+      await signIn(page, 'nouveau.1@soficlef.local', 'fr');
       await page.goto(`/${locale}/welcome`);
 
       const results = await new AxeBuilder({ page })
@@ -230,7 +230,7 @@ test.describe('keyboard and accessibility', () => {
 
 test.describe('responsive', () => {
   test('the sidebar collapses into a drawer below tablet width', async ({ page }) => {
-    await signIn(page, 'djaoudi@soficlef.local');
+    await signIn(page, 'nouveau.1@soficlef.local');
     await page.setViewportSize({ width: 720, height: 900 });
     await page.goto('/fr/welcome');
 
@@ -245,7 +245,7 @@ test.describe('responsive', () => {
 
 test.describe('sign out', () => {
   test('revokes the session and returns to the sign-in form', async ({ page }) => {
-    await signIn(page, 'djaoudi@soficlef.local');
+    await signIn(page, 'nouveau.1@soficlef.local');
 
     await page.getByRole('button', { name: /djaoudi.*menu utilisateur/i }).click();
     await page.getByRole('menuitem', { name: /déconnecter/i }).click();
@@ -264,7 +264,7 @@ test.describe('screenshots for the checkpoint', () => {
     for (const route of REPRESENTATIVE) {
       test(`${route} · ${locale}`, async ({ page }) => {
         await page.setViewportSize({ width: 1440, height: 900 });
-        await signIn(page, 'djaoudi@soficlef.local', 'fr');
+        await signIn(page, 'nouveau.1@soficlef.local', 'fr');
         await page.goto(`/${locale}${route}`);
         await page.waitForLoadState('networkidle');
         await page.screenshot({
