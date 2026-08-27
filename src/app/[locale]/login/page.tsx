@@ -13,7 +13,15 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
 
-  if (await getCurrentUser()) redirect({ href: '/dashboard', locale });
+  const signedIn = await getCurrentUser();
+  if (signedIn) {
+    // An unplaced account has nowhere to land but `/pending`; sending it to the dashboard
+    // would only bounce it back through the app layout.
+    redirect({
+      href: signedIn.lifecycleState === 'PENDING_ASSIGNMENT' ? '/pending' : '/dashboard',
+      locale,
+    });
+  }
 
   const t = await getTranslations('auth');
 

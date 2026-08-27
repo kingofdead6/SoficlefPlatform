@@ -93,7 +93,7 @@ async function competencyGaps(user: AuthenticatedUser) {
   const links = await prisma.jobCompetency.findMany({
     where: {
       competency: { archivedAt: null },
-      job: {
+      position: {
         archivedAt: null,
         ...(scope.kind === 'units'
           ? { organizationUnitId: { in: scope.organizationUnitIds } }
@@ -221,7 +221,7 @@ async function dataQuality(user: AuthenticatedUser) {
     prisma.organizationUnit.count({
       where: { ...unitFilter, archivedAt: null, headOccupancy: 'VACANT' },
     }),
-    prisma.job.count({
+    prisma.position.count({
       where: {
         archivedAt: null,
         jobDescription: null,

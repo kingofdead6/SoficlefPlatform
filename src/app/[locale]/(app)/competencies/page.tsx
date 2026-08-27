@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
-import { loadJobMatrix } from '@/application/competency/matrix';
+import { loadPositionMatrix } from '@/application/competency/matrix';
 import { canOpen } from '@/application/navigation/build-navigation';
 import { AssessmentDialog } from '@/components/competency/assessment-dialog';
 import {
@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const user = await getCurrentUser();
   if (!item || !user || !canOpen(user, item)) notFound();
 
-  const matrix = await loadJobMatrix(user).catch((error) => {
+  const matrix = await loadPositionMatrix(user).catch((error) => {
     console.error('Failed to load the competency matrix:', error);
     return null;
   });
@@ -152,7 +152,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiTile value={matrix.summary.total} label="Compétences" hint={matrix.jobTitleFr} />
+        <KpiTile value={matrix.summary.total} label="Compétences" hint={matrix.positionTitleFr} />
         <KpiTile
           value={matrix.summary.conformityRate === null ? '—' : `${matrix.summary.conformityRate}%`}
           label="Conformité"
@@ -164,7 +164,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
       <section>
         <SectionTitle
-          lead={`Emploi ${matrix.jobCode} — niveau attendu, niveau acquis et écart pour chaque compétence. L'écart est calculé sur l'échelle configurée (1 à ${matrix.maxLevel}).`}
+          lead={`Emploi ${matrix.positionCode} — niveau attendu, niveau acquis et écart pour chaque compétence. L'écart est calculé sur l'échelle configurée (1 à ${matrix.maxLevel}).`}
         >
           Matrice emploi–compétences
         </SectionTitle>
@@ -173,7 +173,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           rows={matrix.rows}
           getRowKey={(row) => row.competencyId}
           emptyLabel="Aucune compétence rattachée à cet emploi."
-          caption={`Matrice des compétences de l'emploi ${matrix.jobTitleFr}`}
+          caption={`Matrice des compétences de l'emploi ${matrix.positionTitleFr}`}
         />
       </section>
 

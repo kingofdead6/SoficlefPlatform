@@ -81,15 +81,21 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <div className="space-y-3">
             {rootNodes.map((node) => (
               <Card key={node.id}>
-                <CardTitle>{node.labelFr}</CardTitle>
-                <CardBody className="text-text">{node.roleFr}</CardBody>
+                <CardTitle>{node.titleFr}</CardTitle>
+                {node.holderFr ? (
+                  <CardBody className="text-text">{node.holderFr}</CardBody>
+                ) : null}
                 {childrenOf(node.id).length > 0 && (
                   <ul className="mt-3 space-y-2 border-s-2 border-(--border) ps-4">
                     {childrenOf(node.id).map((child) => (
                       <li key={child.id} className="text-text text-[13px]">
-                        <span className="font-medium">{child.labelFr}</span>
-                        {' — '}
-                        <span className="text-text-muted">{child.roleFr}</span>
+                        <span className="font-medium">{child.titleFr}</span>
+                        {child.holderFr ? (
+                          <>
+                            {' — '}
+                            <span className="text-text-muted">{child.holderFr}</span>
+                          </>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
@@ -111,11 +117,43 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 }
 
 async function loadManagement() {
-  const [members, actions, orgChart] = await Promise.all([
+  const [members, actions, positions] = await Promise.all([
     prisma.managementMember.findMany({ orderBy: { order: 'asc' } }),
     prisma.managementRecommendedAction.findMany({ orderBy: { order: 'asc' } }),
-    prisma.orgChartNode.findMany({ orderBy: { order: 'asc' } }),
+    /*
+     * The chart is posts, not people. `OrgChartNode` used to hold both in one column;
+     * reading `position` with its open assignment keeps them apart, so a seat can be
+     * shown as filled *and* say by whom, or shown as vacant and say how it is advertised.
+     */
+    prisma.position.findMany({
+      where: { archivedAt: null },
+      orderBy: [{ order: 'asc' }, { titleFr: 'asc' }],
+      select: {
+        id: true,
+        titleFr: true,
+        parentPositionId: true,
+        isVacant: true,
+        occupancyFr: true,
+        assignments: {
+          where: { endDate: null },
+          select: { user: { select: { displayName: true } } },
+          take: 1,
+        },
+      },
+    }),
   ]);
+
+  const orgChart = positions.map((position) => ({
+    id: position.id,
+    parentId: position.parentPositionId,
+    titleFr: position.titleFr,
+    // Who sits here, or how the empty seat is described.
+    holderFr:
+      position.assignments[0]?.user.displayName ??
+      position.occupancyFr ??
+      (position.isVacant ? 'Poste vacant' : null),
+    isVacant: position.isVacant,
+  }));
 
   return { members, actions, orgChart };
 }

@@ -230,5 +230,12 @@
         "body": "Each step carries its deadline, its owner and its state. Lateness is derived from the date and the status at every read — a finished milestone stops being flagged, a blocked one reaches HR."
       }
     }
+  },
+  "pending": {
+    "title": "Account awaiting assignment",
+    "lead": "Your account exists, but Human Resources has not yet recorded your position. You will reach the platform as soon as that assignment is made.",
+    "greeting": "Hello {name}.",
+    "contactLabel": "Who to contact",
+    "extension": "Ext."
   }
 }

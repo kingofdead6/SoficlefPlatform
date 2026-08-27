@@ -246,6 +246,17 @@ interface DemoUser {
   positionTitleFr?: string;
   /** E-mail of this person's manager, resolved to an id after every account exists. */
   managerEmail?: string;
+  /**
+   * Left deliberately unplaced, to demonstrate the provisioning chain's resting state:
+   * SI has created the account, HR has not yet given it a post.
+   */
+  pendingAssignment?: boolean;
+  /**
+   * Whose post this person's post reports to. The org chart is a tree of seats, so the
+   * reporting line belongs on the position; this says which one, by the e-mail of whoever
+   * holds it. Absent means a root of the chart.
+   */
+  reportsToEmail?: string;
 }
 
 /**
@@ -258,58 +269,73 @@ interface DemoUser {
 const DEMO_USERS: DemoUser[] = [
   {
     email: 'tech.admin@soficlef.local',
+    reportsToEmail: 'charikhi@soficlef.local',
     displayName: 'Administrateur technique',
     locale: 'fr',
     roles: [{ code: 'TECH_ADMIN' }],
+    positionTitleFr: 'Administrateur technique',
   },
   {
     email: 'mostafa@soficlef.local',
+    reportsToEmail: 'drh@soficlef.local',
     displayName: 'M. Mostafa — Responsable Compétences & Emplois',
     locale: 'fr',
     roles: [{ code: 'HEAD_CE' }],
+    positionTitleFr: 'Responsable Compétences & Emplois',
   },
   {
     email: 'chanane@soficlef.local',
+    reportsToEmail: 'mostafa@soficlef.local',
     displayName: 'CHANANE Mohamed Rafik — Emploi & Compétences',
     locale: 'fr',
     roles: [{ code: 'BIZ_ADMIN_CE' }],
+    positionTitleFr: 'Chargé Emploi & Compétences',
   },
   {
     email: 'drh@soficlef.local',
+    reportsToEmail: 'charikhi@soficlef.local',
     displayName: 'Direction des Ressources Humaines',
     locale: 'fr',
     roles: [{ code: 'HR' }],
+    positionTitleFr: 'Direction des Ressources Humaines',
   },
   {
     // The pilot user is both the subject of an onboarding journey and the head of a
     // structure — two assignments, which is exactly why CDC v1's DIR_PROD maps onto two
     // of CDC v0.1's profiles (ADR-005).
     email: 'djaoudi@soficlef.local',
+    reportsToEmail: 'charikhi@soficlef.local',
     displayName: 'DJAOUDI Farid — Directeur de Production',
     locale: 'fr',
     roles: [{ code: 'EMPLOYEE' }, { code: 'MANAGER', unitCode: 'DPR' }],
     // Taken from the extracted prototype data, not retyped.
     onboardingStartDate: WELCOME.startDate,
+    positionTitleFr: 'Directeur de Production',
   },
   {
     // A collaborator with no managerial breadth: their rights end at their own records,
     // which is what CDC v0.1 §3's "Collaborateur" profile means.
     email: 'boubenia@soficlef.local',
+    reportsToEmail: 'oudni@soficlef.local',
     displayName: 'BOUBENIA Ahmed — Référent Production',
     locale: 'fr',
     roles: [{ code: 'EMPLOYEE' }],
+    positionTitleFr: 'Référent Production',
   },
   {
     email: 'oudni@soficlef.local',
+    reportsToEmail: 'djaoudi@soficlef.local',
     displayName: 'OUDNI Yassine — Responsable Fabrication',
     locale: 'fr',
     roles: [{ code: 'MANAGER', unitCode: 'DPR-FABRICATION' }],
+    positionTitleFr: 'Responsable Fabrication',
   },
   {
     email: 'charikhi@soficlef.local',
     displayName: 'M. CHARIKHI Sofiane — Directeur Général',
     locale: 'fr',
     roles: [{ code: 'VIEWER' }],
+    positionTitleFr: 'Directeur Général',
   },
 ];
 
@@ -333,6 +359,7 @@ const DEMO_USERS: DemoUser[] = [
 const TEST_USERS: DemoUser[] = [
   {
     email: 'admin.tech@test.soficlef.local',
+    reportsToEmail: 'lecteur@test.soficlef.local',
     displayName: 'TEST — Administrateur technique',
     locale: 'fr',
     roles: [{ code: 'TECH_ADMIN' }],
@@ -344,6 +371,7 @@ const TEST_USERS: DemoUser[] = [
   },
   {
     email: 'admin.metier@test.soficlef.local',
+    reportsToEmail: 'responsable.ce@test.soficlef.local',
     displayName: 'TEST — Administrateur métier C&E',
     locale: 'fr',
     roles: [{ code: 'BIZ_ADMIN_CE' }],
@@ -355,6 +383,7 @@ const TEST_USERS: DemoUser[] = [
   },
   {
     email: 'responsable.ce@test.soficlef.local',
+    reportsToEmail: 'rh@test.soficlef.local',
     displayName: 'TEST — Responsable Compétences & Emplois',
     locale: 'fr',
     roles: [{ code: 'HEAD_CE' }],
@@ -366,6 +395,7 @@ const TEST_USERS: DemoUser[] = [
   },
   {
     email: 'rh@test.soficlef.local',
+    reportsToEmail: 'lecteur@test.soficlef.local',
     displayName: 'TEST — Chargée RH',
     locale: 'fr',
     roles: [{ code: 'HR' }],
@@ -379,6 +409,7 @@ const TEST_USERS: DemoUser[] = [
     // Scoped to Fabrication, which has two units beneath it — so this account also
     // demonstrates that a manager's perimeter includes what hangs under it.
     email: 'manager@test.soficlef.local',
+    reportsToEmail: 'lecteur@test.soficlef.local',
     displayName: 'TEST — Responsable de structure',
     locale: 'fr',
     roles: [{ code: 'MANAGER', unitCode: 'DPR-FABRICATION' }],
@@ -392,6 +423,7 @@ const TEST_USERS: DemoUser[] = [
     // Reports to the manager above, and starts an onboarding journey today, so the
     // checklist, the surveys and the training all have somewhere to land.
     email: 'collaborateur@test.soficlef.local',
+    reportsToEmail: 'manager@test.soficlef.local',
     displayName: 'TEST — Collaborateur',
     locale: 'fr',
     roles: [{ code: 'EMPLOYEE' }],
@@ -414,8 +446,180 @@ const TEST_USERS: DemoUser[] = [
     serviceFr: 'Direction Générale',
     positionTitleFr: 'Membre de la direction',
   },
+  {
+    /*
+     * The provisioning chain's first step, left standing: SI has created the account,
+     * HR has not yet placed it. Signing in reaches `/pending` and nothing else, which is
+     * the state the platform must handle gracefully rather than a defect to fix in seed.
+     */
+    email: 'attente.affectation@test.soficlef.local',
+    displayName: 'TEST — Compte en attente d’affectation',
+    locale: 'fr',
+    roles: [{ code: 'EMPLOYEE' }],
+    hireDate: '2026-08-24',
+    pendingAssignment: true,
+  },
 ];
 
+
+/**
+ * Administrable parameters, seeded with the documented defaults.
+ *
+ * They exist as rows so the administration screen has something to edit; the code reads
+ * them through `app-settings.ts`, which falls back to the same values when a row is
+ * missing. Seeding them is a convenience, not a dependency.
+ */
+async function seedAppSettings(): Promise<number> {
+  const settings = [
+    {
+      key: 'org.tree.depth.up',
+      value: 2,
+      labelFr: "Organigramme — niveaux visibles vers le haut (collaborateur)",
+    },
+    {
+      key: 'org.tree.depth.down',
+      value: 1,
+      labelFr: "Organigramme — niveaux visibles vers le bas (collaborateur)",
+    },
+    {
+      key: 'org.tree.showPeers',
+      value: true,
+      labelFr: "Organigramme — afficher les collègues du même responsable",
+    },
+  ];
+
+  for (const setting of settings) {
+    await prisma.appSetting.upsert({
+      where: { key: setting.key },
+      create: setting,
+      // The value is deliberately NOT overwritten: re-seeding must not undo a change the
+      // business made through the administration screen.
+      update: { labelFr: setting.labelFr },
+    });
+  }
+
+  return settings.length;
+}
+
+/**
+ * Places every seeded person into a post.
+ *
+ * The posts are derived from the employee records already in `DEMO_USERS` / `TEST_USERS`
+ * rather than invented: one position per distinct (title, unit) pair, code slugified from
+ * the title. Nothing here is business data the client has not already supplied -- it is
+ * the same directory, expressed as the seat rather than as free text on the person.
+ *
+ * The assignment is what makes the account `ASSIGNED`; an account with no open assignment
+ * stays `PENDING_ASSIGNMENT`, which is the provisioning chain's resting state and is
+ * demonstrated deliberately by `attente.affectation@test.soficlef.local`.
+ */
+async function seedAssignments(unitIds: Map<string, string>): Promise<number> {
+  const slug = (value: string) =>
+    value
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+  /** e-mail -> the seat that person now holds, for the reporting-line pass below. */
+  const seatOf = new Map<string, string>();
+  let placed = 0;
+
+  for (const demo of [...DEMO_USERS, ...TEST_USERS]) {
+    if (!demo.positionTitleFr || demo.pendingAssignment) continue;
+
+    const user = await prisma.user.findUnique({
+      where: { email: demo.email },
+      select: { id: true, hireDate: true },
+    });
+    if (!user) continue;
+
+    // The unit the person's role is scoped to, when it has one; the seed's units are
+    // keyed by code, and a person without a scoped role sits in no unit.
+    const unitCode = demo.roles.find((role) => role.unitCode)?.unitCode;
+    const organizationUnitId = unitCode ? (unitIds.get(unitCode) ?? null) : null;
+
+    /*
+     * Reuse a post that already carries this title before minting a new one.
+     *
+     * The org chart and the employee records describe the same seats from two source
+     * files, so "Directeur de Production" arrives twice. Keying only on a slugified code
+     * made a second, empty copy of every such seat -- three of them for the DP alone.
+     * Title is the only identity the two sources share, so it is what they are matched on.
+     */
+    const existing = await prisma.position.findFirst({
+      where: { titleFr: demo.positionTitleFr, archivedAt: null },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
+
+    const position = existing
+      ? await prisma.position.update({
+          where: { id: existing.id },
+          data: { isVacant: false, occupancy: 'OCCUPIED', occupancyFr: null, organizationUnitId },
+          select: { id: true },
+        })
+      : await prisma.position.create({
+          data: {
+            code: `poste-${slug(demo.positionTitleFr)}`,
+            titleFr: demo.positionTitleFr,
+            organizationUnitId,
+            isVacant: false,
+            occupancy: 'OCCUPIED',
+          },
+          select: { id: true },
+        });
+
+    const startDate = demo.hireDate ? new Date(demo.hireDate) : new Date();
+
+    // At most one *open* assignment per person, enforced by a partial unique index. The
+    // upsert is keyed on the existing open row so re-running the seed reassigns rather
+    // than colliding.
+    const open = await prisma.assignment.findFirst({
+      where: { userId: user.id, endDate: null },
+      select: { id: true },
+    });
+
+    if (open) {
+      await prisma.assignment.update({
+        where: { id: open.id },
+        data: { positionId: position.id, startDate },
+      });
+    } else {
+      await prisma.assignment.create({
+        data: { userId: user.id, positionId: position.id, startDate },
+      });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lifecycleState: 'ASSIGNED' },
+    });
+    seatOf.set(demo.email, position.id);
+    placed += 1;
+  }
+
+  /*
+   * The reporting line, in a second pass: a parent seat must exist as a row before a
+   * child can point at it, and the order of the arrays above should not have to encode
+   * that. Without this the chart is flat, and a flat chart makes every unparented post a
+   * sibling of every other -- which is how a collaborator ends up "seeing" the whole
+   * company through the peers clause.
+   */
+  for (const demo of [...DEMO_USERS, ...TEST_USERS]) {
+    if (!demo.reportsToEmail) continue;
+    const child = seatOf.get(demo.email);
+    const parent = seatOf.get(demo.reportsToEmail);
+    if (!child || !parent || child === parent) continue;
+    await prisma.position.update({
+      where: { id: child },
+      data: { parentPositionId: parent },
+    });
+  }
+
+  return placed;
+}
 
 async function seedDemoUsers(unitIds: Map<string, string>, password: string): Promise<void> {
   const passwordHash = await hash(password, {
@@ -635,15 +839,16 @@ async function seedStrategy(): Promise<void> {
   }
 }
 
-/** Creates the Directeur de Production post and its job description. Returns the Job id. */
-async function seedJobAndDescription(unitIds: Map<string, string>): Promise<string> {
-  const job = await prisma.job.upsert({
+/** Creates the Directeur de Production post and its job description. Returns the position id. */
+async function seedPositionAndDescription(unitIds: Map<string, string>): Promise<string> {
+  const job = await prisma.position.upsert({
     where: { code: 'directeur-production' },
     create: {
       code: 'directeur-production',
       titleFr: JOB_DESCRIPTION.jobTitleFr,
       organizationUnitId: unitIds.get('DPR') ?? null,
       isVacant: false,
+      occupancy: 'OCCUPIED',
     },
     update: { titleFr: JOB_DESCRIPTION.jobTitleFr, organizationUnitId: unitIds.get('DPR') ?? null },
     select: { id: true },
@@ -653,7 +858,7 @@ async function seedJobAndDescription(unitIds: Map<string, string>): Promise<stri
     where: { code: JOB_DESCRIPTION.code },
     create: {
       code: JOB_DESCRIPTION.code,
-      jobId: job.id,
+      positionId: job.id,
       jobTitleFr: JOB_DESCRIPTION.jobTitleFr,
       applicationDate: new Date(JOB_DESCRIPTION.applicationDate),
       applicationDateSourceFr: JOB_DESCRIPTION.applicationDateSourceFr,
@@ -667,7 +872,7 @@ async function seedJobAndDescription(unitIds: Map<string, string>): Promise<stri
       requirementWorkPatternFr: JOB_DESCRIPTION.requirements.workPatternFr,
     },
     update: {
-      jobId: job.id,
+      positionId: job.id,
       jobTitleFr: JOB_DESCRIPTION.jobTitleFr,
       applicationDate: new Date(JOB_DESCRIPTION.applicationDate),
       applicationDateSourceFr: JOB_DESCRIPTION.applicationDateSourceFr,
@@ -765,31 +970,56 @@ async function seedManagementTeamAndOrgChart(unitIds: Map<string, string>): Prom
     });
   }
 
-  // Org chart nodes form their own tree (see the model's doc comment) — create parents
-  // before children so `parentId` always resolves.
+  /*
+   * The org chart is a tree of *posts*, seeded into `position`.
+   *
+   * The source rows conflate two things in `labelFr`: a person's name where the seat is
+   * filled ("DJAOUDI Farid"), a post title where it is not ("Resp. Fabrication"). A post
+   * carries a title, so the title is taken from `roleFr` when the seat is occupied and
+   * from `labelFr` when it is not. Who sits in the seat is an `Assignment`, not a column.
+   *
+   * Parents are created before children so `parentPositionId` always resolves.
+   */
   const nodeIds = new Map<string, string>();
   for (const [order, node] of ORGANIZATION.orgChart.entries()) {
-    const parentId = node.parentId ? (nodeIds.get(node.parentId) ?? null) : null;
-    const record = await prisma.orgChartNode.upsert({
-      where: { slug: node.id },
-      create: {
-        slug: node.id,
-        labelFr: node.labelFr,
-        roleFr: node.roleFr,
-        occupancy: node.occupancy,
-        parentId,
-        organizationUnitId: unitIds.get(node.id) ?? null,
-        order,
-      },
-      update: {
-        labelFr: node.labelFr,
-        roleFr: node.roleFr,
-        occupancy: node.occupancy,
-        parentId,
-        order,
-      },
+    const parentPositionId = node.parentId ? (nodeIds.get(node.parentId) ?? null) : null;
+    const occupied = node.occupancy === 'OCCUPIED';
+
+    const titleFr = occupied ? node.roleFr : node.labelFr;
+
+    /*
+     * Reconcile on title before minting a code.
+     *
+     * The org chart and the job description describe the same seats from two source
+     * files -- "Directeur de Production" arrives from both -- and title is the only
+     * identity they share. Keying on a code alone produced a second, empty copy of every
+     * such seat, which then showed up on the chart as a vacant duplicate of a filled post.
+     */
+    const existing = await prisma.position.findFirst({
+      where: { titleFr, archivedAt: null },
+      orderBy: { createdAt: 'asc' },
       select: { id: true },
     });
+
+    const data = {
+      titleFr,
+      parentPositionId,
+      isVacant: !occupied,
+      occupancy: node.occupancy,
+      occupancyFr: occupied ? null : node.roleFr,
+      order,
+    };
+
+    const record = existing
+      ? await prisma.position.update({ where: { id: existing.id }, data, select: { id: true } })
+      : await prisma.position.create({
+          data: {
+            ...data,
+            code: `orgchart-${node.id}`,
+            organizationUnitId: unitIds.get(node.id) ?? null,
+          },
+          select: { id: true },
+        });
     nodeIds.set(node.id, record.id);
   }
 }
@@ -1112,16 +1342,16 @@ async function seedRecruitment(): Promise<void> {
   }
 }
 
-/** The reusable 30-day checklist attached to the Directeur de Production job. */
-async function seedOnboardingTemplate(jobId: string): Promise<string> {
+/** The reusable 30-day checklist attached to the Directeur de Production post. */
+async function seedOnboardingTemplate(positionId: string): Promise<string> {
   const template = await prisma.onboardingTemplate.upsert({
     where: { slug: 'checklist-directeur-production' },
     create: {
       slug: 'checklist-directeur-production',
-      jobId,
+      positionId,
       titleFr: "Checklist d'intégration 30 jours",
     },
-    update: { jobId, titleFr: "Checklist d'intégration 30 jours" },
+    update: { positionId, titleFr: "Checklist d'intégration 30 jours" },
     select: { id: true },
   });
 
@@ -1306,7 +1536,7 @@ async function seedTestJourney(templateId: string): Promise<boolean> {
  * seeded from the CDC's own example list, flagged as a proposal in the source file, and
  * fully editable through the administration screens (OQ-05, OQ-06).
  */
-async function seedCompetencyFrame(jobId: string | null): Promise<number> {
+async function seedCompetencyFrame(positionId: string | null): Promise<number> {
   const frame = JSON.parse(
     readFileSync(new URL('../seed/reference/competency-frame.json', import.meta.url), 'utf8'),
   ) as {
@@ -1347,12 +1577,12 @@ async function seedCompetencyFrame(jobId: string | null): Promise<number> {
       update: { nameFr: competency.nameFr, familyId },
     });
 
-    // The matrix row only exists once there is a job to attach it to.
-    if (jobId) {
+    // The matrix row only exists once there is a post to attach it to.
+    if (positionId) {
       await prisma.jobCompetency.upsert({
-        where: { jobId_competencyId: { jobId, competencyId: row.id } },
+        where: { positionId_competencyId: { positionId, competencyId: row.id } },
         create: {
-          jobId,
+          positionId,
           competencyId: row.id,
           requiredLevel: competency.requiredLevel,
           notesFr: competency.mandatory ? 'Obligatoire' : 'Optionnelle',
@@ -1475,7 +1705,7 @@ async function main(): Promise<void> {
 
   await seedCompanyAndValues();
   await seedStrategy();
-  const jobId = await seedJobAndDescription(unitIds);
+  const jobId = await seedPositionAndDescription(unitIds);
   await seedManagementTeamAndOrgChart(unitIds);
   await seedKaizen();
   await seedQms();
@@ -1487,6 +1717,8 @@ async function main(): Promise<void> {
   await seedWelcomeAndOnboardingInstance(templateId);
   const testJourney = await seedTestJourney(templateId);
   const competencyCount = await seedCompetencyFrame(jobId);
+  const assignmentCount = await seedAssignments(unitIds);
+  const settingCount = await seedAppSettings();
   const trainingCount = await seedTrainingCatalogue();
   const surveyRoundCount = await seedSurveyRounds();
 
@@ -1500,6 +1732,11 @@ async function main(): Promise<void> {
   console.log('✔ onboarding template + welcome content + onboarding instance');
   console.log(`✔ training catalogue — ${trainingCount} modules, placeholder content`);
   console.log(`✔ ${surveyRoundCount} survey rounds — J+7, J+30, J+60, J+90`);
+  console.log(`✔ ${settingCount} administrable settings (defaults; existing values kept)`);
+  console.log(
+    `✔ ${assignmentCount} assignments — one open post each; ` +
+      'attente.affectation@test.soficlef.local left PENDING_ASSIGNMENT on purpose',
+  );
   if (testJourney) {
     console.log(`✔ test journey for collaborateur@test.soficlef.local (start ${TEST_JOURNEY_START})`);
   }

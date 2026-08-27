@@ -16,6 +16,14 @@ import type { RoleCode, ScopeKind } from './roles';
 
 export type UserStatus = 'ACTIVE' | 'SUSPENDED' | 'DISABLED';
 
+/**
+ * Where the account sits in the provisioning chain — a different axis from `UserStatus`.
+ *
+ * `status` answers "may this account be used at all"; this answers "has HR placed this
+ * person yet". An account can be perfectly active and still have nowhere to be.
+ */
+export type LifecycleState = 'PENDING_ASSIGNMENT' | 'ASSIGNED' | 'ARCHIVED';
+
 export interface AssignedScope {
   kind: ScopeKind;
   /** Set when kind is ORGANIZATION_UNIT. */
@@ -39,6 +47,8 @@ export interface AuthenticatedUser {
   displayName: string;
   locale: string;
   status: UserStatus;
+  /** Provisioning state; a PENDING_ASSIGNMENT account reaches `/pending` and nothing else. */
+  lifecycleState: LifecycleState;
   /** Start of this person's onboarding journey, when they have one. */
   onboardingStartDate: Date | null;
   assignments: RoleAssignment[];

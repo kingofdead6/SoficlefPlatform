@@ -304,3 +304,67 @@ alongside). Recorded here because it diverges from the target's single field.
 **Q6 — `positionTitleFr` after migration.** Once `Assignment` exists, the free-text fields on
 `User` (`directionFr`, `serviceFr`, `positionTitleFr`) become a second source of truth.
 Recommend deriving them from the active assignment and dropping the columns — confirm.
+
+
+---
+
+## 11. Execution log — group (b), positions and assignments
+
+### The rename, not a rewrite
+
+`Job` already *was* a position: code, title, unit, vacancy. It was renamed in place
+(`ALTER TABLE "job" RENAME TO "position"`), so the existing row, its job description and
+its twelve competency links survived untouched — verified by row count before and after.
+`parentPositionId`, `missionFr`, `order`, `occupancy` and `occupancyFr` were added; nothing
+was dropped and recreated.
+
+`OrgChartNode` is now retired, but **not** as the redundant second tree the audit first
+called it. Reading its seed data showed its rows were *posts* — `labelFr` held a person's
+name where the seat was filled and a post title where it was not. That is precisely the
+conflation `Position` + `Assignment` exists to undo, so its five rows were migrated into
+`position` (title from `roleFr` when occupied, from `labelFr` when vacant) rather than
+discarded. This corrects the delete-list entry in §3: it was not dead weight, it was the
+right model under the wrong name.
+
+### What the verification caught
+
+Three defects, none of them found by reading the code:
+
+1. **Duplicate seats.** The org chart and the employee records describe the same posts from
+   two source files, and keying on a slugified code produced a second, empty copy of every
+   shared title — three "Directeur de Production" rows at the worst point. Both seeding
+   passes now reconcile on title first. One orphan row from the buggy run was deleted after
+   confirming it had no assignment, no children, no competencies, no template and no job
+   description.
+2. **A flat chart.** Fourteen of seventeen posts had `parentPositionId = NULL`, so the
+   peers clause (`parentPositionId IS NOT DISTINCT FROM NULL`) matched every unparented
+   post in the company: a collaborator "saw" fifteen posts instead of a window. The demo
+   cast now carries a `reportsToEmail` reporting line, wired in a second pass once every
+   seat exists. The collaborator now sees five.
+3. **The pending account reached everything.** `lifecycleState` existed as a column but
+   nothing enforced it, so an unplaced account opened seventeen routes. `/pending` now
+   exists outside the `(app)` route group, the app layout redirects `PENDING_ASSIGNMENT`
+   there, and `/pending` redirects an assigned user back — neither direction loops.
+
+### `getVisibleTree`
+
+In `infrastructure/repositories/position-repository.ts`, enforced in the query (ADR-021),
+not by fetching the chart and hiding rows. Three audiences: a global reader sees
+everything; a manager sees their own sub-tree without depth limit; everybody else gets a
+window — *n* levels up, *m* down, peers optional — with the depths read from `AppSetting`
+via `infrastructure/settings/app-settings.ts`, clamped, because the value is JSON and an
+unbounded depth is an unbounded recursive walk. An unplaced account has no anchor and
+therefore sees nothing, which is the same answer the `/pending` gate gives.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `tsc --noEmit`, `eslint .`, `check-messages` | clean · 177 keys, three locales |
+| `vitest run` | 362 passed (13 files) |
+| `next build` | compiled, 88 static pages |
+| Seed idempotency | three consecutive runs, stable at 17 positions / 15 assignments |
+| One open assignment per person | partial unique index refuses a second — asserted live |
+| Visible tree | HR 19 · manager 4 · collaborator 5 · unplaced 0 |
+| RBAC matrix | 152 route/role combinations (8 accounts × 19 routes) — **0 leaks** |
+| Provisioning gate | all 19 app routes → 307 `/pending`; assigned user at `/pending` → 307 `/dashboard` |

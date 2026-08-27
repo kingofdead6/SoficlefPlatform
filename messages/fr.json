@@ -230,5 +230,12 @@
         "body": "Chaque étape porte son échéance, son responsable et son état. Le retard est déduit de la date et du statut à chaque affichage — un jalon terminé cesse d'être signalé, un jalon bloqué remonte à la DRH."
       }
     }
+  },
+  "pending": {
+    "title": "Compte en attente d’affectation",
+    "lead": "Votre compte est créé, mais votre poste n’a pas encore été enregistré par les Ressources Humaines. Vous aurez accès à la plateforme dès que cette affectation sera faite.",
+    "greeting": "Bonjour {name}.",
+    "contactLabel": "Votre interlocuteur",
+    "extension": "Poste"
   }
 }

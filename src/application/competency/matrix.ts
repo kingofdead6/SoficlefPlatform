@@ -6,10 +6,10 @@ import { scopeFilterFor } from '@/domain/auth/authorization';
 import { prisma } from '@/infrastructure/db/client';
 
 /**
- * Reads the job↔competency matrix for one job, with each row's gap resolved against the
+ * Reads the post↔competency matrix for one position, with each row's gap resolved against the
  * latest assessment of a given person (CDC v0.1 §7.1).
  *
- * Scope is applied in the query (ADR-021): a manager asking for a job outside their
+ * Scope is applied in the query (ADR-021): a manager asking for a post outside their
  * structures gets nothing back rather than a filtered-in-the-UI list.
  */
 
@@ -25,10 +25,10 @@ export interface MatrixRow {
   lastAssessedAt: Date | null;
 }
 
-export interface JobMatrix {
-  jobId: string;
-  jobCode: string;
-  jobTitleFr: string;
+export interface PositionMatrix {
+  positionId: string;
+  positionCode: string;
+  positionTitleFr: string;
   organizationUnitId: string | null;
   /** The configurable scale, so the UI never hardcodes a maximum. */
   maxLevel: number;
@@ -42,30 +42,30 @@ export async function maxCompetencyLevel(): Promise<number> {
   return top?.value ?? 4;
 }
 
-export async function loadJobMatrix(
+export async function loadPositionMatrix(
   user: AuthenticatedUser,
-  options: { jobId?: string; forUserId?: string } = {},
-): Promise<JobMatrix | null> {
+  options: { positionId?: string; forUserId?: string } = {},
+): Promise<PositionMatrix | null> {
   const scope = scopeFilterFor(user, 'read', 'competency');
   if (scope.kind === 'none') return null;
 
-  const job = await prisma.job.findFirst({
+  const position = await prisma.position.findFirst({
     where: {
-      ...(options.jobId ? { id: options.jobId } : {}),
+      ...(options.positionId ? { id: options.positionId } : {}),
       archivedAt: null,
-      // A unit-scoped reader only sees jobs anchored in their structures. `self` is not
-      // an anchor for a job, so it falls through to the unrestricted branch below and is
+      // A unit-scoped reader only sees posts anchored in their structures. `self` is not
+      // an anchor for a post, so it falls through to the unrestricted branch below and is
       // constrained by the assessment subject instead.
       ...(scope.kind === 'units' ? { organizationUnitId: { in: scope.organizationUnitIds } } : {}),
     },
     orderBy: { createdAt: 'asc' },
     select: { id: true, code: true, titleFr: true, organizationUnitId: true },
   });
-  if (!job) return null;
+  if (!position) return null;
 
   const [links, maxLevel] = await Promise.all([
     prisma.jobCompetency.findMany({
-      where: { jobId: job.id, competency: { archivedAt: null } },
+      where: { positionId: position.id, competency: { archivedAt: null } },
       include: { competency: { include: { family: true } } },
     }),
     maxCompetencyLevel(),
@@ -118,10 +118,10 @@ export async function loadJobMatrix(
     });
 
   return {
-    jobId: job.id,
-    jobCode: job.code,
-    jobTitleFr: job.titleFr,
-    organizationUnitId: job.organizationUnitId,
+    positionId: position.id,
+    positionCode: position.code,
+    positionTitleFr: position.titleFr,
+    organizationUnitId: position.organizationUnitId,
     maxLevel,
     rows,
     summary: summarize(rows.map((row) => row.gap)),

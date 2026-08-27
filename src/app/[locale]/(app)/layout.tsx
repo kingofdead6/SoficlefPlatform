@@ -38,6 +38,16 @@ export default async function AppLayout({
     return null;
   }
 
+  /*
+   * An account SI has created but HR has not yet placed has no perimeter, so there is
+   * nothing behind this layout it could meaningfully be shown. It goes to `/pending`,
+   * which sits outside this route group precisely so this redirect cannot loop.
+   */
+  if (user.lifecycleState === 'PENDING_ASSIGNMENT') {
+    redirect({ href: '/pending', locale });
+    return null;
+  }
+
   // The proxy forwards the path; a layout cannot read it on its own.
   const pathname = (await headers()).get(PATHNAME_HEADER) ?? '';
   const route = pathname.replace(new RegExp(`^/${locale}`), '') || '/';

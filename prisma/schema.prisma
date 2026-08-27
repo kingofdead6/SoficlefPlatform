@@ -61,6 +61,22 @@ enum UserStatus {
   DISABLED
 }
 
+/// Where the account sits in the provisioning chain, which is a different question from
+/// `UserStatus`.
+///
+/// `UserStatus` answers "may this account be used at all"; `LifecycleState` answers "has
+/// HR placed this person yet". Collapsing the two would make a suspended-but-assigned
+/// employee unrepresentable, so both axes are kept.
+enum LifecycleState {
+  /// SI has created the account; HR has not yet given it a post. The holder can sign in
+  /// and reaches `/pending` only.
+  PENDING_ASSIGNMENT
+  /// HR has attached an open assignment. The platform proper is available.
+  ASSIGNED
+  /// The person has left. Retained, never deleted: the history is the turnover record.
+  ARCHIVED
+}
+
 enum ScopeType {
   /// The whole organization. Held by TECH_ADMIN, BIZ_ADMIN_CE, HEAD_CE, HR, VIEWER.
   GLOBAL
@@ -114,9 +130,8 @@ model OrganizationUnit {
   updatedAt  DateTime  @updatedAt
 
   scopes            Scope[]
-  jobs              Job[]
+  positions         Position[]
   managementMembers ManagementMember[]
-  orgChartNodes     OrgChartNode[]
 
   @@index([parentId])
   @@index([archivedAt])
@@ -132,6 +147,8 @@ model User {
   /// Preferred interface locale; falls back to the platform default (fr).
   locale              String     @default("fr")
   status              UserStatus @default(ACTIVE)
+  /// Provisioning state, orthogonal to `status` -- see `LifecycleState`.
+  lifecycleState      LifecycleState @default(PENDING_ASSIGNMENT)
   /// Start date of this person's onboarding journey, when they have one. The shell's day
   /// badge counts from it — forward once the journey has started, down before it (OQ-26).
   /// Part 9's onboarding engine reads the same field.
@@ -149,7 +166,13 @@ model User {
   /// Direction / service, as free text until the client confirms the list (OQ-01).
   directionFr     String?
   serviceFr       String?
-  /// Job title as written on the contract, distinct from the `Job` reference entity.
+  /**
+   * Job title as written on the contract.
+   *
+   * Superseded by `Assignment` -> `Position.titleFr` for anything structural, and kept
+   * only because a contract title and a post title are not always the same words. Read
+   * the assignment first; fall back to this. (Open question Q6.)
+   */
   positionTitleFr String?
   /// The manager this person reports to. Self-relation: a manager is a user.
   managerId       String?   @db.Uuid
@@ -170,8 +193,11 @@ model User {
   notifications       Notification[]
   surveyResponses     SurveyResponse[]
   trainingAttempts    TrainingAttempt[]
+  assignments         Assignment[]
+  managerOverrideFor  Assignment[]         @relation("AssignmentManagerOverride")
 
   @@index([status])
+  @@index([lifecycleState])
   @@index([managerId])
   @@map("user")
 }
@@ -426,24 +452,95 @@ model StrategyContribution {
 // (resource "assessment", action "assess" — held by MANAGER only).
 // ─────────────────────────────────────────────────────────────────────────────
 
-model Job {
+/// A **post**, not a person: the seat on the org chart that somebody may or may not
+/// currently occupy. This is the former `Job` renamed rather than replaced — it already
+/// carried code, title, unit and vacancy — plus the two things it lacked: a reporting
+/// parent (`parentPositionId`) and a history of who has held it (`Assignment`).
+///
+/// The distinction `Position` + `Assignment` draws is the one the old `OrgChartNode`
+/// conflated, where `labelFr` held a person's name when the post was filled and a post
+/// title when it was not. A title belongs to the post; a name belongs to an assignment.
+model Position {
   id                 String            @id @default(uuid()) @db.Uuid
   /// Business code where the client has one, a slug otherwise.
   code               String            @unique
   titleFr            String
+  missionFr          String?
   organizationUnitId String?           @db.Uuid
   organizationUnit   OrganizationUnit? @relation(fields: [organizationUnitId], references: [id], onDelete: SetNull)
-  isVacant           Boolean           @default(false)
-  archivedAt         DateTime?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
 
+  /// The reporting line, post to post. Restrict rather than cascade: deleting a post that
+  /// others report to would silently orphan a branch of the chart.
+  parentPositionId String?    @db.Uuid
+  parentPosition   Position?  @relation("PositionTree", fields: [parentPositionId], references: [id], onDelete: Restrict)
+  childPositions   Position[] @relation("PositionTree")
+
+  /// Display order among siblings, carried over from the org-chart rows.
+  order Int @default(0)
+
+  /**
+   * Whether the post is currently unfilled, and how it is described when so.
+   *
+   * Derivable from `assignments` — a post with no open assignment is vacant — but kept as
+   * a column because the source data distinguishes "VACANT" from "à pourvoir", a business
+   * distinction no join can reconstruct.
+   */
+  isVacant     Boolean    @default(false)
+  occupancy    Occupancy?
+  occupancyFr  String?
+
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  assignments         Assignment[]
   jobDescription      JobDescription?
   jobCompetencies     JobCompetency[]
   onboardingTemplates OnboardingTemplate[]
 
   @@index([organizationUnitId])
-  @@map("job")
+  @@index([parentPositionId])
+  @@index([archivedAt])
+  @@map("position")
+}
+
+/// Who holds which post, over which dates.
+///
+/// Never hard-deleted: a reassignment closes the current row with an `endDate` and opens
+/// a new one. The history is not bookkeeping for its own sake — it is what the turnover
+/// KPI reads, and it is what lets a post be reassigned without rebuilding the tree.
+model Assignment {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  positionId String    @db.Uuid
+  position   Position  @relation(fields: [positionId], references: [id], onDelete: Restrict)
+
+  startDate DateTime  @db.Date
+  /// Null means current. At most one open assignment per user is enforced in the
+  /// application layer; Postgres cannot express a partial uniqueness over a null here
+  /// without a raw partial index, which the migration adds.
+  endDate   DateTime? @db.Date
+
+  /**
+   * The manager for this assignment, when it is not simply the holder of the parent post.
+   * A secondment reports somewhere other than where the chart says, and overriding here
+   * keeps that exception on the assignment instead of distorting the position tree.
+   */
+  managerOverrideId String? @db.Uuid
+  managerOverride   User?   @relation("AssignmentManagerOverride", fields: [managerOverrideId], references: [id], onDelete: SetNull)
+
+  /// The onboarding template this assignment triggered, when one applied.
+  templateId String?             @db.Uuid
+  template   OnboardingTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([positionId])
+  @@index([endDate])
+  @@map("assignment")
 }
 
 /// The official job description of the Directeur de Production — prototype page "poste".
@@ -454,8 +551,8 @@ model JobDescription {
   id                               String   @id @default(uuid()) @db.Uuid
   /// Document code, e.g. "EN-012-DRH".
   code                             String   @unique
-  jobId                            String?  @unique @db.Uuid
-  job                              Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  positionId                       String?   @unique @db.Uuid
+  position                         Position? @relation(fields: [positionId], references: [id], onDelete: SetNull)
   jobTitleFr                       String
   applicationDate                  DateTime @db.Date
   applicationDateSourceFr          String
@@ -537,15 +634,15 @@ model Competency {
 
 /// The job–competency matrix (CDC v0.1 §7.1). One row per (job, competency) pair.
 model JobCompetency {
-  jobId         String     @db.Uuid
+  positionId    String     @db.Uuid
   competencyId  String     @db.Uuid
-  job           Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  position      Position   @relation(fields: [positionId], references: [id], onDelete: Cascade)
   competency    Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
   /// Target proficiency level, on whatever scale the client's matrix defines.
   requiredLevel Int
   notesFr       String?
 
-  @@id([jobId, competencyId])
+  @@id([positionId, competencyId])
   @@index([competencyId])
   @@map("job_competency")
 }
@@ -612,23 +709,11 @@ model ManagementRecommendedAction {
 /// A node of the org chart rendered on the "structures" page. Self-referencing tree,
 /// independent of `OrganizationUnit.parentId` (see note above); `organizationUnitId`
 /// links back to the RBAC/scope row when the node represents a real unit.
-model OrgChartNode {
-  id                 String            @id @default(uuid()) @db.Uuid
-  slug               String            @unique
-  labelFr            String
-  roleFr             String
-  occupancy          Occupancy?
-  parentId           String?           @db.Uuid
-  parent             OrgChartNode?     @relation("OrgChartTree", fields: [parentId], references: [id], onDelete: Restrict)
-  children           OrgChartNode[]    @relation("OrgChartTree")
-  organizationUnitId String?           @db.Uuid
-  organizationUnit   OrganizationUnit? @relation(fields: [organizationUnitId], references: [id], onDelete: SetNull)
-  order              Int
+// `OrgChartNode` lived here. It was a second reporting tree whose `labelFr` held a
+// person's name when a post was filled and a post title when it was not -- the exact
+// conflation `Position` + `Assignment` exists to separate. Its rows migrate into
+// `position`, so nothing is lost; see migration `20260827_positions_and_assignments`.
 
-  @@index([parentId])
-  @@index([organizationUnitId])
-  @@map("org_chart_node")
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Part 8 — Kaizen & operational excellence: /kaizen.
@@ -987,16 +1072,17 @@ model WelcomeAgendaItem {
 model OnboardingTemplate {
   id        String   @id @default(uuid()) @db.Uuid
   slug      String   @unique
-  jobId     String?  @db.Uuid
-  job       Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  positionId String?   @db.Uuid
+  position   Position? @relation(fields: [positionId], references: [id], onDelete: SetNull)
   titleFr   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  milestones OnboardingMilestone[]
-  instances  OnboardingInstance[]
+  milestones  OnboardingMilestone[]
+  instances   OnboardingInstance[]
+  assignments Assignment[]
 
-  @@index([jobId])
+  @@index([positionId])
   @@map("onboarding_template")
 }
 

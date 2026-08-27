@@ -20,6 +20,7 @@ function user(role: RoleCode, scopeUnits?: string[]): AuthenticatedUser {
     displayName: 'Test User',
     locale: 'fr',
     status: 'ACTIVE',
+    lifecycleState: 'ASSIGNED',
     onboardingStartDate: null,
     assignments: [
       {

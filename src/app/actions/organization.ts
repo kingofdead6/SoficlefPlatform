@@ -177,10 +177,10 @@ export async function archiveOrganizationUnit(
           );
         }
 
-        const jobs = await context.tx.job.count({
+        const positions = await context.tx.position.count({
           where: { organizationUnitId: value.id, archivedAt: null },
         });
-        if (jobs > 0) {
+        if (positions > 0) {
           throw Object.assign(new Error('Des emplois actifs sont rattachés à cette structure.'), {
             status: 409,
           });
