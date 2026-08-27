@@ -95,7 +95,8 @@
       "dashboard": "Dashboard",
       "admin": "Administration",
       "training": "Training",
-      "surveys": "Surveys"
+      "surveys": "Surveys",
+      "hr": "Personnel"
     }
   },
   "shell": {
@@ -237,5 +238,15 @@
     "greeting": "Hello {name}.",
     "contactLabel": "Who to contact",
     "extension": "Ext."
+  },
+  "organization": {
+    "units": "Entities",
+    "structures": "Structures",
+    "cells": "Cells",
+    "vacantPosts": "Vacant posts",
+    "treeTitle": "Structure tree",
+    "treeLead": "The tree for your perimeter. An archived structure keeps its history and stays referenced by the jobs that cited it.",
+    "emptyTitle": "Structures & Organisation",
+    "emptyDescription": "No structure is visible within your perimeter."
   }
 }

@@ -11,6 +11,16 @@ import type { RoleCode } from './roles';
 
 export const RESOURCES = [
   'organization_unit',
+  /**
+   * The post — the seat on the org chart. Administered by the business (BIZ_ADMIN_CE),
+   * because defining what a job *is* is a business act, not an IT one.
+   */
+  'position',
+  /**
+   * Who holds which post. Deliberately separate from `position` and from `user`: the
+   * provisioning chain has two owners, and this is the half that belongs to HR.
+   */
+  'assignment',
   'job',
   'job_description',
   'competency',
@@ -53,6 +63,8 @@ export const permission = (resource: Resource, action: Action): PermissionCode =
 
 const READ_ONLY_EVERYTHING: PermissionCode[] = [
   'organization_unit:read',
+  'position:read',
+  'assignment:read',
   'job:read',
   'job_description:read',
   'competency:read',
@@ -94,6 +106,14 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'setting:read',
     'setting:update',
     'organization_unit:read',
+    /*
+     * Read-only on both halves of the org model. SI creates the account; giving it a post
+     * is HR's act and defining the post is the business administrator's, so neither
+     * `assignment:create` nor `position:create` belongs here however tempting the
+     * "administrator can do anything" reading is.
+     */
+    'position:read',
+    'assignment:read',
     'onboarding_instance:read',
     'notification:read',
     'notification:update',
@@ -106,6 +126,11 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     'organization_unit:create',
     'organization_unit:update',
     'organization_unit:delete',
+    'position:read',
+    'position:create',
+    'position:update',
+    'position:delete',
+    'assignment:read',
     'job:read',
     'job:create',
     'job:update',
@@ -145,6 +170,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   ],
   HEAD_CE: [
     'organization_unit:read',
+    'position:read',
+    'assignment:read',
     'job:read',
     'job:update',
     'job_description:read',
@@ -171,6 +198,22 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   ],
   HR: [
     'organization_unit:read',
+    'position:read',
+    /*
+     * HR places people; HR does not create or delete accounts. The account arrives from
+     * SI (TECH_ADMIN) already existing but unplaced, and HR gives it a post — which is
+     * what turns PENDING_ASSIGNMENT into ASSIGNED. Splitting the chain across two roles
+     * is the point: neither can put a working account into the platform alone.
+     */
+    'assignment:read',
+    'assignment:create',
+    'assignment:update',
+    /*
+     * Deliberately NOT `user:read`: that permission gates `/admin`, the SI console with
+     * its accounts, roles and audit trail. HR reads the people it may place through
+     * `assignment:read` instead, which is narrower and is what `/hr` is gated on. Adding
+     * `user:read` here to "let HR see names" silently handed HR the whole console.
+     */
     'job:read',
     'job_description:read',
     'job_description:validate',
@@ -197,6 +240,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   ],
   MANAGER: [
     'organization_unit:read',
+    'position:read',
+    'assignment:read',
     'job:read',
     'job_description:read',
     'competency:read',
@@ -221,6 +266,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   ],
   EMPLOYEE: [
     'organization_unit:read',
+    'position:read',
+    'assignment:read',
     'job:read',
     'job_description:read',
     'competency:read',

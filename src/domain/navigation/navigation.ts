@@ -174,6 +174,25 @@ export const NAV_ITEMS: NavItem[] = [
     deliveredIn: 10,
   },
 
+  /*
+   * Personnel administration — the HR half of the provisioning chain.
+   *
+   * Gated on `assignment:create`, not `assignment:read`.
+   *
+   * The distinction matters: TECH_ADMIN *reads* assignments (it administers the platform
+   * and must be able to see who is placed where) but must never make one, because SI
+   * creating an account and then placing it would be the whole provisioning chain in one
+   * pair of hands. The screen that performs the act is offered only to whoever may
+   * perform it.
+   */
+  {
+    id: 'hr',
+    href: '/hr',
+    group: 'administration',
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 13,
+  },
+
   // ── Administration ─────────────────────────────────────────────────────────
   // Gated on `user:read`, which only TECH_ADMIN holds: the administration screens are
   // accounts, roles and the audit trail, not the business reference frame.

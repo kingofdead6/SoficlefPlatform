@@ -18,6 +18,10 @@ export const AUDIT_ACTIONS = [
   'user.role_assigned',
   'user.role_revoked',
   'user.role_assignment_denied',
+  /** HR gave an account a post — the step that turns PENDING_ASSIGNMENT into ASSIGNED. */
+  'user.assigned',
+  /** An assignment was closed with an end date. Never a deletion: the history is the record. */
+  'user.assignment_ended',
   'role.permission_changed',
   'entity.created',
   'entity.updated',

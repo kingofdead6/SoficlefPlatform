@@ -42,13 +42,14 @@ function user(role: RoleCode, scopeUnits?: string[]): AuthenticatedUser {
 const idsOf = (groups: ReturnType<typeof buildNavigation>) =>
   groups.flatMap((group) => group.items.map((item) => item.id));
 
-describe('navigation is nineteen routes in six groups', () => {
-  it('declares exactly the nineteen routes of the specification', () => {
+describe('navigation is twenty routes in six groups', () => {
+  it('declares exactly the twenty routes of the specification', () => {
     // Fifteen content routes from the prototype, the role dashboard and the
-    // administration section of CDC v0.1 §4, plus training and surveys from CDC-2026
-    // Modules 6 and 9.
-    expect(NAV_ITEMS).toHaveLength(19);
-    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(19);
+    // administration section of CDC v0.1 §4, training and surveys from CDC-2026
+    // Modules 6 and 9, and personnel administration -- HR's half of the provisioning
+    // chain, which is a separate screen from SI's because it is a separate job.
+    expect(NAV_ITEMS).toHaveLength(20);
+    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(20);
   });
 
   it('does not include the AI assistant — phase 2 (ADR-003)', () => {
@@ -64,6 +65,12 @@ describe('navigation is nineteen routes in six groups', () => {
     expect(visible).toHaveLength(18);
     expect(visible).not.toContain('admin');
     expect(visible).toContain('dashboard');
+    /*
+     * Nor personnel administration. The business administrator defines what a post *is*;
+     * putting a person in one is HR's act, and `/hr` is gated on performing it rather
+     * than on reading it.
+     */
+    expect(visible).not.toContain('hr');
   });
 
   it('reserves the administration section for the technical administrator', () => {
@@ -165,5 +172,42 @@ describe('a unit-scoped role can actually load what the menu offers it', () => {
   it('refuses everything to a suspended account regardless of scope', () => {
     const suspended = { ...user('HR', [FABRICATION]), status: 'SUSPENDED' as const };
     expect(canAnyScope(suspended, 'read', 'training')).toBe(false);
+  });
+});
+
+describe('the provisioning chain is split across two screens', () => {
+  /*
+   * SI creates accounts, HR places them. The split is the control: neither role can put
+   * a working account into the platform on its own, so `/admin` and `/hr` must never
+   * collapse into one another.
+   *
+   * This caught a real mistake — giving HR `user:read` so it could "see names" handed it
+   * the whole SI console, because that is the permission `/admin` is gated on.
+   */
+  it('keeps HR out of the SI console', () => {
+    const visible = idsOf(buildNavigation(user('HR')));
+    expect(visible).toContain('hr');
+    expect(visible).not.toContain('admin');
+  });
+
+  it('keeps the technical administrator out of personnel administration', () => {
+    const visible = idsOf(buildNavigation(user('TECH_ADMIN')));
+    expect(visible).toContain('admin');
+    // TECH_ADMIN reads posts and assignments but writes neither, and the screen that
+    // writes them is not offered.
+    expect(visible).not.toContain('hr');
+  });
+
+  it('lets neither role perform the other half of the chain', () => {
+    const si = user('TECH_ADMIN');
+    const hr = user('HR');
+
+    // SI creates the account; HR cannot.
+    expect(canAnyScope(si, 'create', 'user')).toBe(true);
+    expect(canAnyScope(hr, 'create', 'user')).toBe(false);
+
+    // HR gives it a post; SI cannot.
+    expect(canAnyScope(hr, 'create', 'assignment')).toBe(true);
+    expect(canAnyScope(si, 'create', 'assignment')).toBe(false);
   });
 });

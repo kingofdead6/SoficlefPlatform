@@ -368,3 +368,73 @@ therefore sees nothing, which is the same answer the `/pending` gate gives.
 | Visible tree | HR 19 · manager 4 · collaborator 5 · unplaced 0 |
 | RBAC matrix | 152 route/role combinations (8 accounts × 19 routes) — **0 leaks** |
 | Provisioning gate | all 19 app routes → 307 `/pending`; assigned user at `/pending` → 307 `/dashboard` |
+
+
+---
+
+## 12. Execution log — group (c), the provisioning chain and the assistant
+
+### Separation of duties, enforced rather than described
+
+The chain has two steps and two owners: SI creates the account (`/admin`, `user:create`),
+HR gives it a post (`/hr`, `assignment:create`). Neither role can do both, so no single
+person can put a working account into the platform.
+
+Two new resources carry this: `position` (administered by BIZ_ADMIN_CE — defining what a
+job *is* is a business act) and `assignment` (HR's). TECH_ADMIN *reads* both and writes
+neither.
+
+**A mistake worth recording.** The first cut gave HR `user:read` so the screen could show
+names. `/admin` is gated on exactly that permission, so it silently handed HR the whole SI
+console — caught by an existing test asserting HR never sees `admin`. HR reads people
+through `assignment:read` instead, which is narrower and is what `/hr` is gated on. A
+second, related choice followed: `/hr` is gated on `assignment:**create**`, not `read`,
+because TECH_ADMIN legitimately reads assignments but must never be offered the screen that
+makes one.
+
+### `assignToPosition`
+
+One transaction: close any open assignment, open the new one, flip the seat's occupancy,
+set `lifecycleState`, and create the onboarding journey with its four survey rounds through
+the existing `ensureRoundsFor`. A half-applied assignment would leave an account `ASSIGNED`
+with nowhere to be, or a journey with no surveys — both worse than a clean failure.
+
+Reassignment closes the previous row rather than deleting it. Verified live: the partial
+unique index refuses a second open row, the vacated seat returns to `VACANT`, and both
+history rows survive.
+
+### The assistant — structure only
+
+ADR-003 holds: no provider call, no key, no vector storage anywhere in this work. What
+exists is `domain/assistant/agents.ts` (the five agents, what each may read, and the rule
+that an answer either cites a checkable source or admits it found nothing) and Agent 1,
+`application/assistant/orientation.ts`, which is real retrieval with no model behind it.
+
+Agent 1 searches **the asker's own visible tree**, not every post — both the correct privacy
+behaviour and the better answer, since the nearest relevant person beats the most senior.
+Observed in the probe: a collaborator asking about "compétences" is answered from the
+contact directory because that post is outside their window, while HR gets the position
+rows themselves.
+
+One flaw found by probing and fixed: good answers were padded with weak matches — "responsable
+HSE" returned the right person and then every other "Responsable" scoring on that one shared
+word. A relevance threshold now keeps only what ties with the best match.
+
+### Also in this group
+
+- Org-tree indentation is capped at four levels; the inset compounded per level and pushed
+  labels off a narrow screen, with no horizontal scroll to rescue them.
+- `/organization`'s hardcoded French moved to next-intl (186 keys, three locales).
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `tsc --noEmit`, `eslint .`, `check-messages` | clean · 186 keys, three locales |
+| `vitest run` | 386 passed (14 files) |
+| `next build` | compiled |
+| Assignment flow, end to end in the browser | pending account → assigned; seat occupied; journey + J+7/30/60/90 created; audited as `user.assigned` |
+| Gate release | after assignment the account reaches `/dashboard`; `/pending` bounces it back out |
+| Reassignment | second open row refused; old row closed not deleted; seat re-vacated |
+| RBAC matrix | 160 combinations (8 accounts × 20 routes) — **0 leaks**, no JS errors |
+| Separation of duties | HR is the only role opening `/hr`; TECH_ADMIN opens `/admin` and is refused `/hr` |

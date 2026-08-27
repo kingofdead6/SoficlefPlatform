@@ -64,6 +64,12 @@ export function buildForest(
   return roots;
 }
 
+/**
+ * How many levels of visual indentation before it stops compounding. Four covers
+ * direction → structure → service → cell, which is the depth the client's own chart uses.
+ */
+const MAX_INDENT_LEVEL = 4;
+
 export function OrgTree({
   nodes,
   renderActions,
@@ -75,8 +81,26 @@ export function OrgTree({
 }) {
   if (nodes.length === 0) return null;
 
+  /*
+   * Indentation stops after a few levels.
+   *
+   * Each level nests inside the previous one, so the inset compounds: on a narrow screen a
+   * six-deep structure pushes its labels off the edge, and there is no horizontal scroll
+   * to rescue them because the page must never scroll sideways. Past the cap the connector
+   * still marks the nesting, but the inset does not grow -- the depth stays legible to a
+   * screen reader through the nested lists themselves, which is where it belongs.
+   */
+  const indented = level > 1 && level <= MAX_INDENT_LEVEL;
+  const nested = level > MAX_INDENT_LEVEL;
+
   return (
-    <ul className={cn('space-y-2', level > 1 && 'mt-2 border-s border-(--border) ps-4')}>
+    <ul
+      className={cn(
+        'space-y-2',
+        indented && 'mt-2 border-s border-(--border) ps-4',
+        nested && 'mt-2 border-s border-(--border) ps-2',
+      )}
+    >
       {nodes.map((node) => (
         <li key={node.id}>
           <div className="rounded-(--radius) border border-(--border) bg-(--surface) px-4 py-3">

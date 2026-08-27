@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { assignableParents } from '@/application/organization/parents';
 import { canOpen } from '@/application/navigation/build-navigation';
@@ -30,6 +30,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const user = await getCurrentUser();
   if (!item || !user || !canOpen(user, item)) notFound();
 
+  const t = await getTranslations('organization');
   const scope = scopeFilterFor(user, 'read', 'organization_unit');
 
   const units =
@@ -60,10 +61,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   if (units.length === 0) {
     return (
-      <EmptyState
-        title="Structures & Organisation"
-        description="Aucune structure n'est visible dans votre périmètre."
-      />
+      <EmptyState title={t('emptyTitle')} description={t('emptyDescription')} />
     );
   }
 
@@ -76,22 +74,22 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiTile value={units.length} label="Entités" />
+        <KpiTile value={units.length} label={t('units')} />
         <KpiTile
           value={units.filter((unit) => unit.type === 'STRUCTURE').length}
-          label="Structures"
+          label={t('structures')}
         />
-        <KpiTile value={units.filter((unit) => unit.type === 'CELLULE').length} label="Cellules" />
-        <KpiTile value={vacant} label="Postes vacants" />
+        <KpiTile value={units.filter((unit) => unit.type === 'CELLULE').length} label={t('cells')} />
+        <KpiTile value={vacant} label={t('vacantPosts')} />
       </div>
 
       <section>
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
           <SectionTitle
             className="mb-0"
-            lead="L'arborescence de votre périmètre. Une structure archivée conserve son historique et reste référencée par les emplois qui l'ont citée."
+            lead={t('treeLead')}
           >
-            Arborescence
+            {t('treeTitle')}
           </SectionTitle>
           {mayCreate ? <CreateUnitDialog parents={parents} /> : null}
         </div>

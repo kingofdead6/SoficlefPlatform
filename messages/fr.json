@@ -95,7 +95,8 @@
       "dashboard": "Tableau de bord",
       "admin": "Administration",
       "training": "Formations",
-      "surveys": "Enquêtes"
+      "surveys": "Enquêtes",
+      "hr": "Personnel"
     }
   },
   "shell": {
@@ -237,5 +238,15 @@
     "greeting": "Bonjour {name}.",
     "contactLabel": "Votre interlocuteur",
     "extension": "Poste"
+  },
+  "organization": {
+    "units": "Entités",
+    "structures": "Structures",
+    "cells": "Cellules",
+    "vacantPosts": "Postes vacants",
+    "treeTitle": "Arborescence",
+    "treeLead": "L’arborescence de votre périmètre. Une structure archivée conserve son historique et reste référencée par les emplois qui l’ont citée.",
+    "emptyTitle": "Structures & Organisation",
+    "emptyDescription": "Aucune structure n’est visible dans votre périmètre."
   }
 }
