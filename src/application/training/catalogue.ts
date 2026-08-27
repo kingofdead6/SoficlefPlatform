@@ -1,6 +1,10 @@
 import 'server-only';
 
-import { assertCan, scopeFilterFor, type AuthenticatedUser } from '@/domain/auth/authorization';
+import {
+  assertCanAnyScope,
+  scopeFilterFor,
+  type AuthenticatedUser,
+} from '@/domain/auth/authorization';
 import {
   bestScores,
   mandatoryTrainingComplete,
@@ -41,10 +45,12 @@ export interface CatalogueView {
 
 /** The catalogue with the caller's own progress against it. */
 export async function loadCatalogue(user: AuthenticatedUser): Promise<CatalogueView> {
-  // The target names the caller: the modules are shared reference content, but the
-  // progress shown against them is theirs. A SELF-scoped assignment — what every
-  // collaborator holds — covers no row unless the target says whose row it is.
-  assertCan(user, 'read', 'training', { ownerUserId: user.id });
+  // The catalogue is shared reference content: the modules belong to no unit and to no
+  // person, only the progress shown against them is the caller's. Naming a target here
+  // cannot work for both audiences at once — `{ ownerUserId }` is what a SELF-scoped
+  // collaborator needs and is exactly what a unit-scoped HR or manager assignment cannot
+  // cover, so targeting the caller locked every non-collaborator out of the catalogue.
+  assertCanAnyScope(user, 'read', 'training');
 
   const [modules, attempts] = await Promise.all([
     prisma.trainingModule.findMany({
@@ -116,7 +122,8 @@ export async function loadModule(
   user: AuthenticatedUser,
   code: string,
 ): Promise<ModuleDetail | null> {
-  assertCan(user, 'read', 'training', { ownerUserId: user.id });
+  // Shared content, as in `loadCatalogue` above.
+  assertCanAnyScope(user, 'read', 'training');
 
   const record = await prisma.trainingModule.findFirst({
     where: { code, archivedAt: null },

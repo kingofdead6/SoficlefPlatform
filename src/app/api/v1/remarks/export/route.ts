@@ -17,8 +17,27 @@ export async function GET(request: Request): Promise<Response> {
   const scope = scopeFilterFor(user, 'read', 'remark');
   if (scope.kind === 'none') return forbidden();
 
+  /*
+   * `units` fell through to `{}` — unfiltered — which is the opposite of what a unit
+   * scope means. No role holds `remark:read` with a unit scope today, so nothing leaked;
+   * it is fixed because the export is personal content and the next role added should not
+   * have to notice.
+   */
+  const where =
+    scope.kind === 'self'
+      ? { authorId: user.id }
+      : scope.kind === 'units'
+        ? {
+            author: {
+              userRoles: {
+                some: { scope: { organizationUnitId: { in: scope.organizationUnitIds } } },
+              },
+            },
+          }
+        : {};
+
   const remarks = await prisma.remark.findMany({
-    where: scope.kind === 'self' ? { authorId: user.id } : {},
+    where,
     orderBy: { createdAt: 'asc' },
     include: { author: { select: { displayName: true } } },
   });

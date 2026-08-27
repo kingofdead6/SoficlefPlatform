@@ -43,7 +43,23 @@ export default async function AppLayout({
   const route = pathname.replace(new RegExp(`^/${locale}`), '') || '/';
   const item = navItemByHref(route);
 
-  if (item && !canOpen(user, item)) notFound();
+  /*
+   * Refuse rather than skip when the route does not resolve to a nav entry.
+   *
+   * This used to read `if (item && !canOpen(user, item))`, which *passed* whenever
+   * `item` was undefined. Nothing exploited it — every current route resolves, and the
+   * proxy matcher covers every page path so the header is always present — but it fails
+   * open in two ways worth closing before they bite:
+   *
+   *   - `navItemByHref` is an exact-match lookup, so the first nested route
+   *     (`/organization/[id]`) would resolve to nothing and skip the check entirely.
+   *   - If `PATHNAME_HEADER` were ever absent, `route` becomes '/', which also resolves
+   *     to nothing.
+   *
+   * An authenticated route that the navigation model does not know about is a mistake,
+   * and the safe reading of a mistake is 404.
+   */
+  if (!item || !canOpen(user, item)) notFound();
 
   return (
     <AppShell user={user} navigation={buildNavigation(user)} locale={locale as Locale}>

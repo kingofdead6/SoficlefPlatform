@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildNavigation, canOpen } from '@/application/navigation/build-navigation';
-import type { AuthenticatedUser } from '@/domain/auth/authorization';
+import { canAnyScope, type AuthenticatedUser } from '@/domain/auth/authorization';
 import { NAV_ITEMS } from '@/domain/navigation/navigation';
 import { ROLE_CODES, type RoleCode } from '@/domain/auth/roles';
 
@@ -131,5 +131,38 @@ describe('canOpen agrees with the menu', () => {
         expect(canOpen(account, item), `${role} · ${item.id}`).toBe(visible.has(item.id));
       }
     }
+  });
+});
+
+describe('a unit-scoped role can actually load what the menu offers it', () => {
+  /*
+   * The regression this pins down: `canOpen` asked "do you hold this permission
+   * anywhere", while the training loader asked "do you hold it on your own row". Those
+   * disagree for every unit-scoped role — the sidebar offered HR the training catalogue
+   * and the loader then threw `training:read`, so the page rendered its empty state and
+   * the course list was invisible to everyone except collaborators.
+   *
+   * `canAnyScope` is now the single question both sides ask.
+   */
+  const UNIT_SCOPED: RoleCode[] = ['HR', 'MANAGER', 'HEAD_CE', 'BIZ_ADMIN_CE'];
+
+  it('grants shared reference content to unit-scoped and self-scoped roles alike', () => {
+    for (const role of UNIT_SCOPED) {
+      const account = user(role, [FABRICATION]);
+      expect(canAnyScope(account, 'read', 'training'), `${role} · training`).toBe(true);
+    }
+
+    // The collaborator, whose only assignment is SELF, must keep it too.
+    expect(canAnyScope(user('EMPLOYEE'), 'read', 'training')).toBe(true);
+  });
+
+  it('still refuses a permission the role does not hold at all', () => {
+    // MANAGER is deliberately without `remark:read` — scope breadth must not invent it.
+    expect(canAnyScope(user('MANAGER', [FABRICATION]), 'read', 'remark')).toBe(false);
+  });
+
+  it('refuses everything to a suspended account regardless of scope', () => {
+    const suspended = { ...user('HR', [FABRICATION]), status: 'SUSPENDED' as const };
+    expect(canAnyScope(suspended, 'read', 'training')).toBe(false);
   });
 });

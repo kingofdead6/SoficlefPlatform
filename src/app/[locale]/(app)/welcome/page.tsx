@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
 import SignOutButton from '@/components/auth/sign-out-button';
@@ -6,17 +7,23 @@ import type { Locale } from '@/i18n/config';
 import { formatDate } from '@/lib/format';
 import { getCurrentUser } from '@/infrastructure/auth/current-user';
 import { prisma } from '@/infrastructure/db/client';
+import { canOpen } from '@/application/navigation/build-navigation';
+import { navItemByHref } from '@/domain/navigation/navigation';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  // The page is the boundary, not the sidebar (ADR-020). The layout checks too, but a
+  // page that trusts its layout has no defence if that layout is ever bypassed.
+  const item = navItemByHref('/welcome');
   const user = await getCurrentUser();
+  if (!item || !user || !canOpen(user, item)) notFound();
 
   let welcome: Awaited<ReturnType<typeof loadWelcome>> = null;
 
   try {
-    if (user) welcome = await loadWelcome(user.id);
+    welcome = await loadWelcome(user.id);
   } catch (error) {
     console.error('Failed to load welcome data:', error);
   }

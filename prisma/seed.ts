@@ -66,33 +66,6 @@ if (!connectionString) throw new Error('DATABASE_URL is required to seed');
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
-// Persist the raw extracted payloads into the legacy generic store too, so any page not
-// yet migrated off `SeedContent` keeps working while it's migrated table by table.
-function seedDataFiles(): { domain: string; content: unknown }[] {
-  const files = [
-    'company.json',
-    'contacts.json',
-    'documents.json',
-    'hse.json',
-    'job-description.json',
-    'kaizen.json',
-    'management-team.json',
-    'onboarding-checklist.json',
-    'organization.json',
-    'qms.json',
-    'recruitment.json',
-    'strategy.json',
-    'values.json',
-    'welcome.json',
-  ];
-
-  return files.map((f) => {
-    const parsed = readSeed<{ meta?: { domain?: string } }>(f);
-    const domain = parsed?.meta?.domain ?? f.replace(/\.json$/, '');
-    return { domain, content: parsed };
-  });
-}
-
 /** Organizational skeleton, derived from the extracted prototype data (Part 1). */
 function organizationSkeleton() {
   const units: {
@@ -243,6 +216,20 @@ async function scopeFor(unitId: string | null): Promise<string | null> {
   return scope.id;
 }
 
+/**
+ * The test collaborator's journey starts a fortnight before the seed runs.
+ *
+ * A journey starting today would have every deadline in the future and every survey
+ * closed, so the pages that matter most — lateness, an open survey, a blocked step —
+ * would all render their empty state. Fourteen days back puts J+7 open and one milestone
+ * overdue, which is what somebody testing actually needs to see.
+ */
+const TEST_JOURNEY_START = (() => {
+  const start = new Date();
+  start.setDate(start.getDate() - 14);
+  return start.toISOString().slice(0, 10);
+})();
+
 interface DemoUser {
   email: string;
   displayName: string;
@@ -250,12 +237,23 @@ interface DemoUser {
   roles: { code: RoleCode; unitCode?: string }[];
   /** ISO date, for the people who have an onboarding journey. */
   onboardingStartDate?: string;
+
+  /** CDC-2026 Module 1's employee record. Optional: the original cast predates it. */
+  hireDate?: string;
+  phone?: string;
+  directionFr?: string;
+  serviceFr?: string;
+  positionTitleFr?: string;
+  /** E-mail of this person's manager, resolved to an id after every account exists. */
+  managerEmail?: string;
 }
 
 /**
  * Demo accounts mirroring the real cast, so the role model can be walked through with
  * the client. Real accounts are created through the administration screens.
- * password of all of the accounts is Pwd123456
+ *
+ * They share one password, set by SEED_DEMO_PASSWORD; nothing is hardcoded here
+ * (ADR-023). See `TEST_USERS` below for the parallel set used to exercise each role.
  */
 const DEMO_USERS: DemoUser[] = [
   {
@@ -315,6 +313,110 @@ const DEMO_USERS: DemoUser[] = [
   },
 ];
 
+/**
+ * A parallel cast for testing — exactly one account per role, and nothing else.
+ *
+ * The accounts above mirror the real SOFICLEF people, which makes them the right set to
+ * demonstrate the product with and the wrong set to test rights with: DJAOUDI holds two
+ * roles, so "log in as the collaborator" and "log in as the manager" are the same login,
+ * and any confusion between a test action and a real person's record is one careless
+ * click away.
+ *
+ * These are deliberately, visibly fictional — `@test.soficlef.local`, and names that read
+ * as placeholders — so nobody mistakes a test account for a colleague. Each holds one
+ * role, so opening a page as `manager@test.soficlef.local` tells you exactly what a
+ * MANAGER sees, with nothing borrowed from a second assignment.
+ *
+ * They carry the CDC-2026 Module 1 employee record too (hire date, service, manager,
+ * phone), which the original cast predates — so those fields have real values to show.
+ */
+const TEST_USERS: DemoUser[] = [
+  {
+    email: 'admin.tech@test.soficlef.local',
+    displayName: 'TEST — Administrateur technique',
+    locale: 'fr',
+    roles: [{ code: 'TECH_ADMIN' }],
+    hireDate: '2024-01-15',
+    phone: '150',
+    directionFr: 'Direction des Systèmes d’Information',
+    serviceFr: 'Infrastructure & Sécurité',
+    positionTitleFr: 'Administrateur systèmes',
+  },
+  {
+    email: 'admin.metier@test.soficlef.local',
+    displayName: 'TEST — Administrateur métier C&E',
+    locale: 'fr',
+    roles: [{ code: 'BIZ_ADMIN_CE' }],
+    hireDate: '2023-09-04',
+    phone: '432',
+    directionFr: 'Direction des Ressources Humaines',
+    serviceFr: 'Structure Compétences & Emplois',
+    positionTitleFr: 'Chargé du référentiel emplois',
+  },
+  {
+    email: 'responsable.ce@test.soficlef.local',
+    displayName: 'TEST — Responsable Compétences & Emplois',
+    locale: 'fr',
+    roles: [{ code: 'HEAD_CE' }],
+    hireDate: '2019-03-11',
+    phone: '430',
+    directionFr: 'Direction des Ressources Humaines',
+    serviceFr: 'Structure Compétences & Emplois',
+    positionTitleFr: 'Responsable Compétences & Emplois',
+  },
+  {
+    email: 'rh@test.soficlef.local',
+    displayName: 'TEST — Chargée RH',
+    locale: 'fr',
+    roles: [{ code: 'HR' }],
+    hireDate: '2022-06-20',
+    phone: '434',
+    directionFr: 'Direction des Ressources Humaines',
+    serviceFr: 'Administration du personnel',
+    positionTitleFr: 'Chargée des ressources humaines',
+  },
+  {
+    // Scoped to Fabrication, which has two units beneath it — so this account also
+    // demonstrates that a manager's perimeter includes what hangs under it.
+    email: 'manager@test.soficlef.local',
+    displayName: 'TEST — Responsable de structure',
+    locale: 'fr',
+    roles: [{ code: 'MANAGER', unitCode: 'DPR-FABRICATION' }],
+    hireDate: '2021-02-01',
+    phone: '210',
+    directionFr: 'Direction de Production',
+    serviceFr: 'Structure Fabrication',
+    positionTitleFr: 'Responsable Fabrication',
+  },
+  {
+    // Reports to the manager above, and starts an onboarding journey today, so the
+    // checklist, the surveys and the training all have somewhere to land.
+    email: 'collaborateur@test.soficlef.local',
+    displayName: 'TEST — Collaborateur',
+    locale: 'fr',
+    roles: [{ code: 'EMPLOYEE' }],
+    hireDate: TEST_JOURNEY_START,
+    onboardingStartDate: TEST_JOURNEY_START,
+    phone: '211',
+    directionFr: 'Direction de Production',
+    serviceFr: 'Structure Fabrication',
+    positionTitleFr: 'Technicien de fabrication',
+    managerEmail: 'manager@test.soficlef.local',
+  },
+  {
+    email: 'lecteur@test.soficlef.local',
+    displayName: 'TEST — Lecteur / Direction',
+    locale: 'fr',
+    roles: [{ code: 'VIEWER' }],
+    hireDate: '2018-05-02',
+    phone: '145',
+    directionFr: 'Direction Générale',
+    serviceFr: 'Direction Générale',
+    positionTitleFr: 'Membre de la direction',
+  },
+];
+
+
 async function seedDemoUsers(unitIds: Map<string, string>, password: string): Promise<void> {
   const passwordHash = await hash(password, {
     algorithm: ARGON2ID,
@@ -323,7 +425,7 @@ async function seedDemoUsers(unitIds: Map<string, string>, password: string): Pr
     parallelism: 1,
   });
 
-  for (const demo of DEMO_USERS) {
+  for (const demo of [...DEMO_USERS, ...TEST_USERS]) {
     const user = await prisma.user.upsert({
       where: { email: demo.email },
       create: {
@@ -332,11 +434,13 @@ async function seedDemoUsers(unitIds: Map<string, string>, password: string): Pr
         locale: demo.locale,
         passwordHash,
         onboardingStartDate: demo.onboardingStartDate ? new Date(demo.onboardingStartDate) : null,
+        ...employeeRecordOf(demo),
       },
       update: {
         displayName: demo.displayName,
         passwordHash,
         onboardingStartDate: demo.onboardingStartDate ? new Date(demo.onboardingStartDate) : null,
+        ...employeeRecordOf(demo),
       },
       select: { id: true },
     });
@@ -361,6 +465,33 @@ async function seedDemoUsers(unitIds: Map<string, string>, password: string): Pr
       }
     }
   }
+
+  // Manager links are resolved in a second pass: a manager must already exist as a row
+  // before somebody can point at it, and the order of the arrays above should not have
+  // to encode that.
+  for (const demo of [...DEMO_USERS, ...TEST_USERS]) {
+    if (!demo.managerEmail) continue;
+    const manager = await prisma.user.findUnique({
+      where: { email: demo.managerEmail },
+      select: { id: true },
+    });
+    if (!manager) throw new Error(`unknown manager e-mail in demo data: ${demo.managerEmail}`);
+    await prisma.user.update({
+      where: { email: demo.email },
+      data: { managerId: manager.id },
+    });
+  }
+}
+
+/** The CDC-2026 Module 1 columns, omitted entirely when a demo account declares none. */
+function employeeRecordOf(demo: DemoUser) {
+  return {
+    hireDate: demo.hireDate ? new Date(demo.hireDate) : null,
+    phone: demo.phone ?? null,
+    directionFr: demo.directionFr ?? null,
+    serviceFr: demo.serviceFr ?? null,
+    positionTitleFr: demo.positionTitleFr ?? null,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1117,6 +1248,56 @@ async function seedWelcomeAndOnboardingInstance(templateId: string): Promise<voi
 }
 
 /**
+ * An onboarding journey for the test collaborator.
+ *
+ * Separate from the pilot's journey above, and deliberately dated a fortnight back, so a
+ * tester signing in as `collaborateur@test.soficlef.local` lands on a checklist with a
+ * live deadline, an overdue step and an open J+7 survey — rather than on four empty
+ * states that demonstrate nothing.
+ *
+ * The task rows are left open. Completion is recorded through the app, which is the
+ * behaviour being tested; seeding it would hide whether it works.
+ */
+async function seedTestJourney(templateId: string): Promise<boolean> {
+  const collaborator = await prisma.user.findUnique({
+    where: { email: 'collaborateur@test.soficlef.local' },
+    select: { id: true },
+  });
+  if (!collaborator) return false;
+
+  const startDate = new Date(TEST_JOURNEY_START);
+
+  let instance = await prisma.onboardingInstance.findFirst({
+    where: { userId: collaborator.id, templateId },
+    select: { id: true },
+  });
+  if (!instance) {
+    instance = await prisma.onboardingInstance.create({
+      data: { userId: collaborator.id, templateId, startDate },
+      select: { id: true },
+    });
+  }
+
+  const milestones = await prisma.onboardingMilestone.findMany({
+    where: { templateId },
+    select: { id: true },
+  });
+  for (const milestone of milestones) {
+    const existing = await prisma.onboardingTaskCompletion.findUnique({
+      where: { instanceId_milestoneId: { instanceId: instance.id, milestoneId: milestone.id } },
+      select: { id: true },
+    });
+    if (!existing) {
+      await prisma.onboardingTaskCompletion.create({
+        data: { instanceId: instance.id, milestoneId: milestone.id },
+      });
+    }
+  }
+
+  return true;
+}
+
+/**
  * The competency reference frame (CDC v0.1 §7).
  *
  * Unlike everything above, this is *not* extracted from the prototype: the prototype's
@@ -1304,28 +1485,24 @@ async function main(): Promise<void> {
   await seedRecruitment();
   const templateId = await seedOnboardingTemplate(jobId);
   await seedWelcomeAndOnboardingInstance(templateId);
+  const testJourney = await seedTestJourney(templateId);
   const competencyCount = await seedCompetencyFrame(jobId);
   const trainingCount = await seedTrainingCatalogue();
   const surveyRoundCount = await seedSurveyRounds();
 
-  // Legacy generic store, kept for pages not yet migrated off it (see file header).
-  const payloads = seedDataFiles();
-  for (const p of payloads) {
-    await prisma.seedContent.upsert({
-      where: { domain: p.domain },
-      create: { domain: p.domain, data: p.content as object },
-      update: { data: p.content as object },
-    });
-  }
-
   console.log(`✔ ${ALL_PERMISSIONS.length} permissions, ${Object.keys(ROLES).length} roles`);
   console.log(`✔ ${unitIds.size} organization units`);
-  console.log(`✔ ${DEMO_USERS.length} demo users`);
+  console.log(
+    `✔ ${DEMO_USERS.length} demo users + ${TEST_USERS.length} test users (one per role)`,
+  );
   console.log('✔ company, values, strategy, job description, management team, org chart');
   console.log('✔ kaizen, qms, hse, contacts, documents, recruitment');
   console.log('✔ onboarding template + welcome content + onboarding instance');
   console.log(`✔ training catalogue — ${trainingCount} modules, placeholder content`);
   console.log(`✔ ${surveyRoundCount} survey rounds — J+7, J+30, J+60, J+90`);
+  if (testJourney) {
+    console.log(`✔ test journey for collaborateur@test.soficlef.local (start ${TEST_JOURNEY_START})`);
+  }
   console.log(
     `✔ competency frame — ${competencyCount} competencies (proposal, awaiting validation)`,
   );

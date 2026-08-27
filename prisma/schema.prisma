@@ -8,11 +8,10 @@
 // the pipeline end to end and creates the settings table that the password policy and
 // other administrable parameters will use (ADR-012, CDC v0.1 §11).
 //
-// Everything below "Part 6+ — content domains" replaces the generic `SeedContent` JSON
-// blob with real relational tables, one per prototype page (ADR-001: v0.1 is a superset
-// of v1, every v1 module maps onto a v0.1 entity — SCOPE.md §4). `SeedContent` is kept
-// only as a legacy fallback for domains not yet migrated off it; new pages should read
-// their own table, not the JSON blob.
+// Everything below "Part 6+ — content domains" is a real relational table, one per
+// prototype page (ADR-001: v0.1 is a superset of v1, every v1 module maps onto a v0.1
+// entity — SCOPE.md §4). The generic `SeedContent` JSON blob these replaced has been
+// removed now that every page reads its own table.
 //
 // Modelling follows §16.1's principles, consistent with Part 3's tables: a uuid surrogate
 // key on every row, the prototype's own business code or slug kept as a separate unique
@@ -296,18 +295,6 @@ model AuditLog {
   @@map("audit_log")
 }
 
-/// Legacy generic storage for extracted seed data, from before each domain got its own
-/// table. Kept so `prisma/seed.ts` and any page not yet migrated keep working; new work
-/// should read the domain's own model below instead of writing here.
-model SeedContent {
-  id        String   @id @default(uuid()) @db.Uuid
-  domain    String   @unique
-  data      Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("seed_content")
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Part 6 — Company & institutional pages: /company, /strategy.

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { can, type AuthenticatedUser } from '@/domain/auth/authorization';
+import { canAnyScope, type AuthenticatedUser } from '@/domain/auth/authorization';
 import {
   NAV_GROUPS,
   NAV_ITEMS,
@@ -26,34 +26,21 @@ export function buildNavigation(user: AuthenticatedUser): VisibleNavGroup[] {
     items: NAV_ITEMS.filter(
       (item) =>
         item.group === group &&
-        // Content pages are read at the organizational level the user holds; the page
-        // itself re-checks with the specific target once it has one.
-        (can(user, item.requires.action, item.requires.resource) || canWithinAnyScope(user, item)),
+        // Whether the entry is worth showing is "do they hold this permission anywhere",
+        // not "do they hold it on some particular row" — the nav has no target yet. The
+        // page re-checks with the real target once it has one (ADR-020).
+        canAnyScope(user, item.requires.action, item.requires.resource),
     ),
   })).filter((group) => group.items.length > 0);
 }
 
 /**
- * A unit-scoped role holds its permissions inside its perimeter, not globally, so a
- * global check alone would hide every entry from a manager. This asks whether the
- * permission is held *anywhere*.
+ * May this user open this route at all?
+ *
+ * Deliberately the same question `buildNavigation` asks, so the sidebar and the boundary
+ * can never disagree. They used to: the nav asked "anywhere", while some loaders asked
+ * "on your own row", which offered HR a training catalogue that then refused to load.
  */
-function canWithinAnyScope(user: AuthenticatedUser, item: NavItem): boolean {
-  return user.assignments.some((assignment) => {
-    if (assignment.scope.kind === 'ORGANIZATION_UNIT') {
-      const unitId = assignment.scope.organizationUnitIds?.[0];
-      return (
-        unitId !== undefined &&
-        can(user, item.requires.action, item.requires.resource, { organizationUnitId: unitId })
-      );
-    }
-    if (assignment.scope.kind === 'SELF') {
-      return can(user, item.requires.action, item.requires.resource, { ownerUserId: user.id });
-    }
-    return false;
-  });
-}
-
 export function canOpen(user: AuthenticatedUser, item: NavItem): boolean {
-  return can(user, item.requires.action, item.requires.resource) || canWithinAnyScope(user, item);
+  return canAnyScope(user, item.requires.action, item.requires.resource);
 }

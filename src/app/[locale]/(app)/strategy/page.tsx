@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
 import {
@@ -12,10 +13,19 @@ import {
 import type { Locale } from '@/i18n/config';
 import { formatPercent } from '@/lib/format';
 import { prisma } from '@/infrastructure/db/client';
+import { canOpen } from '@/application/navigation/build-navigation';
+import { navItemByHref } from '@/domain/navigation/navigation';
+import { getCurrentUser } from '@/infrastructure/auth/current-user';
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // The page is the boundary, not the sidebar (ADR-020). The layout checks too, but a
+  // page that trusts its layout has no defence if that layout is ever bypassed.
+  const item = navItemByHref('/strategy');
+  const user = await getCurrentUser();
+  if (!item || !user || !canOpen(user, item)) notFound();
 
   let strategy: Awaited<ReturnType<typeof loadStrategy>> = null;
 

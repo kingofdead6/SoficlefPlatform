@@ -130,6 +130,38 @@ export function assertCan(
 }
 
 /**
+ * May this user perform this action on this resource *anywhere* they hold it?
+ *
+ * For shared reference content — the training catalogue, the competency frame — the row
+ * belongs to no unit and to no person, so there is no target to name. `can()` refuses
+ * such a call under a unit scope by design (an unanchored target is the unsafe reading
+ * for business data), which is right for a recruit record and wrong for a course
+ * everybody is meant to read.
+ *
+ * Use this only where the content genuinely is shared. Anything owned by a person or a
+ * unit must go through `can()` with a target, so the scope is checked rather than waived.
+ */
+export function canAnyScope(
+  user: AuthenticatedUser,
+  action: Action,
+  resource: Resource,
+): boolean {
+  if (user.status !== 'ACTIVE') return false;
+  const required = permission(resource, action);
+  return user.assignments.some((assignment) =>
+    ROLE_PERMISSIONS[assignment.role].includes(required),
+  );
+}
+
+export function assertCanAnyScope(
+  user: AuthenticatedUser,
+  action: Action,
+  resource: Resource,
+): void {
+  if (!canAnyScope(user, action, resource)) throw new ForbiddenError(action, resource);
+}
+
+/**
  * The predicate a repository must apply for this user, action and resource.
  *
  *  - `{ kind: 'all' }`        — a global assignment grants the permission everywhere.

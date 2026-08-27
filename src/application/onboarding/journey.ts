@@ -59,10 +59,33 @@ export async function loadJourney(
   // restriction is applied to the query rather than checked afterwards (ADR-021).
   const subjectUserId = scope.kind === 'self' ? user.id : (options.subjectUserId ?? user.id);
 
+  /*
+   * A unit-scoped reader may only reach a subject inside their perimeter.
+   *
+   * This predicate was missing: `subjectUserId` was taken from the caller's options and
+   * used unqualified, so a manager who knew another person's id could read a journey from
+   * a sibling structure. `loadJourneySummaries` below always had the predicate; this
+   * function is brought into line with it.
+   *
+   * Reading their own journey stays possible either way — a manager is somebody's
+   * collaborator too, and their own row is matched by `userId` regardless of unit.
+   */
+  const withinPerimeter =
+    scope.kind === 'units' && subjectUserId !== user.id
+      ? {
+          user: {
+            userRoles: {
+              some: { scope: { organizationUnitId: { in: scope.organizationUnitIds } } },
+            },
+          },
+        }
+      : {};
+
   const instance = await prisma.onboardingInstance.findFirst({
     where: {
       ...(options.instanceId ? { id: options.instanceId } : {}),
       userId: subjectUserId,
+      ...withinPerimeter,
     },
     orderBy: { createdAt: 'asc' },
     include: {
