@@ -71,7 +71,8 @@
       "references": "المرجعيات",
       "tools": "الأدوات",
       "steering": "القيادة",
-      "administration": "الإدارة"
+      "administration": "الإدارة",
+      "me": "مساحتي"
     },
     "items": {
       "welcome": "مرحباً",
@@ -93,7 +94,17 @@
       "admin": "الإدارة",
       "training": "التكوينات",
       "surveys": "الاستبيانات",
-      "hr": "الموظفون"
+      "hr": "الموظفون",
+      "meDashboard": "لوحتي",
+      "meJourney": "مساري",
+      "meOrganigram": "هيكلي التنظيمي",
+      "mePosition": "منصبي",
+      "meTeam": "فريقي",
+      "meDocuments": "وثائقي",
+      "meFiles": "ملفاتي",
+      "meTraining": "تكويناتي",
+      "meSurveys": "استبياناتي",
+      "meAssistant": "المساعد"
     }
   },
   "shell": {

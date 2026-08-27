@@ -210,12 +210,36 @@ async function pruneRetiredSeedData(): Promise<{ users: number; roles: number }>
     await prisma.onboardingInstance.deleteMany({ where: { userId: { in: ids } } });
     await prisma.user.deleteMany({ where: { id: { in: ids } } });
 
-    // Seats those people held are vacant again.
-    await prisma.position.updateMany({
-      where: { assignments: { none: { endDate: null } }, archivedAt: null },
-      data: { isVacant: true, occupancy: 'VACANT' },
-    });
+
   }
+
+  /*
+   * Seats the departed held. A post created *for* a retired seed account has no reason
+   * to survive it, so the unreferenced ones go; anything still carrying a job
+   * description, competencies, a template or children stays, because those are business
+   * content rather than leftovers.
+   */
+  const orphans = await prisma.position.findMany({
+    where: {
+      code: { startsWith: 'poste-' },
+      // No holder now and none ever: a seat somebody merely vacated keeps its history and
+      // must survive, so `none: {}` rather than `none: { endDate: null }`.
+      assignments: { none: {} },
+      childPositions: { none: {} },
+      jobCompetencies: { none: {} },
+      onboardingTemplates: { none: {} },
+      jobDescription: null,
+    },
+    select: { id: true },
+  });
+  if (orphans.length > 0) {
+    await prisma.position.deleteMany({ where: { id: { in: orphans.map((o) => o.id) } } });
+  }
+
+  await prisma.position.updateMany({
+    where: { assignments: { none: { endDate: null } }, archivedAt: null },
+    data: { isVacant: true, occupancy: 'VACANT' },
+  });
 
   const liveRoles = Object.keys(ROLES);
   const retired = await prisma.role.findMany({
@@ -465,6 +489,78 @@ const DEMO_USERS: DemoUser[] = [
 const TEST_USERS: DemoUser[] = [];
 
 /**
+ * The administrative pieces every new arrival is asked for.
+ *
+ * The list is the standard Algerian hiring file — identity, qualifications, bank details
+ * for payroll, and the occupational-medicine certificate. Requested for recruits only:
+ * asking a five-year employee for their diploma again would be noise.
+ *
+ * Statuses are staggered with the journeys, so the page shows all four states rather than
+ * four identical rows.
+ */
+async function seedPersonalFiles(): Promise<number> {
+  const REQUIRED: { kind: 'ID_CARD' | 'DIPLOMA' | 'BANK_DETAILS' | 'MEDICAL_CERTIFICATE'; labelFr: string }[] = [
+    { kind: 'ID_CARD', labelFr: 'Pièce d’identité (CNI ou passeport)' },
+    { kind: 'DIPLOMA', labelFr: 'Diplômes et attestations de formation' },
+    { kind: 'BANK_DETAILS', labelFr: 'RIB pour la paie' },
+    { kind: 'MEDICAL_CERTIFICATE', labelFr: 'Certificat de visite médicale d’embauche' },
+  ];
+
+  let created = 0;
+
+  for (const demo of DEMO_USERS) {
+    if (!demo.onboardingStartDate) continue;
+
+    const recruit = await prisma.user.findUnique({
+      where: { email: demo.email },
+      select: { id: true },
+    });
+    if (!recruit) continue;
+
+    // How far along this recruit is decides how much of their file is done.
+    const daysIn = Math.round(
+      (Date.now() - new Date(demo.onboardingStartDate).getTime()) / 86_400_000,
+    );
+
+    for (const [index, required] of REQUIRED.entries()) {
+      const status =
+        daysIn > 90
+          ? ('ACCEPTED' as const)
+          : daysIn > 40
+            ? index < 3
+              ? ('ACCEPTED' as const)
+              : ('SUBMITTED' as const)
+            : daysIn > 15
+              ? index < 2
+                ? ('ACCEPTED' as const)
+                : ('REQUESTED' as const)
+              : ('REQUESTED' as const);
+
+      const submitted = status === 'SUBMITTED' || status === 'ACCEPTED';
+
+      await prisma.personalFile.upsert({
+        where: { userId_kind: { userId: recruit.id, kind: required.kind } },
+        create: {
+          userId: recruit.id,
+          kind: required.kind,
+          labelFr: required.labelFr,
+          status,
+          noteFr: submitted ? 'Remise en main propre au service RH.' : null,
+          submittedAt: submitted ? new Date() : null,
+          reviewedAt: status === 'ACCEPTED' ? new Date() : null,
+        },
+        // Status is not overwritten on reseed: it is the one field somebody may have
+        // changed through the app, and the seed must not undo their work.
+        update: { labelFr: required.labelFr },
+      });
+      created += 1;
+    }
+  }
+
+  return created;
+}
+
+/**
  * Administrable parameters, seeded with the documented defaults.
  *
  * They exist as rows so the administration screen has something to edit; the code reads
@@ -537,9 +633,22 @@ async function seedAssignments(unitIds: Map<string, string>): Promise<number> {
     });
     if (!user) continue;
 
-    // The unit the person's role is scoped to, when it has one; the seed's units are
-    // keyed by code, and a person without a scoped role sits in no unit.
-    const unitCode = demo.roles.find((role) => role.unitCode)?.unitCode;
+    /*
+     * Which structure this seat belongs to.
+     *
+     * A scoped role names it outright. Most people have no scoped role, though — a
+     * collaborator's EMPLOYEE grant is SELF, not unit-anchored — so fall back to whoever
+     * they report to. A recruit sits in their manager's structure, which is both true and
+     * the only thing the source data actually says.
+     */
+    const ownUnitCode = demo.roles.find((role) => role.unitCode)?.unitCode;
+    const bossUnitCode = demo.reportsToEmail
+      ? [...DEMO_USERS, ...TEST_USERS]
+          .find((candidate) => candidate.email === demo.reportsToEmail)
+          ?.roles.find((role) => role.unitCode)?.unitCode
+      : undefined;
+
+    const unitCode = ownUnitCode ?? bossUnitCode;
     const organizationUnitId = unitCode ? (unitIds.get(unitCode) ?? null) : null;
 
     /*
@@ -1344,6 +1453,40 @@ async function seedRecruitment(): Promise<void> {
   }
 }
 
+/**
+ * Which phase a milestone belongs to, and who owns it, derived from the source data.
+ *
+ * The extracted checklist carries neither: the prototype had one flat list. Rather than
+ * leave both columns null and have every task pile into one section, they are derived from
+ * what the data *does* say — the day offset, and the words the client used in the title.
+ *
+ * Derived rather than invented: nothing here adds a task, a date or a department the
+ * source file does not already imply. Anything unrecognised stays null, which the UI
+ * renders as "not specified" instead of guessing.
+ */
+function milestoneShape(titleFr: string, dayOffset: number): {
+  phase: 'PRE_ONBOARDING' | 'DAY_ONE' | 'PROBATION';
+  ownerDepartment: 'HR' | 'IT' | 'HSE' | 'QUALITY' | 'MANAGER' | 'EMPLOYEE' | null;
+} {
+  const phase = dayOffset < 1 ? 'PRE_ONBOARDING' : dayOffset === 1 ? 'DAY_ONE' : 'PROBATION';
+
+  const title = titleFr.toLowerCase();
+  const ownerDepartment =
+    title.includes('drh') || title.includes('accueil') || title.includes('recrutement')
+      ? ('HR' as const)
+      : title.includes('smq') || title.includes('qualité')
+        ? ('QUALITY' as const)
+        : title.includes('hse') || title.includes('sécurité')
+          ? ('HSE' as const)
+          : title.includes('équipement') || title.includes('cnc') || title.includes('plateforme')
+            ? ('IT' as const)
+            : title.includes('dg') || title.includes('direction')
+              ? ('MANAGER' as const)
+              : ('EMPLOYEE' as const);
+
+  return { phase, ownerDepartment };
+}
+
 /** The reusable 30-day checklist attached to the Directeur de Production post. */
 async function seedOnboardingTemplate(positionId: string): Promise<string> {
   const template = await prisma.onboardingTemplate.upsert({
@@ -1369,6 +1512,7 @@ async function seedOnboardingTemplate(positionId: string): Promise<string> {
         titleFr: milestone.titleFr,
         detailFr: milestone.detailFr,
         isRecommended: milestone.isRecommended,
+        ...milestoneShape(milestone.titleFr, milestone.dayOffset),
       },
       update: {
         order: milestone.order,
@@ -1377,6 +1521,7 @@ async function seedOnboardingTemplate(positionId: string): Promise<string> {
         titleFr: milestone.titleFr,
         detailFr: milestone.detailFr,
         isRecommended: milestone.isRecommended,
+        ...milestoneShape(milestone.titleFr, milestone.dayOffset),
       },
     });
   }
@@ -1747,6 +1892,7 @@ async function main(): Promise<void> {
   const competencyCount = await seedCompetencyFrame(jobId);
   const assignmentCount = await seedAssignments(unitIds);
   const settingCount = await seedAppSettings();
+  const fileCount = await seedPersonalFiles();
   const trainingCount = await seedTrainingCatalogue();
   const surveyRoundCount = await seedSurveyRounds();
 
@@ -1761,6 +1907,7 @@ async function main(): Promise<void> {
   console.log(`✔ training catalogue — ${trainingCount} modules, placeholder content`);
   console.log(`✔ ${surveyRoundCount} survey rounds — J+7, J+30, J+60, J+90`);
   console.log(`✔ ${journeyCount} recruit journeys — D+5, D+20, D+45 and D+95`);
+  console.log(`✔ ${fileCount} personal file requests (upload pending OQ-14/OQ-15)`);
   if (pruned.users > 0 || pruned.roles > 0) {
     console.log(
       `✔ pruned ${pruned.users} retired seed accounts and ${pruned.roles} retired roles`,

@@ -110,6 +110,8 @@ model User {
   trainingAttempts    TrainingAttempt[]
   assignments         Assignment[]
   managerOverrideFor  Assignment[]         @relation("AssignmentManagerOverride")
+  documentAcknowledgements DocumentAcknowledgement[]
+  personalFiles       PersonalFile[]
 
   @@index([status])
   @@index([lifecycleState])
@@ -743,8 +745,59 @@ model Document {
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
+  acknowledgements DocumentAcknowledgement[]
+
   @@index([availability])
   @@map("document")
+}
+
+model DocumentAcknowledgement {
+  id         String   @id @default(uuid()) @db.Uuid
+  documentId String   @db.Uuid
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  acceptedAt DateTime @default(now())
+
+  @@unique([documentId, userId])
+  @@index([userId])
+  @@map("document_acknowledgement")
+}
+
+enum PersonalFileKind {
+  ID_CARD
+  DIPLOMA
+  BANK_DETAILS
+  MEDICAL_CERTIFICATE
+  OTHER
+}
+
+enum PersonalFileStatus {
+  REQUESTED
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+}
+
+model PersonalFile {
+  id         String             @id @default(uuid()) @db.Uuid
+  userId     String             @db.Uuid
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind       PersonalFileKind
+  labelFr    String
+  status     PersonalFileStatus @default(REQUESTED)
+  fileName   String?
+  storageKey String?
+  noteFr     String?            @db.Text
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  reviewedBy  String?           @db.Uuid
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@unique([userId, kind])
+  @@index([status])
+  @@map("personal_file")
 }
 
 model Recruitment {

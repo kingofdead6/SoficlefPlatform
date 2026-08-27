@@ -71,7 +71,8 @@
       "references": "Référentiels",
       "tools": "Outils",
       "steering": "Pilotage",
-      "administration": "Administration"
+      "administration": "Administration",
+      "me": "Mon espace"
     },
     "items": {
       "welcome": "Bienvenue",
@@ -93,7 +94,17 @@
       "admin": "Administration",
       "training": "Formations",
       "surveys": "Enquêtes",
-      "hr": "Personnel"
+      "hr": "Personnel",
+      "meDashboard": "Mon tableau de bord",
+      "meJourney": "Mon parcours",
+      "meOrganigram": "Mon organigramme",
+      "mePosition": "Mon poste",
+      "meTeam": "Mon équipe",
+      "meDocuments": "Mes documents",
+      "meFiles": "Mes pièces",
+      "meTraining": "Mes formations",
+      "meSurveys": "Mes enquêtes",
+      "meAssistant": "Assistant"
     }
   },
   "shell": {

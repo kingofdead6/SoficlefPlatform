@@ -53,6 +53,22 @@ export function formatDate(
 }
 
 /**
+ * A date with its time, for anything that records *when* something happened.
+ *
+ * An audit entry or a status change needs the hour: two changes on the same day are
+ * otherwise indistinguishable, which defeats the point of keeping a history.
+ */
+export function formatDateTime(value: Date, locale: Locale): string {
+  return formatDate(value, locale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+/**
  * Whole days between a start date and today, in the site's time zone.
  *
  * Used for the onboarding day badge: positive after the start date, negative before it —

@@ -36,6 +36,7 @@ export function TaskRow({
   dueSoon,
   canUpdate,
   canValidate,
+  footer,
 }: {
   instanceId: string;
   milestoneId: string;
@@ -49,6 +50,8 @@ export function TaskRow({
   dueSoon: boolean;
   canUpdate: boolean;
   canValidate: boolean;
+  /** Extra content under the row — a link to the detail page, the owning department. */
+  footer?: React.ReactNode;
 }) {
   const [current, setCurrent] = useState<OnboardingTaskStatus>(status);
   const [error, setError] = useState<string | null>(null);
@@ -187,6 +190,8 @@ export function TaskRow({
           ) : null}
         </div>
       </div>
+
+      {footer ? <div className="mt-2 border-t border-(--border) pt-2">{footer}</div> : null}
     </li>
   );
 }

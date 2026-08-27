@@ -12,7 +12,13 @@ import type { Action, Resource } from '@/domain/auth/permissions';
  */
 
 export type NavGroupId =
-  'steering' | 'onboarding' | 'direction' | 'references' | 'tools' | 'administration';
+  | 'me'
+  | 'steering'
+  | 'onboarding'
+  | 'direction'
+  | 'references'
+  | 'tools'
+  | 'administration';
 
 export interface NavItem {
   /** Key into `messages.nav.items`, and the item's stable id. */
@@ -28,6 +34,7 @@ export interface NavItem {
 }
 
 export const NAV_GROUPS: NavGroupId[] = [
+  'me',
   'steering',
   'onboarding',
   'direction',
@@ -37,6 +44,87 @@ export const NAV_GROUPS: NavGroupId[] = [
 ];
 
 export const NAV_ITEMS: NavItem[] = [
+  /*
+   * ── Mon espace (/app/me) ─────────────────────────────────────────────────
+   *
+   * The new arrival's own surface. Every entry is gated on a permission the person holds
+   * over *their own* rows, so a SELF-scoped account sees the whole group and nobody else's
+   * data — the scope does the narrowing, in the query, not the route prefix.
+   *
+   * The prefix is organisational, not a security boundary: `can()` is still what decides.
+   */
+  {
+    id: 'meDashboard',
+    href: '/app/me',
+    group: 'me',
+    requires: { resource: 'dashboard', action: 'read' },
+    deliveredIn: 14,
+  },
+  {
+    id: 'meJourney',
+    href: '/app/me/journey',
+    group: 'me',
+    requires: { resource: 'onboarding_task', action: 'read' },
+    deliveredIn: 14,
+    badge: 'onboarding-progress',
+  },
+  {
+    id: 'meOrganigram',
+    href: '/app/me/organigram',
+    group: 'me',
+    requires: { resource: 'organization_unit', action: 'read' },
+    deliveredIn: 14,
+  },
+  {
+    id: 'mePosition',
+    href: '/app/me/position',
+    group: 'me',
+    requires: { resource: 'job_description', action: 'read' },
+    deliveredIn: 14,
+  },
+  {
+    id: 'meTeam',
+    href: '/app/me/team',
+    group: 'me',
+    requires: { resource: 'organization_unit', action: 'read' },
+    deliveredIn: 14,
+  },
+  {
+    id: 'meDocuments',
+    href: '/app/me/documents',
+    group: 'me',
+    requires: { resource: 'document', action: 'read' },
+    deliveredIn: 14,
+  },
+  {
+    id: 'meFiles',
+    href: '/app/me/files',
+    group: 'me',
+    requires: { resource: 'document', action: 'read' },
+    deliveredIn: 14,
+  },
+  {
+    id: 'meTraining',
+    href: '/app/me/training',
+    group: 'me',
+    requires: { resource: 'training', action: 'read' },
+    deliveredIn: 14,
+  },
+  {
+    id: 'meSurveys',
+    href: '/app/me/surveys',
+    group: 'me',
+    requires: { resource: 'survey', action: 'read' },
+    deliveredIn: 14,
+  },
+  {
+    id: 'meAssistant',
+    href: '/app/me/assistant',
+    group: 'me',
+    requires: { resource: 'organization_unit', action: 'read' },
+    deliveredIn: 14,
+  },
+
   // ── Pilotage ───────────────────────────────────────────────────────────────
   {
     id: 'dashboard',

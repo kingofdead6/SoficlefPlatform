@@ -42,14 +42,16 @@ function user(role: RoleCode, scopeUnits?: string[]): AuthenticatedUser {
 const idsOf = (groups: ReturnType<typeof buildNavigation>) =>
   groups.flatMap((group) => group.items.map((item) => item.id));
 
-describe('navigation is twenty routes in six groups', () => {
-  it('declares exactly the twenty routes of the specification', () => {
+describe('navigation is thirty routes in seven groups', () => {
+  it('declares exactly the thirty routes of the specification', () => {
     // Fifteen content routes from the prototype, the role dashboard and the
     // administration section of CDC v0.1 §4, training and surveys from CDC-2026
     // Modules 6 and 9, and personnel administration -- HR's half of the provisioning
     // chain, which is a separate screen from SI's because it is a separate job.
-    expect(NAV_ITEMS).toHaveLength(20);
-    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(20);
+    expect(NAV_ITEMS).toHaveLength(30);
+    // Every href distinct: two entries pointing at one route would make the sidebar
+    // highlight ambiguous and the permission check on that route arbitrary.
+    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(30);
   });
 
   it('does not include the AI assistant — phase 2 (ADR-003)', () => {

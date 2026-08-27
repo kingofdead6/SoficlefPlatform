@@ -28,6 +28,16 @@ export interface JourneyTask {
   titleFr: string;
   detailFr: string;
   isRecommended: boolean;
+  /**
+   * Which of CDC-2026 §2's three phases the task belongs to, and which department owns it.
+   *
+   * Both are nullable because the seeded template predates the columns. A task with no
+   * phase is grouped under the probation period, which is where an undated task in a
+   * 90-day journey actually sits; a task with no owner shows no department rather than
+   * guessing one.
+   */
+  phase: 'PRE_ONBOARDING' | 'DAY_ONE' | 'PROBATION' | null;
+  ownerDepartment: 'HR' | 'IT' | 'HSE' | 'QUALITY' | 'MANAGER' | 'EMPLOYEE' | null;
   status: OnboardingTaskStatus;
   dueDate: Date | null;
   completedAt: Date | null;
@@ -118,6 +128,8 @@ export async function loadJourney(
       titleFr: milestone.titleFr,
       detailFr: milestone.detailFr,
       isRecommended: milestone.isRecommended,
+      phase: milestone.phase,
+      ownerDepartment: milestone.ownerDepartment,
       status,
       dueDate,
       completedAt: completion?.completedAt ?? null,

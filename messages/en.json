@@ -71,7 +71,8 @@
       "references": "Reference data",
       "tools": "Tools",
       "steering": "Steering",
-      "administration": "Administration"
+      "administration": "Administration",
+      "me": "My space"
     },
     "items": {
       "welcome": "Welcome",
@@ -93,7 +94,17 @@
       "admin": "Administration",
       "training": "Training",
       "surveys": "Surveys",
-      "hr": "Personnel"
+      "hr": "Personnel",
+      "meDashboard": "My dashboard",
+      "meJourney": "My path",
+      "meOrganigram": "My org chart",
+      "mePosition": "My position",
+      "meTeam": "My team",
+      "meDocuments": "My documents",
+      "meFiles": "My files",
+      "meTraining": "My training",
+      "meSurveys": "My surveys",
+      "meAssistant": "Assistant"
     }
   },
   "shell": {
