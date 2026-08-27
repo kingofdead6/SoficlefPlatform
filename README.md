@@ -167,9 +167,39 @@ prototype's browser-side implementation could not have worked outside a sandbox 
 | `/onboarding`      | The 30-day journey: task states, deadlines, lateness, manager validation, and an oversight table  |
 | `/competencies`    | The job↔competency matrix, gaps against a configurable level scale, and assessment recording      |
 | `/remarks`         | The collaborator's journal to HR and the DG, with an audited text export                          |
+| `/hr`              | The queue of unplaced accounts, and assignment to a post. `HR` only                               |
+| `/pending`         | Where an account with no post lands: a message and the HR contact, no sidebar, no data            |
 | `/admin`           | Accounts, roles and the audit trail. `TECH_ADMIN` only                                            |
 | `/job-description` | The `EN-012-DRH` fiche, its versions, and the §6.1 validation circuit                             |
 | Content routes     | Company, strategy, management, recruitment, Kaizen, QMS, HSE, contacts, documents                 |
+
+### The provisioning chain
+
+An account reaches the platform through two roles, never one. `TECH_ADMIN` creates it on
+`/admin`; `HR` gives it a post on `/hr`. Until that second step the account is
+`PENDING_ASSIGNMENT` and every route redirects to `/pending`.
+
+The split is enforced in the permission table, not by hiding buttons: HR does not hold
+`user:create`, and `TECH_ADMIN` does not hold `assignment:create`. `/hr` is gated on
+*creating* an assignment rather than reading one, because an administrator legitimately
+reads assignments and must still never be offered the screen that makes one.
+
+Assigning is a single transaction: it closes any open assignment, opens the new one, marks
+the seat occupied, flips the lifecycle state, and creates the onboarding journey with its
+J+7/30/60/90 surveys. Reassignment closes the previous row rather than deleting it — the
+history is what the turnover reporting reads.
+
+### The org model
+
+`Position` is the seat, `Assignment` is who holds it and when. A person's placement is not
+free text on their record: it is a row with dates, which is what makes "who held this post
+in March" answerable and lets a post be reassigned without rebuilding the chart. A partial
+unique index enforces at most one *open* assignment per person.
+
+`getVisibleTree()` returns the slice of the chart a given user may see — the whole thing for
+a global reader, their own sub-tree for a manager, and a configurable window (levels up,
+levels down, peers) for everyone else. The limits come from `AppSetting`, and the narrowing
+happens in the SQL, not in the component.
 
 Every mutation goes through one helper (`src/application/shared/mutate.ts`) that
 authenticates, re-validates the payload with Zod, authorizes against the resolved target
@@ -185,6 +215,16 @@ adding a field to a table can therefore never widen what an anonymous visitor se
 Two gaps are deliberate and documented in `docs/SCOPE.md`: field-level editing of a job
 description's §6.2 content (the versioning and validation workflow around it is complete),
 and document upload with per-document ACLs, which awaits the storage decision (OQ-15).
+
+The AI assistant is structure only, and deliberately so (ADR-003): `src/domain/assistant/`
+declares the five agents of CDC-2026 §4, what each may read, and the rule that an answer
+either cites a source the reader can check or admits it found nothing. Agent 1
+(`src/application/assistant/orientation.ts`) answers "who do I talk to about X" by
+retrieval over the asker's *own* visible org tree and the contact directory — no model, no
+API key, no vector storage anywhere in the codebase.
+
+Set `DEMO_DATA=true` to badge every page as demonstration data, so seeded people are not
+mistaken for colleagues.
 
 ## Data seeded from the prototype
 

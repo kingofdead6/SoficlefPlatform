@@ -110,6 +110,8 @@ HR and the DG, and a structure head is not on that distribution list.
 
 **Can:**
 
+- **Give an account a post** — the second half of the provisioning chain, on **Personnel** (`/hr`). IT creates the account; until HR places it the person signs in and sees nothing but a waiting message. Assigning also starts the onboarding journey and its four satisfaction surveys.
+- **Reassign** somebody. The previous assignment is closed with a date, never deleted: "who held this post in March" has to stay answerable.
 - **Create and manage onboarding journeys**: instantiate a template for a new arrival, adjust it, follow every journey in the organization from one table with its progress and alerts.
 - Update onboarding tasks across the organization.
 - **Validate a job description.**
@@ -118,8 +120,9 @@ HR and the DG, and a structure head is not on that distribution list.
 - Read the competency frame and every assessment; export reports.
 
 **Cannot:** assess a competency themselves (that is the manager's judgement, on someone
-they actually work with), create or restructure organizational units, or administer
-accounts and roles.
+they actually work with), create or restructure organizational units, or **create,
+suspend or delete an account** — that is IT's half of the chain, and keeping the two
+apart is what stops any one person putting a working account into the platform alone.
 
 ### 3.4 Responsable Compétences & Emplois — `HEAD_CE`
 
@@ -193,6 +196,7 @@ onboarding checklist.
 
 - **Validate a job description, or assess a competency.** Signing off business content is a business act. IT running the servers does not make IT the authority on whether someone is competent.
 - **Grant a role to themselves.** The attempt is refused _and written to the audit log_, so an administrator quietly widening their own access is both blocked and visible.
+- **Give anybody a post.** IT creates the account; HR decides where the person sits. An administrator can *see* who is placed where — they administer the platform — but the screen that makes an assignment is not offered to them, and the permission is not held.
 - **Suspend their own account**, which would lock the platform's administrator out of it.
 
 ---
@@ -238,7 +242,7 @@ An honest answer at J+30 depends on that being true.
 
 ## 5. The pages
 
-Seventeen routes in six groups. Each declares the permission it needs, so the menu and the
+Twenty routes in six groups. Each declares the permission it needs, so the menu and the
 route agree by construction.
 
 | Group          | Page                      | Who sees it                             | What it does                                                         |
@@ -261,11 +265,21 @@ route agree by construction.
 | Outils         | Formations                | all but technical admin                 | Training modules, quizzes and certificates (CDC 2026 Module 6)       |
 | Outils         | Enquêtes                  | all but technical admin                 | Satisfaction surveys at J+7/30/60/90, and the consolidated score     |
 | Outils         | Remarques                 | employee, HR, Head C&E, business admin  | The observations journal, with export                                |
+| Administration | Personnel                 | HR only                                 | The queue of unplaced accounts, and assignment to a post             |
 | Administration | Administration            | technical admin only                    | Accounts, roles, audit trail                                         |
 
 The technical administrator sees fewer business pages than anyone else, which is the model
 working as intended: running the platform is not a reason to read its HR content. The
 reader (DG) sees the reference frame but neither the checklist nor the remarks journal.
+
+Note the two administration entries, and that no role sees both. **Administration** is
+IT's: accounts, roles, the audit trail. **Personnel** is HR's: giving those accounts a
+post. That is the provisioning chain, and splitting it across two screens with two owners
+is what stops one person creating an account and then handing it access.
+
+There is a twenty-first page nobody has in their menu: **`/pending`**, where an account
+that has no post yet lands. It carries a message and the HR contact to chase, and nothing
+else — no sidebar, no data. Every other route redirects there until HR assigns a post.
 
 ---
 
@@ -342,6 +356,37 @@ so nothing else is disturbed.
 | `tech.admin@soficlef.local` | Technical admin           | Accounts, roles, audit — and no business rights  |
 | `boubenia@soficlef.local`   | Employee                  | The narrowest profile                            |
 
+### Test accounts — one per role
+
+A second, deliberately fictional cast at `@test.soficlef.local`, so a test action is never
+one careless click from a real person's record. Each holds exactly one role, which the demo
+cast above does not: DJAOUDI is both an employee and a manager, so "sign in as the
+collaborator" and "sign in as the manager" are the same login there.
+
+| Account                                   | Role               | Useful for showing                                   |
+| ----------------------------------------- | ------------------ | ---------------------------------------------------- |
+| `admin.tech@test.soficlef.local`          | Technical admin    | Eight routes of twenty — platform, not business      |
+| `admin.metier@test.soficlef.local`        | Business admin C&E | The widest business rights, no `/admin`, no `/hr`    |
+| `responsable.ce@test.soficlef.local`      | Head C&E           | Validation authority                                 |
+| `rh@test.soficlef.local`                  | HR                 | **The only role that opens `/hr`**                   |
+| `manager@test.soficlef.local`             | Manager            | A perimeter: Fabrication and what hangs under it     |
+| `collaborateur@test.soficlef.local`       | Employee           | A running journey, with surveys and training         |
+| `lecteur@test.soficlef.local`             | Reader (DG)        | Read-only: every mutation refused                    |
+| `attente.affectation@test.soficlef.local` | Employee, unplaced | **The provisioning chain's resting state**           |
+
 A good five-minute demonstration: sign in as **oudni** and note the dashboard counts one
 vacant structure; sign in as **drh** and note the same tile reads three. Nothing was
 hidden in the interface — the two queries genuinely returned different rows.
+
+A second, shorter one, for the provisioning chain: sign in as
+**attente.affectation** and note that every route — including the dashboard — lands on the
+waiting page. Then sign in as **rh**, open **Personnel**, and give that account a post.
+Sign back in as the first account: the platform is now there, the 30-day checklist has
+started, and the four satisfaction surveys are scheduled. Nobody edited a database row.
+
+### Demonstration data
+
+When `DEMO_DATA=true`, every page carries a **"Données de démonstration"** badge in the top
+bar. The seeded people are realistic enough to be mistaken for colleagues and the figures
+for real KPIs, which is exactly why the platform says so on screen rather than trusting
+everyone to remember. Leave it unset in production.

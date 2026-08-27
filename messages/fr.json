@@ -107,7 +107,8 @@
     "noOnboarding": "Aucun parcours d'intégration en cours",
     "localeSwitcher": "Choisir la langue",
     "localeSwitcherCurrent": "Langue actuelle : {locale}",
-    "breadcrumb": "Fil d'Ariane"
+    "breadcrumb": "Fil d'Ariane",
+    "demoData": "Données de démonstration"
   },
   "empty": {
     "welcome": "Votre page d'accueil affichera le mot de bienvenue de la Direction Générale, vos indicateurs clés et l'agenda de votre première journée. Elle sera activée avec la mise en service du module Onboarding.",

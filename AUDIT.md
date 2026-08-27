@@ -438,3 +438,51 @@ word. A relevance threshold now keeps only what ties with the best match.
 | Reassignment | second open row refused; old row closed not deleted; seat re-vacated |
 | RBAC matrix | 160 combinations (8 accounts × 20 routes) — **0 leaks**, no JS errors |
 | Separation of duties | HR is the only role opening `/hr`; TECH_ADMIN opens `/admin` and is refused `/hr` |
+
+
+---
+
+## 13. Execution log — group (d), demonstration mode and the docs
+
+### A live credential in a tracked file
+
+`.env.example` carried a real Neon connection string, password included — in the very file
+whose header cites ADR-023 ("never put a real credential in this file"). Replaced with the
+local placeholder plus a comment showing the `sslmode`/`channel_binding` form managed
+Postgres needs, which was the only useful thing the real URL demonstrated. `.env` is
+untouched.
+
+**Still outstanding, and it needs your decision:** the credential remains reachable in git
+history at `c0739b4`. Removing it there means rewriting history, which is not something to
+do unilaterally. **Rotating the Neon password is the faster and safer remedy** and does not
+depend on the rewrite.
+
+### Demonstration mode
+
+`DEMO_DATA=true` badges every page with "Données de démonstration". It changes no behaviour
+beyond the badge, and that is deliberate: the plan's mock↔production connector would mean a
+second data path to keep correct, when the actual risk is a seeded person being mistaken for
+a colleague or a demo figure for a KPI. Saying so on screen addresses that risk; a parallel
+implementation would not. Flagged here rather than silently substituted.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `tsc --noEmit`, `eslint .`, `check-messages` | clean · 187 keys, three locales |
+| `vitest run` | 386 passed (14 files) |
+| `next build` | compiled |
+| Browser sweep | 18 routes × {fr, ar} × {390px, 1280px} — no horizontal overflow, no console errors |
+| Demo badge | renders in French and Arabic |
+
+---
+
+## 14. What remains
+
+| Item | Why it is not done |
+| --- | --- |
+| Document upload | Blocked on OQ-14/OQ-15 — the storage backend is undecided, and picking one is your call, not a default to guess. The library around it is built. |
+| Entra ID / OIDC | Needs a tenant that does not exist. Auth sits behind one module, so it drops in without touching call sites. |
+| Agents 2–5 | Structure declared, retrieval unimplemented. Agent 1 is the one that works without a model; the others need the generation step ADR-003 defers. |
+| `positionTitleFr` on `User` | Redundant with `Assignment → Position.titleFr`, kept with documented precedence because a contract title and a post title are not always the same words (Q6). |
+| Route prefixes `/app/me` etc. | Recommended against and flagged as Q1: renaming twenty routes is churn with no security benefit, since the boundary is `can()`, not the URL. Still your call. |

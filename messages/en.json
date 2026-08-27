@@ -107,7 +107,8 @@
     "noOnboarding": "No onboarding journey in progress",
     "localeSwitcher": "Choose language",
     "localeSwitcherCurrent": "Current language: {locale}",
-    "breadcrumb": "Breadcrumb"
+    "breadcrumb": "Breadcrumb",
+    "demoData": "Demonstration data"
   },
   "empty": {
     "welcome": "Your home page will show the General Manager's welcome message, your key indicators and your first-day agenda. It becomes active when the Onboarding module goes live.",

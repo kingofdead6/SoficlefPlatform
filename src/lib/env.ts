@@ -29,6 +29,22 @@ const serverSchema = z.object({
     .optional()
     .transform((value) => value === 'true'),
 
+  /**
+   * Whether the data on screen is the seeded demonstration set rather than real records.
+   *
+   * When on, the shell shows a "Données de démonstration" badge on every page. The point
+   * is that nobody mistakes seeded people for colleagues, or a demo figure for a KPI they
+   * can act on — a mistake that is cheap to prevent here and expensive to discover in a
+   * meeting.
+   *
+   * It changes no behaviour beyond that badge: there is one data path, and it is the
+   * database. A second, in-memory implementation would be a second thing to keep correct.
+   */
+  DEMO_DATA: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((value) => value === 'true'),
+
   APP_URL: z
     .string()
     .url()

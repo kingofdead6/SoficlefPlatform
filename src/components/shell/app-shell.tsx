@@ -10,6 +10,8 @@ import { formatDate } from '@/lib/format';
 import type { Locale } from '@/i18n/config';
 
 import { Brand } from './brand';
+import { serverEnv } from '@/lib/env';
+
 import { DayBadge } from './day-badge';
 import { LocaleSwitcher } from './locale-switcher';
 import { MobileNav } from './mobile-nav';
@@ -121,6 +123,19 @@ export async function AppShell({
           <MobileNav groups={groups} brand={<Brand />} />
           <TopBarTitle fallback={t('app.tagline')} />
           <div className="flex-1" />
+          {serverEnv().DEMO_DATA ? (
+            /*
+             * Seeded data, said out loud. Nobody should mistake a demonstration person for
+             * a colleague or a demo figure for a KPI they can act on. `title` carries the
+             * long form; the short label is all that fits beside the other controls.
+             */
+            <span
+              title="Les données affichées sont un jeu de démonstration, pas des enregistrements réels."
+              className="text-red-strong hidden rounded border border-(--red-brand) bg-(--red-dim) px-2 py-0.5 text-[11px] font-medium sm:inline"
+            >
+              {t('shell.demoData')}
+            </span>
+          ) : null}
           <DayBadge startDate={user.onboardingStartDate} locale={locale} />
           <NotificationBell notifications={notifications} localePrefix={`/${locale}`} />
           <LocaleSwitcher current={locale} />
