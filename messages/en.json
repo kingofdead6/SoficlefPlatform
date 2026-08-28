@@ -72,7 +72,8 @@
       "tools": "Tools",
       "steering": "Steering",
       "administration": "Administration",
-      "me": "My space"
+      "me": "My space",
+      "hr": "Human Resources"
     },
     "items": {
       "welcome": "Welcome",
@@ -94,7 +95,6 @@
       "admin": "Administration",
       "training": "Training",
       "surveys": "Surveys",
-      "hr": "Personnel",
       "meDashboard": "My dashboard",
       "meJourney": "My path",
       "meOrganigram": "My org chart",
@@ -104,7 +104,19 @@
       "meFiles": "My files",
       "meTraining": "My training",
       "meSurveys": "My surveys",
-      "meAssistant": "Assistant"
+      "meAssistant": "Assistant",
+      "hrDashboard": "HR dashboard",
+      "hrUnassigned": "Accounts to assign",
+      "hrEmployees": "Employees",
+      "hrOrganigram": "Org chart",
+      "hrPositions": "Job descriptions",
+      "hrTemplates": "Path templates",
+      "hrDocuments": "Document library",
+      "hrTraining": "Training catalogue",
+      "hrSurveys": "Surveys",
+      "hrAnalytics": "KPIs & reporting",
+      "hrAlerts": "Alerts & reminders",
+      "hrAiKnowledge": "AI knowledge base"
     }
   },
   "shell": {

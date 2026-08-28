@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildNavigation, canOpen } from '@/application/navigation/build-navigation';
 import { canAnyScope, type AuthenticatedUser } from '@/domain/auth/authorization';
-import { NAV_ITEMS } from '@/domain/navigation/navigation';
+import { NAV_ITEMS, navItemGoverning } from '@/domain/navigation/navigation';
 import { ROLE_CODES, type RoleCode } from '@/domain/auth/roles';
 
 /**
@@ -42,16 +42,16 @@ function user(role: RoleCode, scopeUnits?: string[]): AuthenticatedUser {
 const idsOf = (groups: ReturnType<typeof buildNavigation>) =>
   groups.flatMap((group) => group.items.map((item) => item.id));
 
-describe('navigation is thirty routes in seven groups', () => {
-  it('declares exactly the thirty routes of the specification', () => {
+describe('navigation is forty-one routes in seven groups', () => {
+  it('declares exactly the forty-one routes of the specification', () => {
     // Fifteen content routes from the prototype, the role dashboard and the
     // administration section of CDC v0.1 §4, training and surveys from CDC-2026
     // Modules 6 and 9, and personnel administration -- HR's half of the provisioning
     // chain, which is a separate screen from SI's because it is a separate job.
-    expect(NAV_ITEMS).toHaveLength(30);
+    expect(NAV_ITEMS).toHaveLength(41);
     // Every href distinct: two entries pointing at one route would make the sidebar
     // highlight ambiguous and the permission check on that route arbitrary.
-    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(30);
+    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(41);
   });
 
   it('does not include the AI assistant — phase 2 (ADR-003)', () => {
@@ -86,7 +86,7 @@ describe('entries a role cannot open are never sent', () => {
   it('hides Kaizen and personnel administration from a collaborator', () => {
     const visible = idsOf(buildNavigation(user('EMPLOYEE')));
     expect(visible).not.toContain('kaizen');
-    expect(visible).not.toContain('hr');
+    expect(visible).not.toContain('hrDashboard');
     expect(visible).not.toContain('admin');
     // The reference frame stays visible: a new arrival is meant to read it.
     expect(visible).toContain('organization');
@@ -205,15 +205,105 @@ describe('the provisioning chain, under the four-role model', () => {
 
   it('offers the personnel screen only to those who may assign', () => {
     // Both roles that hold `assignment:create` see it; neither of the other two does.
-    expect(idsOf(buildNavigation(user('HR')))).toContain('hr');
-    expect(idsOf(buildNavigation(user('ADMIN')))).toContain('hr');
-    expect(idsOf(buildNavigation(user('EMPLOYEE')))).not.toContain('hr');
-    expect(idsOf(buildNavigation(user('MANAGER', [FABRICATION])))).not.toContain('hr');
+    expect(idsOf(buildNavigation(user('HR')))).toContain('hrDashboard');
+    expect(idsOf(buildNavigation(user('ADMIN')))).toContain('hrDashboard');
+    expect(idsOf(buildNavigation(user('EMPLOYEE')))).not.toContain('hrDashboard');
+    expect(idsOf(buildNavigation(user('MANAGER', [FABRICATION])))).not.toContain('hrDashboard');
   });
 
   it('keeps HR out of the SI console', () => {
     const visible = idsOf(buildNavigation(user('HR')));
-    expect(visible).toContain('hr');
+    expect(visible).toContain('hrDashboard');
     expect(visible).not.toContain('admin');
+  });
+});
+
+describe('the HR surface is a tree, not a page', () => {
+  /*
+   * `/hr` used to be one screen doing everything. It is now twelve entries under
+   * `/app/hr`, and the thing worth pinning is that the split did not widen anybody's
+   * access: the same roles reach it, and no other role gained an entry.
+   */
+  const HR_IDS = [
+    'hrDashboard',
+    'hrUnassigned',
+    'hrEmployees',
+    'hrOrganigram',
+    'hrPositions',
+    'hrTemplates',
+    'hrDocuments',
+    'hrTraining',
+    'hrSurveys',
+    'hrAnalytics',
+    'hrAlerts',
+    'hrAiKnowledge',
+  ];
+
+  it('groups every HR route under one heading', () => {
+    for (const id of HR_IDS) {
+      const entry = NAV_ITEMS.find((item) => item.id === id);
+      expect(entry, id).toBeDefined();
+      expect(entry?.group, id).toBe('hr');
+      expect(entry?.href.startsWith('/app/hr'), id).toBe(true);
+    }
+  });
+
+  it('shows the whole tree to HR and to the administrator', () => {
+    for (const role of ['HR', 'ADMIN'] as RoleCode[]) {
+      const visible = new Set(idsOf(buildNavigation(user(role))));
+      for (const id of HR_IDS) {
+        expect(visible.has(id), `${role} · ${id}`).toBe(true);
+      }
+    }
+  });
+
+  it('shows none of it to a manager or a collaborator', () => {
+    for (const account of [user('MANAGER', [FABRICATION]), user('EMPLOYEE')]) {
+      const visible = new Set(idsOf(buildNavigation(account)));
+      for (const id of HR_IDS) {
+        expect(visible.has(id), `${account.assignments[0].role} · ${id}`).toBe(false);
+      }
+    }
+  });
+});
+
+describe('a detail route inherits the permission of the screen it belongs to', () => {
+  /*
+   * The layout refuses any authenticated route it cannot resolve to a nav entry — the
+   * fail-closed behaviour that a fail-open check used to lack. Exact matching then made
+   * every dynamic detail route unreachable, because `/app/hr/employees/<uuid>` has no
+   * entry of its own. `navItemGoverning` walks up to the closest ancestor.
+   */
+  it('resolves an exact route to its own entry', () => {
+    expect(navItemGoverning('/app/hr/employees')?.id).toBe('hrEmployees');
+    expect(navItemGoverning('/dashboard')?.id).toBe('dashboard');
+  });
+
+  it('resolves a detail route to its parent screen', () => {
+    expect(navItemGoverning('/app/hr/employees/abc-123')?.id).toBe('hrEmployees');
+    expect(navItemGoverning('/app/me/journey/abc-123')?.id).toBe('meJourney');
+    expect(navItemGoverning('/app/hr/templates/abc-123')?.id).toBe('hrTemplates');
+  });
+
+  it('prefers the narrowest ancestor, never the broadest', () => {
+    // Governed by the employees screen, not by the HR dashboard at `/app/hr`.
+    expect(navItemGoverning('/app/hr/employees/abc-123/assign')?.id).toBe('hrEmployees');
+    expect(navItemGoverning('/app/hr/training/abc/quiz')?.id).toBe('hrTraining');
+  });
+
+  it('matches whole segments, so a sibling cannot inherit a permission', () => {
+    /*
+     * The important negative. A raw prefix test would let `/app/hr/employees-archive`
+     * inherit the employees permission purely because the strings overlap — a silent way
+     * for a new route to acquire rights nobody granted it.
+     */
+    expect(navItemGoverning('/app/hr/employees-archive')?.id).not.toBe('hrEmployees');
+    expect(navItemGoverning('/dashboard-internal')?.id).not.toBe('dashboard');
+  });
+
+  it('still resolves nothing for a route under no entry at all', () => {
+    // An unknown top-level route must stay unresolvable, so the layout keeps refusing it.
+    expect(navItemGoverning('/nonsense')).toBeUndefined();
+    expect(navItemGoverning('/nonsense/deeper')).toBeUndefined();
   });
 });

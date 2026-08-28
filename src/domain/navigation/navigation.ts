@@ -13,6 +13,7 @@ import type { Action, Resource } from '@/domain/auth/permissions';
 
 export type NavGroupId =
   | 'me'
+  | 'hr'
   | 'steering'
   | 'onboarding'
   | 'direction'
@@ -35,6 +36,7 @@ export interface NavItem {
 
 export const NAV_GROUPS: NavGroupId[] = [
   'me',
+  'hr',
   'steering',
   'onboarding',
   'direction',
@@ -263,22 +265,106 @@ export const NAV_ITEMS: NavItem[] = [
   },
 
   /*
-   * Personnel administration — the HR half of the provisioning chain.
+   * ── Ressources humaines (/app/hr) ────────────────────────────────────────
    *
-   * Gated on `assignment:create`, not `assignment:read`.
+   * HR's own surface. Most entries need `assignment:create` — the act that defines the
+   * role — rather than a read, so an administrator who can *see* assignments is still not
+   * offered the screens that make them.
    *
-   * The distinction matters: TECH_ADMIN *reads* assignments (it administers the platform
-   * and must be able to see who is placed where) but must never make one, because SI
-   * creating an account and then placing it would be the whole provisioning chain in one
-   * pair of hands. The screen that performs the act is offered only to whoever may
-   * perform it.
+   * Every entry is gated on `assignment:create` — the act that defines the role — rather
+   * than on reading whatever the screen displays. Gating on the read looked tidier and was
+   * wrong: a manager reads assignments, positions and surveys for their own team, so it
+   * would have handed them the HR directory. The rule is "who does this job", not "who may
+   * see this data".
    */
   {
-    id: 'hr',
-    href: '/hr',
-    group: 'administration',
+    id: 'hrDashboard',
+    href: '/app/hr',
+    group: 'hr',
     requires: { resource: 'assignment', action: 'create' },
-    deliveredIn: 13,
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrUnassigned',
+    href: '/app/hr/employees/unassigned',
+    group: 'hr',
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrEmployees',
+    href: '/app/hr/employees',
+    group: 'hr',
+    /*
+     * `assignment:create`, not `read`. A manager legitimately *reads* assignments for
+     * their own team, so gating on the read handed them the whole personnel directory —
+     * caught by a test asserting no manager sees any HR entry.
+     */
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrOrganigram',
+    href: '/app/hr/organigram',
+    group: 'hr',
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrPositions',
+    href: '/app/hr/positions',
+    group: 'hr',
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrTemplates',
+    href: '/app/hr/templates',
+    group: 'hr',
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrDocuments',
+    href: '/app/hr/documents',
+    group: 'hr',
+    requires: { resource: 'document', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrTraining',
+    href: '/app/hr/training',
+    group: 'hr',
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrSurveys',
+    href: '/app/hr/surveys',
+    group: 'hr',
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrAnalytics',
+    href: '/app/hr/analytics',
+    group: 'hr',
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrAlerts',
+    href: '/app/hr/alerts',
+    group: 'hr',
+    requires: { resource: 'assignment', action: 'create' },
+    deliveredIn: 15,
+  },
+  {
+    id: 'hrAiKnowledge',
+    href: '/app/hr/ai-knowledge',
+    group: 'hr',
+    requires: { resource: 'document', action: 'create' },
+    deliveredIn: 15,
   },
 
   // ── Administration ─────────────────────────────────────────────────────────
@@ -300,4 +386,31 @@ export const NAV_ITEMS: NavItem[] = [
 
 export function navItemByHref(href: string): NavItem | undefined {
   return NAV_ITEMS.find((item) => item.href === href);
+}
+
+/**
+ * The nav entry that governs a route, following it up to its closest ancestor.
+ *
+ * `navItemByHref` is an exact match, which is right for highlighting the sidebar and wrong
+ * for authorization: a detail route like `/app/hr/employees/<uuid>` has no entry of its
+ * own, so an exact lookup resolves to nothing and the layout — correctly refusing anything
+ * it cannot resolve — answers 404 for a page the person may open.
+ *
+ * Ancestors are matched on whole segments. `/app/hr/employees-archive` must not inherit
+ * the permission of `/app/hr/employees`, and a prefix test on the raw string would let it.
+ *
+ * The longest match wins, so `/app/hr/employees/<id>/assign` is governed by the employees
+ * entry rather than by `/app/hr` — the narrower gate, never the broader one.
+ */
+export function navItemGoverning(href: string): NavItem | undefined {
+  const exact = navItemByHref(href);
+  if (exact) return exact;
+
+  let best: NavItem | undefined;
+  for (const item of NAV_ITEMS) {
+    if (item.href === '/') continue;
+    if (!href.startsWith(`${item.href}/`)) continue;
+    if (!best || item.href.length > best.href.length) best = item;
+  }
+  return best;
 }

@@ -228,17 +228,75 @@ export async function endAssignment(input: unknown): Promise<ActionResult<{ assi
   });
 }
 
-/** Accounts SI has created that HR has not yet placed. The HR work queue. */
+/**
+ * Accounts SI has created that HR has not yet placed. The HR work queue.
+ *
+ * `waitingDays` is computed here rather than in the page: a duration depends on when it is
+ * measured, and a component that reads the clock mid-render can disagree with itself
+ * between passes. Oldest first, so nobody sits in the queue because their name sorts late.
+ */
 export async function listPendingAccounts(
   user: AuthenticatedUser,
-): Promise<{ id: string; displayName: string; email: string; createdAt: Date }[]> {
+): Promise<
+  { id: string; displayName: string; email: string; createdAt: Date; waitingDays: number }[]
+> {
   assertCanAnyScope(user, 'read', 'assignment');
 
-  return prisma.user.findMany({
+  const rows = await prisma.user.findMany({
     where: { lifecycleState: 'PENDING_ASSIGNMENT', status: 'ACTIVE' },
     select: { id: true, displayName: true, email: true, createdAt: true },
     orderBy: { createdAt: 'asc' },
   });
+
+  const now = Date.now();
+  return rows.map((row) => ({
+    ...row,
+    waitingDays: Math.floor((now - row.createdAt.getTime()) / 86_400_000),
+  }));
+}
+
+/**
+ * Requests HR has raised with SI, newest state first and oldest request first within it.
+ *
+ * `waitingDays` is attached here for the same reason as on the pending queue: a duration
+ * is a property of the data at the moment it was read, not of the markup.
+ */
+export async function listAccountRequests(
+  user: AuthenticatedUser,
+  limit = 25,
+): Promise<
+  {
+    id: string;
+    candidateNameFr: string;
+    plannedPositionFr: string;
+    plannedHireDate: Date | null;
+    urgency: string;
+    status: string;
+    createdAt: Date;
+    waitingDays: number;
+  }[]
+> {
+  assertCanAnyScope(user, 'read', 'assignment');
+
+  const rows = await prisma.accountRequest.findMany({
+    orderBy: [{ status: 'asc' }, { createdAt: 'asc' }],
+    take: limit,
+    select: {
+      id: true,
+      candidateNameFr: true,
+      plannedPositionFr: true,
+      plannedHireDate: true,
+      urgency: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+
+  const now = Date.now();
+  return rows.map((row) => ({
+    ...row,
+    waitingDays: Math.floor((now - row.createdAt.getTime()) / 86_400_000),
+  }));
 }
 
 /** Posts nobody currently holds, for the assignment form. */

@@ -112,6 +112,8 @@ model User {
   managerOverrideFor  Assignment[]         @relation("AssignmentManagerOverride")
   documentAcknowledgements DocumentAcknowledgement[]
   personalFiles       PersonalFile[]
+  accountRequests     AccountRequest[]     @relation("AccountRequestRequester")
+  accountRequestsFor  AccountRequest[]     @relation("AccountRequestCreatedUser")
 
   @@index([status])
   @@index([lifecycleState])
@@ -798,6 +800,37 @@ model PersonalFile {
   @@unique([userId, kind])
   @@index([status])
   @@map("personal_file")
+}
+
+enum AccountRequestStatus {
+  OPEN
+  CREATED
+  REJECTED
+}
+
+enum AccountRequestUrgency {
+  NORMAL
+  URGENT
+}
+
+model AccountRequest {
+  id               String                @id @default(uuid()) @db.Uuid
+  candidateNameFr  String
+  plannedPositionFr String
+  plannedHireDate  DateTime?             @db.Date
+  urgency          AccountRequestUrgency @default(NORMAL)
+  noteFr           String?               @db.Text
+  status           AccountRequestStatus  @default(OPEN)
+  requestedById    String                @db.Uuid
+  requestedBy      User                  @relation("AccountRequestRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  createdUserId    String?               @db.Uuid
+  createdUser      User?                 @relation("AccountRequestCreatedUser", fields: [createdUserId], references: [id], onDelete: SetNull)
+  resolvedAt       DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([status, createdAt])
+  @@map("account_request")
 }
 
 model Recruitment {

@@ -4,7 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 
 import { buildNavigation, canOpen } from '@/application/navigation/build-navigation';
 import { AppShell } from '@/components/shell/app-shell';
-import { navItemByHref } from '@/domain/navigation/navigation';
+import { navItemGoverning } from '@/domain/navigation/navigation';
 import { getCurrentUser } from '@/infrastructure/auth/current-user';
 import type { Locale } from '@/i18n/config';
 import { redirect } from '@/i18n/navigation';
@@ -51,7 +51,7 @@ export default async function AppLayout({
   // The proxy forwards the path; a layout cannot read it on its own.
   const pathname = (await headers()).get(PATHNAME_HEADER) ?? '';
   const route = pathname.replace(new RegExp(`^/${locale}`), '') || '/';
-  const item = navItemByHref(route);
+  const item = navItemGoverning(route);
 
   /*
    * Refuse rather than skip when the route does not resolve to a nav entry.
@@ -61,8 +61,9 @@ export default async function AppLayout({
    * proxy matcher covers every page path so the header is always present — but it fails
    * open in two ways worth closing before they bite:
    *
-   *   - `navItemByHref` is an exact-match lookup, so the first nested route
-   *     (`/organization/[id]`) would resolve to nothing and skip the check entirely.
+   *   - The lookup used to be exact-match, so a nested route resolved to nothing. That is
+   *     now `navItemGoverning`, which walks up to the closest ancestor entry — a detail
+   *     page inherits the permission of the screen it belongs to.
    *   - If `PATHNAME_HEADER` were ever absent, `route` becomes '/', which also resolves
    *     to nothing.
    *

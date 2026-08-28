@@ -72,7 +72,8 @@
       "tools": "Outils",
       "steering": "Pilotage",
       "administration": "Administration",
-      "me": "Mon espace"
+      "me": "Mon espace",
+      "hr": "Ressources humaines"
     },
     "items": {
       "welcome": "Bienvenue",
@@ -94,7 +95,6 @@
       "admin": "Administration",
       "training": "Formations",
       "surveys": "Enquêtes",
-      "hr": "Personnel",
       "meDashboard": "Mon tableau de bord",
       "meJourney": "Mon parcours",
       "meOrganigram": "Mon organigramme",
@@ -104,7 +104,19 @@
       "meFiles": "Mes pièces",
       "meTraining": "Mes formations",
       "meSurveys": "Mes enquêtes",
-      "meAssistant": "Assistant"
+      "meAssistant": "Assistant",
+      "hrDashboard": "Tableau de bord RH",
+      "hrUnassigned": "Comptes à affecter",
+      "hrEmployees": "Collaborateurs",
+      "hrOrganigram": "Organigramme",
+      "hrPositions": "Fiches de poste",
+      "hrTemplates": "Parcours types",
+      "hrDocuments": "Bibliothèque documentaire",
+      "hrTraining": "Catalogue de formation",
+      "hrSurveys": "Enquêtes",
+      "hrAnalytics": "Indicateurs & reporting",
+      "hrAlerts": "Alertes & relances",
+      "hrAiKnowledge": "Base de connaissance IA"
     }
   },
   "shell": {

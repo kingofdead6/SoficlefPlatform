@@ -37,7 +37,16 @@ export async function assignUser(
 
   if (result.ok) {
     // The person moves off the pending queue, onto the chart, and into a journey.
-    for (const path of ['/hr', '/organization', '/management', '/onboarding', '/admin']) {
+    for (const path of [
+      '/app/hr',
+      '/app/hr/employees',
+      '/app/hr/employees/unassigned',
+      '/app/hr/organigram',
+      '/organization',
+      '/management',
+      '/onboarding',
+      '/admin',
+    ]) {
       revalidatePath(`/[locale]${path}`, 'page');
     }
   }
@@ -55,7 +64,14 @@ export async function closeAssignment(
   });
 
   if (result.ok) {
-    for (const path of ['/hr', '/organization', '/management', '/admin']) {
+    for (const path of [
+      '/app/hr',
+      '/app/hr/employees',
+      '/app/hr/organigram',
+      '/organization',
+      '/management',
+      '/admin',
+    ]) {
       revalidatePath(`/[locale]${path}`, 'page');
     }
   }
