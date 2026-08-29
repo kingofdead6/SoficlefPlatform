@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+
 @import './tokens.css';
 
 /**
@@ -7,6 +8,7 @@
  * `inline` keeps the var() reference in the generated CSS instead of inlining the value,
  * which is what lets a locale or a future theme re-point a token at runtime.
  */
+
 @theme inline {
   --color-red-brand: var(--red-brand);
   --color-red-strong: var(--red-strong);
@@ -27,17 +29,18 @@
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
   --color-text-dim: var(--text-dim);
-
   --radius-token: var(--radius);
   --shadow-token: var(--shadow);
   --shadow-lifted: var(--shadow-lifted);
-
   --ease-out: var(--ease-out);
   --ease-in-out: var(--ease-in-out);
-
   --font-display: var(--type-display);
   --font-ui: var(--type-ui);
   --font-mono: var(--type-mono);
+}
+
+button {
+  cursor: pointer;
 }
 
 @layer base {
@@ -50,6 +53,10 @@
     color: var(--text);
     font-family: var(--type-ui);
     -webkit-text-size-adjust: 100%;
+
+    /* Red scrollbar */
+    scrollbar-color: var(--red-brand) transparent;
+    scrollbar-width: thin;
   }
 
   body {
@@ -59,12 +66,13 @@
     line-height: 1.6;
   }
 
-  /*
+  /**
    * Focus must always be visible — part of the unannounced quality floor.
    * :focus-visible only, so a mouse click does not paint a ring, but every keyboard
    * path does.
    */
-  :focus-visible {
+
+  *:focus-visible {
     outline: 2px solid var(--red-brand);
     outline-offset: 2px;
     border-radius: 4px;
@@ -78,12 +86,13 @@
     line-height: 1.25;
   }
 
-  /*
+  /**
    * Interactive affordances share one transition, so a button, a link and a row all
    * respond at the same speed. Declared once here rather than repeated as utility
    * classes on every control — a hover that is 180ms in one place and 240ms in another
    * is the kind of inconsistency nobody names but everybody feels.
    */
+
   button,
   a,
   select,
@@ -96,16 +105,18 @@
       opacity var(--duration-fast) var(--ease-out);
   }
 
-  /*
+  /**
    * A pressed control dips very slightly. 1px, only on a real press — enough to feel
    * mechanical on a workshop tablet, not enough to look like a toy.
    */
+
   button:not(:disabled):active,
   [role='tab']:active {
     transform: translateY(1px);
   }
 
   /* Codes, extensions, KPIs and percentages are monospaced data, not prose. */
+
   code,
   kbd,
   samp,
@@ -114,8 +125,68 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /**
+   * Scrollbar
+   *
+   * The scrollbar uses the existing brand-red tokens so it stays consistent
+   * with the rest of the application's visual language.
+   */
+
+  *::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--red-brand);
+    border: 2px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--red-strong);
+  }
+
+  /* Held, not merely passed over: the brand colour confirms the grab. */
+
+  *::-webkit-scrollbar-thumb:active {
+    background-color: var(--red-deep);
+  }
+
+  /**
+   * The corner where a horizontal and a vertical scrollbar meet — a wide table inside a
+   * scrolling page. Chromium paints it opaque grey by default, which shows as a square
+   * notch against the surface.
+   */
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /**
+   * Buttons off. The arrow steppers at each end are a Windows-only affordance that nobody
+   * uses and that breaks the rounded shape.
+   *
+   * Sized to nothing rather than `display: none`: Chromium ignores the latter on scrollbar
+   * buttons and keeps painting the arrow, which is what the first attempt at this rule did
+   * — a grey triangle survived at the top of the track. Zero dimensions do remove it.
+   */
+
+  *::-webkit-scrollbar-button {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     /* The press-dip is movement too, and it is not covered by a duration of zero. */
+
     button:not(:disabled):active,
     [role='tab']:active {
       transform: none;
@@ -132,17 +203,19 @@
   }
 }
 
-/*
+/**
  * Dialog entrances. Radix drives these through `data-state`, and keeps the element
  * mounted until the animation ends, so no JavaScript is involved in the timing.
  *
  * The content scales from 0.98, not from 0.9: a dialog that grows noticeably reads as a
  * notification popping up rather than a panel arriving.
  */
+
 @keyframes modal-overlay-in {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -153,6 +226,7 @@
     opacity: 0;
     transform: translate(-50%, calc(-50% + 6px)) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);

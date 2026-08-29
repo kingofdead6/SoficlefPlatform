@@ -12,6 +12,7 @@ an instance of a reusable template, not a hardcoded portal — see `docs/SCOPE.m
 | File                        | What it holds                                                                                         |
 | --------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `docs/USER-GUIDE.md`        | **How the platform works**: each user type, what they can and cannot do, the pages, the two workflows |
+| `docs/ARCHITECTURE.md`      | **How the codebase is put together**: what each file does, where it lives, and what depends on what   |
 | `docs/SCOPE.md`             | Reconciled scope, MVP boundary, and the mapping of every CDC v1 module and CDC v0.1 section to a Part |
 | `docs/DECISIONS.md`         | ADRs. Anything flagged `ASSUMPTION` awaits client confirmation                                        |
 | `docs/OPEN-QUESTIONS.md`    | Business questions with a proposed default each, so an unanswered one never halts the build           |

@@ -57,6 +57,20 @@
   --text-dim: #6b6164; /* 5.73:1 on --bg; used for 9–11px labels */
 
   /* ── Geometry ──────────────────────────────────────────────────────────── */
+  /*
+   * The scrollbar, as tokens rather than as literals in `globals.css`.
+   *
+   * The thumb is a warm grey rather than a tint of the brand red: a scrollbar is chrome,
+   * and a red one would compete with the actual red things on the page — the active nav
+   * entry, an overdue badge, a primary button. It earns a touch of red only on hover,
+   * where the reader is deliberately holding it.
+   */
+  --scrollbar-size: 10px;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #d6cecf; /* 1.35:1 on --bg: visible, never loud */
+  --scrollbar-thumb-hover: #b9adaf;
+  --scrollbar-thumb-active: var(--red-brand);
+
   --radius: 10px;
   --shadow: 0 1px 4px rgba(23, 19, 20, 0.07);
   --shadow-lifted: 0 6px 20px -6px rgba(127, 10, 29, 0.18);
