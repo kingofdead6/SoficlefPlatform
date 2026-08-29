@@ -4,7 +4,6 @@ node_modules/
 .pnp.js
 
 # generated Prisma client — produced by `npm run db:generate`
-src/infrastructure/db/generated/
 
 # build output
 .next/
