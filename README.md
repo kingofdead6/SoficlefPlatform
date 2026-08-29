@@ -240,4 +240,5 @@ Counts are asserted by the extractor and re-asserted in CI.
 admin@soficlef.local — ADMIN
 rh@soficlef.local — HR
 manager@soficlef.local — MANAGER
-nouveau.1@ through nouveau.4@soficlef.local — four EMPLOYEE recruits, plus attente@soficlef.local
+nouveau.1@ through nouveau.4@soficlef.local — four EMPLOYEE recruits,
+plus attente@soficlef.local
