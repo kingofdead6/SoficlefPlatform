@@ -113,6 +113,9 @@ model User {
   documentAcknowledgements DocumentAcknowledgement[]
   personalFiles       PersonalFile[]
   accountRequests     AccountRequest[]     @relation("AccountRequestRequester")
+  evaluationsAbout    Evaluation[]         @relation("EvaluationSubject")
+  evaluationsMade     Evaluation[]         @relation("EvaluationEvaluator")
+  managerTasksCreated ManagerTask[]        @relation("ManagerTaskAuthor")
   accountRequestsFor  AccountRequest[]     @relation("AccountRequestCreatedUser")
 
   @@index([status])
@@ -960,6 +963,74 @@ model OnboardingMilestone {
   @@map("onboarding_milestone")
 }
 
+enum EvaluationMilestone {
+  DAY_30
+  DAY_90
+  PROBATION_END
+}
+
+enum EvaluationStatus {
+  DUE
+  DRAFT
+  SUBMITTED
+}
+
+enum EvaluationRecommendation {
+  CONFIRM
+  EXTEND
+  TERMINATE
+}
+
+model Evaluation {
+  id         String              @id @default(uuid()) @db.Uuid
+  instanceId String              @db.Uuid
+  instance   OnboardingInstance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  subjectId  String              @db.Uuid
+  subject    User                @relation("EvaluationSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  milestone  EvaluationMilestone
+  dueDate    DateTime            @db.Date
+  status     EvaluationStatus    @default(DUE)
+
+  scoreSkills      Int?
+  scoreAutonomy    Int?
+  scoreIntegration Int?
+  scoreBehaviour   Int?
+
+  commentFr      String?                   @db.Text
+  recommendation EvaluationRecommendation?
+
+  evaluatorId String?   @db.Uuid
+  evaluator   User?     @relation("EvaluationEvaluator", fields: [evaluatorId], references: [id], onDelete: SetNull)
+  submittedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([instanceId, milestone])
+  @@index([subjectId])
+  @@index([status, dueDate])
+  @@map("evaluation")
+}
+
+model ManagerTask {
+  id         String    @id @default(uuid()) @db.Uuid
+  instanceId String    @db.Uuid
+  instance   OnboardingInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  titleFr    String
+  detailFr   String?   @db.Text
+  dueDate    DateTime? @db.Date
+  ownerDepartment TaskOwnerDepartment @default(MANAGER)
+  status     OnboardingTaskStatus    @default(TODO)
+  createdById String   @db.Uuid
+  createdBy   User     @relation("ManagerTaskAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+  completedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([instanceId, status])
+  @@map("manager_task")
+}
+
 enum ProbationOutcome {
   ONGOING
   CONFIRMED
@@ -986,6 +1057,8 @@ model OnboardingInstance {
 
   taskCompletions OnboardingTaskCompletion[]
   surveyRounds    SurveyRound[]
+  evaluations     Evaluation[]
+  managerTasks    ManagerTask[]
 
   @@index([userId])
   @@index([templateId])

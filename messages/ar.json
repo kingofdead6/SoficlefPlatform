@@ -73,7 +73,8 @@
       "steering": "القيادة",
       "administration": "الإدارة",
       "me": "مساحتي",
-      "hr": "الموارد البشرية"
+      "hr": "الموارد البشرية",
+      "manager": "الإشراف"
     },
     "items": {
       "welcome": "مرحباً",
@@ -116,7 +117,14 @@
       "hrSurveys": "الاستبيانات",
       "hrAnalytics": "المؤشرات والتقارير",
       "hrAlerts": "التنبيهات والتذكيرات",
-      "hrAiKnowledge": "قاعدة معارف الذكاء الاصطناعي"
+      "hrAiKnowledge": "قاعدة معارف الذكاء الاصطناعي",
+      "managerDashboard": "لوحة القيادة",
+      "managerRecruits": "الملتحقون الجدد",
+      "managerEvaluations": "التقييمات",
+      "managerOrganigram": "هيكلي التنظيمي",
+      "managerTeam": "فريقي",
+      "managerReports": "المؤشرات",
+      "managerAssistant": "المساعد"
     }
   },
   "shell": {

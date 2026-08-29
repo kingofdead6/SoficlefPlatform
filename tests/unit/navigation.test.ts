@@ -42,16 +42,16 @@ function user(role: RoleCode, scopeUnits?: string[]): AuthenticatedUser {
 const idsOf = (groups: ReturnType<typeof buildNavigation>) =>
   groups.flatMap((group) => group.items.map((item) => item.id));
 
-describe('navigation is forty-one routes in seven groups', () => {
-  it('declares exactly the forty-one routes of the specification', () => {
+describe('navigation is forty-eight routes in eight groups', () => {
+  it('declares exactly the forty-eight routes of the specification', () => {
     // Fifteen content routes from the prototype, the role dashboard and the
     // administration section of CDC v0.1 §4, training and surveys from CDC-2026
     // Modules 6 and 9, and personnel administration -- HR's half of the provisioning
     // chain, which is a separate screen from SI's because it is a separate job.
-    expect(NAV_ITEMS).toHaveLength(41);
+    expect(NAV_ITEMS).toHaveLength(48);
     // Every href distinct: two entries pointing at one route would make the sidebar
     // highlight ambiguous and the permission check on that route arbitrary.
-    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(41);
+    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(48);
   });
 
   it('does not include the AI assistant — phase 2 (ADR-003)', () => {
@@ -305,5 +305,58 @@ describe('a detail route inherits the permission of the screen it belongs to', (
     // An unknown top-level route must stay unresolvable, so the layout keeps refusing it.
     expect(navItemGoverning('/nonsense')).toBeUndefined();
     expect(navItemGoverning('/nonsense/deeper')).toBeUndefined();
+  });
+});
+
+describe('the manager surface sits alongside the employee one', () => {
+  /*
+   * A manager is also an employee, so `/app/manager` adds to `/app/me` rather than
+   * replacing it — the same person has their own journey and other people's to follow.
+   */
+  const MANAGER_IDS = [
+    'managerDashboard',
+    'managerRecruits',
+    'managerEvaluations',
+    'managerOrganigram',
+    'managerTeam',
+    'managerReports',
+    'managerAssistant',
+  ];
+
+  it('groups every manager route under one heading', () => {
+    for (const id of MANAGER_IDS) {
+      const entry = NAV_ITEMS.find((item) => item.id === id);
+      expect(entry, id).toBeDefined();
+      expect(entry?.group, id).toBe('manager');
+      expect(entry?.href.startsWith('/app/manager'), id).toBe(true);
+    }
+  });
+
+  it('gives a manager both surfaces', () => {
+    const visible = new Set(idsOf(buildNavigation(user('MANAGER', [FABRICATION]))));
+    for (const id of MANAGER_IDS) expect(visible.has(id), id).toBe(true);
+    // And their own space, because they are somebody's report too.
+    expect(visible.has('meDashboard')).toBe(true);
+    expect(visible.has('meJourney')).toBe(true);
+  });
+
+  it('shows a collaborator their own space and none of the manager one', () => {
+    const visible = new Set(idsOf(buildNavigation(user('EMPLOYEE'))));
+    expect(visible.has('meDashboard')).toBe(true);
+    for (const id of MANAGER_IDS) expect(visible.has(id), id).toBe(false);
+  });
+
+  it('keeps a manager out of HR and administration', () => {
+    // The rule that defines the role: no account creation, no user administration.
+    const visible = new Set(idsOf(buildNavigation(user('MANAGER', [FABRICATION]))));
+    expect(visible.has('admin')).toBe(false);
+    expect(visible.has('hrDashboard')).toBe(false);
+    expect(visible.has('hrEmployees')).toBe(false);
+  });
+
+  it('resolves the manager detail routes to their parent screens', () => {
+    expect(navItemGoverning('/app/manager/recruits/abc-123')?.id).toBe('managerRecruits');
+    expect(navItemGoverning('/app/manager/recruits/abc/tasks/new')?.id).toBe('managerRecruits');
+    expect(navItemGoverning('/app/manager/evaluations/abc-123')?.id).toBe('managerEvaluations');
   });
 });

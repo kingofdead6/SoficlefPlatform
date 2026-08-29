@@ -73,7 +73,8 @@
       "steering": "Steering",
       "administration": "Administration",
       "me": "My space",
-      "hr": "Human Resources"
+      "hr": "Human Resources",
+      "manager": "Management"
     },
     "items": {
       "welcome": "Welcome",
@@ -116,7 +117,14 @@
       "hrSurveys": "Surveys",
       "hrAnalytics": "KPIs & reporting",
       "hrAlerts": "Alerts & reminders",
-      "hrAiKnowledge": "AI knowledge base"
+      "hrAiKnowledge": "AI knowledge base",
+      "managerDashboard": "Dashboard",
+      "managerRecruits": "My recruits",
+      "managerEvaluations": "Evaluations",
+      "managerOrganigram": "My org chart",
+      "managerTeam": "My team",
+      "managerReports": "Reports",
+      "managerAssistant": "Assistant"
     }
   },
   "shell": {

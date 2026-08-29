@@ -1690,6 +1690,26 @@ async function seedRecruitJourneys(templateId: string): Promise<number> {
 
     // Survey rounds are not created here: `seedSurveyRounds` walks every instance later
     // in the run and dates them from each instance's own start.
+
+    /*
+     * The three milestone evaluations, dated from this recruit's own start. Created up
+     * front rather than when they fall due, so a manager can see what is coming — an
+     * evaluation that appears on its due date is one nobody prepared for.
+     */
+    for (const [milestone, offset] of [
+      ['DAY_30', 30],
+      ['DAY_90', 90],
+      ['PROBATION_END', 90],
+    ] as const) {
+      const dueDate = new Date(startDate);
+      dueDate.setDate(dueDate.getDate() + offset);
+
+      await prisma.evaluation.upsert({
+        where: { instanceId_milestone: { instanceId: instance.id, milestone } },
+        create: { instanceId: instance.id, subjectId: recruit.id, milestone, dueDate },
+        update: { dueDate },
+      });
+    }
     created += 1;
   }
 

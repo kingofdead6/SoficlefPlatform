@@ -73,7 +73,8 @@
       "steering": "Pilotage",
       "administration": "Administration",
       "me": "Mon espace",
-      "hr": "Ressources humaines"
+      "hr": "Ressources humaines",
+      "manager": "Encadrement"
     },
     "items": {
       "welcome": "Bienvenue",
@@ -116,7 +117,14 @@
       "hrSurveys": "Enquêtes",
       "hrAnalytics": "Indicateurs & reporting",
       "hrAlerts": "Alertes & relances",
-      "hrAiKnowledge": "Base de connaissance IA"
+      "hrAiKnowledge": "Base de connaissance IA",
+      "managerDashboard": "Tableau de bord",
+      "managerRecruits": "Mes recrues",
+      "managerEvaluations": "Évaluations",
+      "managerOrganigram": "Mon organigramme",
+      "managerTeam": "Mon équipe",
+      "managerReports": "Indicateurs",
+      "managerAssistant": "Assistant"
     }
   },
   "shell": {

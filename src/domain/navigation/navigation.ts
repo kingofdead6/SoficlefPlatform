@@ -13,6 +13,7 @@ import type { Action, Resource } from '@/domain/auth/permissions';
 
 export type NavGroupId =
   | 'me'
+  | 'manager'
   | 'hr'
   | 'steering'
   | 'onboarding'
@@ -36,6 +37,7 @@ export interface NavItem {
 
 export const NAV_GROUPS: NavGroupId[] = [
   'me',
+  'manager',
   'hr',
   'steering',
   'onboarding',
@@ -262,6 +264,73 @@ export const NAV_ITEMS: NavItem[] = [
     group: 'tools',
     requires: { resource: 'remark', action: 'read' },
     deliveredIn: 10,
+  },
+
+  /*
+   * ── Encadrement (/app/manager) ───────────────────────────────────────────
+   *
+   * A manager is also an employee, so this group sits alongside `/app/me` rather than
+   * replacing it — the same person has their own journey and other people's to follow.
+   *
+   * Gated on `onboarding_task:validate` — the permission that actually separates a
+   * manager from a collaborator, since a manager signs a task off while a collaborator
+   * ticks their own.
+   *
+   * `onboarding_instance:read` looked like the natural gate and was wrong in both
+   * directions: a collaborator holds it for their own journey, so it offered them the
+   * whole manager surface, while `onboarding_instance:validate` is held by nobody, so it
+   * hid the evaluations screen from the very role that fills it in. Both caught by tests.
+   *
+   * The perimeter itself is enforced in the query, never by the prefix.
+   */
+  {
+    id: 'managerDashboard',
+    href: '/app/manager',
+    group: 'manager',
+    requires: { resource: 'onboarding_task', action: 'validate' },
+    deliveredIn: 16,
+  },
+  {
+    id: 'managerRecruits',
+    href: '/app/manager/recruits',
+    group: 'manager',
+    requires: { resource: 'onboarding_task', action: 'validate' },
+    deliveredIn: 16,
+  },
+  {
+    id: 'managerEvaluations',
+    href: '/app/manager/evaluations',
+    group: 'manager',
+    requires: { resource: 'onboarding_task', action: 'validate' },
+    deliveredIn: 16,
+  },
+  {
+    id: 'managerOrganigram',
+    href: '/app/manager/organigram',
+    group: 'manager',
+    requires: { resource: 'onboarding_task', action: 'validate' },
+    deliveredIn: 16,
+  },
+  {
+    id: 'managerTeam',
+    href: '/app/manager/team',
+    group: 'manager',
+    requires: { resource: 'onboarding_task', action: 'validate' },
+    deliveredIn: 16,
+  },
+  {
+    id: 'managerReports',
+    href: '/app/manager/reports',
+    group: 'manager',
+    requires: { resource: 'onboarding_task', action: 'validate' },
+    deliveredIn: 16,
+  },
+  {
+    id: 'managerAssistant',
+    href: '/app/manager/assistant',
+    group: 'manager',
+    requires: { resource: 'onboarding_task', action: 'validate' },
+    deliveredIn: 16,
   },
 
   /*
