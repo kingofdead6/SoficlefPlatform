@@ -106,4 +106,34 @@ describe('what reaches a manager as an alert', () => {
     );
     expect(alerts).toEqual([]);
   });
+
+  it('orders the worst first within a kind', () => {
+    /*
+     * Four evaluations, all overdue, all red. Without this the panel shows them in
+     * whatever order the rows arrived, so a sixty-five-day delay sits below a five-day one
+     * and reads as equally urgent.
+     */
+    const alerts = alertsFor(
+      [
+        recruit({
+          userId: 'u1',
+          instanceId: 'i1',
+          evaluationsDue: [
+            { id: 'e-short', milestone: 'Point J+90', dueDate: day(-5) },
+            { id: 'e-long', milestone: 'Point J+30', dueDate: day(-65) },
+            { id: 'e-mid', milestone: 'Point J+60', dueDate: day(-20) },
+          ],
+        }),
+      ],
+      NOW,
+    );
+
+    expect(alerts.map((alert) => alert.id)).toEqual(['eval-e-long', 'eval-e-mid', 'eval-e-short']);
+  });
+
+  it('still puts a blockage above a worse-scoring lateness', () => {
+    // Severity orders *within* a kind; it never promotes a late task above a blockage.
+    const alerts = alertsFor([recruit({ blocked: 1, overdue: 40 })], NOW);
+    expect(alerts.map((alert) => alert.kind)).toEqual(['blocked', 'overdue']);
+  });
 });

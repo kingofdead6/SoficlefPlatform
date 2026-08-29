@@ -29,6 +29,13 @@ export interface ManagerAlert {
   id: string;
   kind: 'overdue' | 'blocked' | 'evaluation';
   severity: 'red' | 'blue';
+  /**
+   * How bad, within its kind: days overdue, or the count of stuck steps.
+   *
+   * Used for ordering rather than display. Two alerts of the same kind are not equally
+   * urgent, and a queue that ignores that is a list.
+   */
+  severityScore: number;
   titleFr: string;
   detailFr: string;
   href: string;
@@ -53,6 +60,7 @@ export function alertsFor(recruits: RecruitCard[], now: Date = new Date()): Mana
         id: `blocked-${recruit.instanceId}`,
         kind: 'blocked',
         severity: 'red',
+        severityScore: recruit.blocked,
         titleFr: `${recruit.displayName} — ${recruit.blocked} étape${recruit.blocked > 1 ? 's' : ''} bloquée${recruit.blocked > 1 ? 's' : ''}`,
         detailFr: 'Une étape bloquée attend une action extérieure au collaborateur.',
         href: `/app/manager/recruits/${recruit.userId}`,
@@ -64,6 +72,7 @@ export function alertsFor(recruits: RecruitCard[], now: Date = new Date()): Mana
         id: `overdue-${recruit.instanceId}`,
         kind: 'overdue',
         severity: 'red',
+        severityScore: recruit.overdue,
         titleFr: `${recruit.displayName} — ${recruit.overdue} étape${recruit.overdue > 1 ? 's' : ''} en retard`,
         detailFr: 'Le parcours a dépassé une échéance.',
         href: `/app/manager/recruits/${recruit.userId}`,
@@ -82,6 +91,8 @@ export function alertsFor(recruits: RecruitCard[], now: Date = new Date()): Mana
         id: `eval-${evaluation.id}`,
         kind: 'evaluation',
         severity: daysUntil < 0 ? 'red' : 'blue',
+        // Overdue outranks upcoming, and the longer overdue outranks the shorter.
+        severityScore: -daysUntil,
         titleFr: `${recruit.displayName} — ${evaluation.milestone}`,
         detailFr:
           daysUntil < 0
@@ -94,7 +105,12 @@ export function alertsFor(recruits: RecruitCard[], now: Date = new Date()): Mana
     }
   }
 
-  // Blockages first, then lateness, then what is merely approaching.
+  /*
+   * Blockages first, then lateness, then what is merely approaching — and *within* each
+   * kind, the worst first. Four evaluations all styled the same and ordered arbitrarily
+   * make a sixty-five-day delay look like a five-day one; sorting by severity is what
+   * turns a list into a queue.
+   */
   const rank = { blocked: 0, overdue: 1, evaluation: 2 };
-  return alerts.sort((a, b) => rank[a.kind] - rank[b.kind]);
+  return alerts.sort((a, b) => rank[a.kind] - rank[b.kind] || b.severityScore - a.severityScore);
 }

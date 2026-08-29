@@ -44,12 +44,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
         <Stagger className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StaggerItem>
-            <KpiTile value={recruits.length} label="Intégrations suivies" />
+            <KpiTile value={recruits.length} label="Intégrations suivies" href="/app/manager/recruits" />
           </StaggerItem>
           <StaggerItem>
             <KpiTile
               value={recruits.filter((recruit) => recruit.overdue > 0).length}
               label="En retard"
+              href="/app/manager/recruits?status=late"
             />
           </StaggerItem>
           <StaggerItem>
@@ -59,7 +60,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             />
           </StaggerItem>
           <StaggerItem>
-            <KpiTile value={evaluationsDue} label="Évaluations à faire" />
+            <KpiTile value={evaluationsDue} label="Évaluations à faire" href="/app/manager/evaluations" />
           </StaggerItem>
         </Stagger>
       </section>
@@ -73,7 +74,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <ul className="space-y-3">
             {alerts.map((alert) => (
               <li key={alert.id}>
-                <Card accent={alert.severity === 'red' ? 'red' : undefined}>
+                <Card compact accent={alert.severity === 'red' ? 'red' : undefined}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <CardTitle>{alert.titleFr}</CardTitle>

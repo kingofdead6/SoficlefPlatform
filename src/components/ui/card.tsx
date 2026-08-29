@@ -8,12 +8,20 @@ export function Card({
   children,
   className,
   accent,
+  compact,
   as: Component = 'div',
 }: {
   children: React.ReactNode;
   className?: string;
   /** A start-edge accent bar, for callouts. Mirrors in RTL on its own. */
   accent?: 'brand' | 'blue' | 'green' | 'red';
+  /**
+   * Tighter padding, for a card carrying one or two lines.
+   *
+   * A list of short alerts at the default padding scrolls out of the viewport after four
+   * entries, which is exactly when a queue stops being readable as one.
+   */
+  compact?: boolean;
   as?: 'div' | 'section' | 'article' | 'li';
 }) {
   const accentClass = accent
@@ -28,7 +36,8 @@ export function Card({
   return (
     <Component
       className={cn(
-        'rounded-(--radius) border border-(--border) bg-(--surface) p-5 shadow-(--shadow)',
+        'rounded-(--radius) border border-(--border) bg-(--surface) shadow-(--shadow)',
+        compact ? 'px-4 py-3' : 'p-5',
         accentClass,
         className,
       )}

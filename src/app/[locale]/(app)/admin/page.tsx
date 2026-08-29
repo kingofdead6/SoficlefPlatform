@@ -115,6 +115,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
               value={degraded}
               label="Connecteurs manquants"
               hint={degraded === 0 ? 'Tout est raccordé' : 'Fonctions dégradées'}
+              href="/admin/integrations"
             />
           </StaggerItem>
         </Stagger>

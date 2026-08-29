@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 
+import { NavIcon } from './nav-icon';
 import { Link, usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/cn';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '@/lib/motion';
@@ -57,7 +58,7 @@ export function SidebarNav({
                     onClick={onNavigate}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'relative mb-px flex items-center gap-2.5 rounded-md border border-transparent px-3 py-2 text-[12px] transition-colors',
+                      'group relative mb-px flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-[7px] text-[12px] transition-colors',
                       isActive
                         ? 'text-red-strong font-medium'
                         : 'text-text-muted hover:text-text hover:bg-(--surface2)',
@@ -77,6 +78,13 @@ export function SidebarNav({
                         }
                       />
                     ) : null}
+                    <NavIcon
+                      id={item.id}
+                      className={cn(
+                        'relative z-10 size-4 shrink-0 transition-opacity',
+                        isActive ? 'opacity-100' : 'opacity-55 group-hover:opacity-90',
+                      )}
+                    />
                     <span className="relative z-10 truncate">{t(`items.${item.id}`)}</span>
                     {item.badge ? (
                       <span

@@ -106,13 +106,18 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
               value={me.overdueCount}
               label="En retard"
               hint={me.overdueCount === 0 ? 'Rien à rattraper' : 'À traiter en priorité'}
+              href="/app/me/journey"
             />
           </StaggerItem>
           <StaggerItem>
-            <KpiTile value={me.openSurveys} label="Enquêtes à remplir" />
+            <KpiTile value={me.openSurveys} label="Enquêtes à remplir" href="/app/me/surveys" />
           </StaggerItem>
           <StaggerItem>
-            <KpiTile value={me.trainingOutstanding} label="Formations obligatoires" />
+            <KpiTile
+              value={me.trainingOutstanding}
+              label="Formations obligatoires"
+              href="/app/me/training"
+            />
           </StaggerItem>
         </Stagger>
       </section>
@@ -132,6 +137,32 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 ? 'Votre parcours n’a pas encore été ouvert. Les RH s’en chargent avant votre arrivée.'
                 : 'Rien en attente — toutes vos étapes sont faites.'}
             </CardBody>
+            {/*
+              * An empty state that ends the page leaves the reader with nowhere to go. The
+              * two things worth doing next depend on which emptiness this is: nothing
+              * started yet, or everything finished.
+              */}
+            <div className="mt-3 flex flex-wrap gap-4">
+              {me.progress.total === 0 ? (
+                <>
+                  <Link href="/app/me/documents" className="text-red-strong text-[12px] font-medium">
+                    Lire les documents d’accueil →
+                  </Link>
+                  <Link href="/app/me/team" className="text-red-strong text-[12px] font-medium">
+                    Voir mes interlocuteurs →
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/app/me/training" className="text-red-strong text-[12px] font-medium">
+                    Poursuivre mes formations →
+                  </Link>
+                  <Link href="/app/me/surveys" className="text-red-strong text-[12px] font-medium">
+                    Répondre aux enquêtes →
+                  </Link>
+                </>
+              )}
+            </div>
           </Card>
         ) : (
           <Stagger as="ul" className="space-y-3">

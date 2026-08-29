@@ -37,7 +37,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <KpiTile value={hr.hiresThisMonth} label="Recrutements ce mois" />
           </StaggerItem>
           <StaggerItem>
-            <KpiTile value={hr.onboardingsInProgress} label="Intégrations en cours" />
+            <KpiTile value={hr.onboardingsInProgress} label="Intégrations en cours" href="/app/hr/employees" />
           </StaggerItem>
           <StaggerItem>
             <KpiTile value={hr.onboardingsCompleted} label="Intégrations terminées" />
@@ -105,7 +105,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
           <ul className="space-y-3">
             {hr.alerts.map((alert) => (
               <li key={alert.id}>
-                <Card accent={alert.severity === 'red' ? 'red' : undefined}>
+                <Card compact accent={alert.severity === 'red' ? 'red' : undefined}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <CardTitle>{alert.titleFr}</CardTitle>
