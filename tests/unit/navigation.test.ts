@@ -42,16 +42,16 @@ function user(role: RoleCode, scopeUnits?: string[]): AuthenticatedUser {
 const idsOf = (groups: ReturnType<typeof buildNavigation>) =>
   groups.flatMap((group) => group.items.map((item) => item.id));
 
-describe('navigation is forty-eight routes in eight groups', () => {
-  it('declares exactly the forty-eight routes of the specification', () => {
+describe('navigation is fifty-eight routes in eight groups', () => {
+  it('declares exactly the fifty-eight routes of the specification', () => {
     // Fifteen content routes from the prototype, the role dashboard and the
     // administration section of CDC v0.1 §4, training and surveys from CDC-2026
     // Modules 6 and 9, and personnel administration -- HR's half of the provisioning
     // chain, which is a separate screen from SI's because it is a separate job.
-    expect(NAV_ITEMS).toHaveLength(48);
+    expect(NAV_ITEMS).toHaveLength(58);
     // Every href distinct: two entries pointing at one route would make the sidebar
     // highlight ambiguous and the permission check on that route arbitrary.
-    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(48);
+    expect(new Set(NAV_ITEMS.map((item) => item.href)).size).toBe(58);
   });
 
   it('does not include the AI assistant — phase 2 (ADR-003)', () => {
@@ -68,16 +68,16 @@ describe('navigation is forty-eight routes in eight groups', () => {
      * simplification makes, and this test says so rather than hiding it.
      */
     const visible = idsOf(buildNavigation(user('ADMIN')));
-    expect(visible).toContain('admin');
+    expect(visible).toContain('adminConsole');
     expect(visible).toContain('dashboard');
     expect(visible).toContain('organization');
   });
 
   it('reserves the administration section for the administrator', () => {
-    expect(idsOf(buildNavigation(user('ADMIN')))).toContain('admin');
+    expect(idsOf(buildNavigation(user('ADMIN')))).toContain('adminConsole');
     for (const role of ['HR', 'MANAGER', 'EMPLOYEE'] as RoleCode[]) {
       const account = role === 'MANAGER' ? user(role, [FABRICATION]) : user(role);
-      expect(idsOf(buildNavigation(account)), role).not.toContain('admin');
+      expect(idsOf(buildNavigation(account)), role).not.toContain('adminConsole');
     }
   });
 });
@@ -87,7 +87,7 @@ describe('entries a role cannot open are never sent', () => {
     const visible = idsOf(buildNavigation(user('EMPLOYEE')));
     expect(visible).not.toContain('kaizen');
     expect(visible).not.toContain('hrDashboard');
-    expect(visible).not.toContain('admin');
+    expect(visible).not.toContain('adminConsole');
     // The reference frame stays visible: a new arrival is meant to read it.
     expect(visible).toContain('organization');
     expect(visible).toContain('onboardingChecklist');
@@ -214,7 +214,7 @@ describe('the provisioning chain, under the four-role model', () => {
   it('keeps HR out of the SI console', () => {
     const visible = idsOf(buildNavigation(user('HR')));
     expect(visible).toContain('hrDashboard');
-    expect(visible).not.toContain('admin');
+    expect(visible).not.toContain('adminConsole');
   });
 });
 
@@ -349,7 +349,7 @@ describe('the manager surface sits alongside the employee one', () => {
   it('keeps a manager out of HR and administration', () => {
     // The rule that defines the role: no account creation, no user administration.
     const visible = new Set(idsOf(buildNavigation(user('MANAGER', [FABRICATION]))));
-    expect(visible.has('admin')).toBe(false);
+    expect(visible.has('adminConsole')).toBe(false);
     expect(visible.has('hrDashboard')).toBe(false);
     expect(visible.has('hrEmployees')).toBe(false);
   });
@@ -358,5 +358,48 @@ describe('the manager surface sits alongside the employee one', () => {
     expect(navItemGoverning('/app/manager/recruits/abc-123')?.id).toBe('managerRecruits');
     expect(navItemGoverning('/app/manager/recruits/abc/tasks/new')?.id).toBe('managerRecruits');
     expect(navItemGoverning('/app/manager/evaluations/abc-123')?.id).toBe('managerEvaluations');
+  });
+});
+
+describe('the administration surface is the platform, not the business', () => {
+  const ADMIN_IDS = [
+    'adminConsole',
+    'adminUsers',
+    'adminRoles',
+    'adminOrganization',
+    'adminIntegrations',
+    'adminAi',
+    'adminAudit',
+    'adminSecurity',
+    'adminBackups',
+    'adminGdpr',
+    'adminSettings',
+  ];
+
+  it('groups every administration route under one heading', () => {
+    for (const id of ADMIN_IDS) {
+      const entry = NAV_ITEMS.find((item) => item.id === id);
+      expect(entry, id).toBeDefined();
+      expect(entry?.group, id).toBe('administration');
+      expect(entry?.href.startsWith('/admin'), id).toBe(true);
+    }
+  });
+
+  it('shows the whole tree to the administrator and to nobody else', () => {
+    const admin = new Set(idsOf(buildNavigation(user('ADMIN'))));
+    for (const id of ADMIN_IDS) expect(admin.has(id), `ADMIN · ${id}`).toBe(true);
+
+    for (const role of ['HR', 'MANAGER', 'EMPLOYEE'] as RoleCode[]) {
+      const account = role === 'MANAGER' ? user(role, [FABRICATION]) : user(role);
+      const visible = new Set(idsOf(buildNavigation(account)));
+      for (const id of ADMIN_IDS) expect(visible.has(id), `${role} · ${id}`).toBe(false);
+    }
+  });
+
+  it('resolves the administration sub-routes to their parent screens', () => {
+    expect(navItemGoverning('/admin/users/provisioning')?.id).toBe('adminUsers');
+    // `/admin` itself is an entry, so it must not swallow a route with its own.
+    expect(navItemGoverning('/admin/audit')?.id).toBe('adminAudit');
+    expect(navItemGoverning('/admin/settings')?.id).toBe('adminSettings');
   });
 });

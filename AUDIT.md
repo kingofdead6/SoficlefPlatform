@@ -486,3 +486,78 @@ implementation would not. Flagged here rather than silently substituted.
 | Agents 2–5 | Structure declared, retrieval unimplemented. Agent 1 is the one that works without a model; the others need the generation step ADR-003 defers. |
 | `positionTitleFr` on `User` | Redundant with `Assignment → Position.titleFr`, kept with documented precedence because a contract title and a post title are not always the same words (Q6). |
 | Route prefixes `/app/me` etc. | Recommended against and flagged as Q1: renaming twenty routes is churn with no security benefit, since the boundary is `can()`, not the URL. Still your call. |
+
+
+---
+
+## 15. Execution log — the four role trees
+
+`/app/me` (13), `/app/manager` (11), `/app/hr` (19) and `/admin` (12): the route prefixes
+of CDC-2026 §4, built as vertical slices so each role's surface was complete before the
+next began.
+
+### The gating mistakes, and what they have in common
+
+Four of them, all caught by tests rather than by review, and all the same error: gating a
+screen on the permission needed to *read* what it shows, rather than on the act it exists
+to perform.
+
+| Screen | Wrong gate | Why it failed |
+| --- | --- | --- |
+| `/app/hr/*` | `assignment:read` | A manager reads assignments for their own team — it handed them the HR directory. |
+| `/app/hr/alerts` | `setting:read` | HR does not hold it; HR could not see its own alert rules. |
+| `/app/manager/*` | `onboarding_instance:read` | A collaborator holds it for their own journey — it offered them the manager surface. |
+| `/app/manager/evaluations` | `onboarding_instance:validate` | Held by nobody; hidden from the only role that fills it in. |
+
+The rule that came out of it: **gate on who does this job, not on who may see this data.**
+`assignment:create` for HR, `onboarding_task:validate` for managers, `user:read` for the
+administrator.
+
+### A defect a comment predicted
+
+`navItemByHref` was an exact match, so every dynamic detail route resolved to no nav entry
+and the layout — correctly refusing what it cannot resolve — 404'd pages people may open.
+The group (a) comment had named this exact hole. `navItemGoverning` walks up to the closest
+ancestor, matching whole segments so `/app/hr/employees-archive` cannot inherit the
+employees permission by string overlap.
+
+### Where refusing was the honest answer
+
+Recorded because each was a deliberate choice against the specification's wording:
+
+- **Survey answers never reach a manager**, on the dossier or in the interview canvas. A
+  recruit who knows their manager reads the answers stops answering honestly.
+- **Feedback drafting and quiz generation are absent, not stubbed** — they need a model
+  (ADR-003), and a generated appraisal signed without being written is the failure worth
+  avoiding.
+- **Satisfaction is not filterable by manager**: on a pilot-sized team that publishes
+  individual answers.
+- **Backups are not scheduled from the console.** The application has no hand on the
+  database server, and the worst failure is a restore that turns out never to have been
+  taken.
+- **GDPR erasure is not a button.** Six categories of personal data answer "delete"
+  differently; one button would apply the wrong rule to five of them.
+- **Connector modes are read, not switched.** A toggle would let somebody point production
+  at a mock from a browser.
+- **Custom roles are not offered.** Permissions are compile-checked; a role built from
+  screen input is a list of strings where a typo becomes a silently missing right.
+
+### The separation of duties, weakened
+
+Worth stating plainly because it reverses an earlier decision. Collapsing seven roles into
+four gave `ADMIN` both `user:create` and `assignment:create`, so one person can now create
+an account *and* place it. The provisioning chain is still two steps, `/pending` still
+gates an unplaced account, and the two screens are still separate — but the guarantee now
+rests on the screens rather than on the permission table, which is weaker. `/admin/users/provisioning`
+deliberately shows the unplaced accounts without offering a way to assign them.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `tsc --noEmit`, `eslint .`, `check-messages` | clean · 225 keys, three locales |
+| `vitest run` | 409 passed (15 files) |
+| `next build` | compiled |
+| Route reachability | all 55 role-tree routes 200 with real data |
+| RBAC matrix | 195 route/role checks — **0 leaks**; ADMIN 39, HR 20, MANAGER 15, EMPLOYEE 8, PENDING 0 |
+| Browser sweep | 12 admin routes × {fr, ar} × {390px, 1280px} — no overflow, no console errors |
