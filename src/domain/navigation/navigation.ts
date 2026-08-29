@@ -436,15 +436,94 @@ export const NAV_ITEMS: NavItem[] = [
     deliveredIn: 15,
   },
 
-  // ── Administration ─────────────────────────────────────────────────────────
-  // Gated on `user:read`, which only TECH_ADMIN holds: the administration screens are
-  // accounts, roles and the audit trail, not the business reference frame.
+  /*
+   * ── Administration (/admin) ──────────────────────────────────────────────
+   *
+   * Gated on `user:read`, which only ADMIN holds. This is the platform, not the business:
+   * accounts, roles, logs, integrations and settings.
+   *
+   * The one entry that is *not* here is assignment. An administrator creates an account
+   * and stops; HR gives it a post. Since the seven-role collapse ADMIN happens to hold
+   * both permissions, so the separation now rests on the screens rather than on the
+   * permission table -- weaker than it was, and recorded as such in AUDIT.md.
+   */
   {
-    id: 'admin',
+    id: 'adminConsole',
     href: '/admin',
     group: 'administration',
     requires: { resource: 'user', action: 'read' },
-    deliveredIn: 13,
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminUsers',
+    href: '/admin/users',
+    group: 'administration',
+    requires: { resource: 'user', action: 'create' },
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminRoles',
+    href: '/admin/roles',
+    group: 'administration',
+    requires: { resource: 'role', action: 'read' },
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminOrganization',
+    href: '/admin/organization',
+    group: 'administration',
+    // The structural skeleton HR fills: creating and moving units and posts.
+    requires: { resource: 'organization_unit', action: 'create' },
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminIntegrations',
+    href: '/admin/integrations',
+    group: 'administration',
+    requires: { resource: 'setting', action: 'update' },
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminAi',
+    href: '/admin/ai',
+    group: 'administration',
+    requires: { resource: 'setting', action: 'update' },
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminAudit',
+    href: '/admin/audit',
+    group: 'administration',
+    requires: { resource: 'audit_log', action: 'read' },
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminSecurity',
+    href: '/admin/security',
+    group: 'administration',
+    requires: { resource: 'setting', action: 'update' },
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminBackups',
+    href: '/admin/backups',
+    group: 'administration',
+    requires: { resource: 'setting', action: 'update' },
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminGdpr',
+    href: '/admin/gdpr',
+    group: 'administration',
+    requires: { resource: 'setting', action: 'update' },
+    deliveredIn: 17,
+  },
+  {
+    id: 'adminSettings',
+    href: '/admin/settings',
+    group: 'administration',
+    requires: { resource: 'setting', action: 'update' },
+    deliveredIn: 17,
   },
 ];
 

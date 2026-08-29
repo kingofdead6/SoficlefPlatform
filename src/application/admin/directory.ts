@@ -65,10 +65,46 @@ export interface AuditRow {
 }
 
 /** The audit trail, newest first (§15). Capped so the page cannot be a full table scan. */
-export async function listAuditTrail(actor: AuthenticatedUser, limit = 100): Promise<AuditRow[]> {
+export interface AuditFilters {
+  /** Matches the actor label as written at the time, or the entity type. */
+  search?: string;
+  action?: string;
+  /** ISO dates, inclusive. */
+  from?: string;
+  to?: string;
+}
+
+export async function listAuditTrail(
+  actor: AuthenticatedUser,
+  limit = 100,
+  filters: AuditFilters = {},
+): Promise<AuditRow[]> {
   assertCan(actor, 'read', 'audit_log');
 
+  const search = filters.search?.trim();
+  const from = filters.from ? new Date(filters.from) : null;
+  /*
+   * `to` is inclusive of the whole day. A filter reading "up to the 14th" that silently
+   * excludes everything after midnight on the 14th is the kind of off-by-one that makes
+   * somebody conclude an event never happened.
+   */
+  const to = filters.to ? new Date(`${filters.to}T23:59:59.999Z`) : null;
+
   const rows = await prisma.auditLog.findMany({
+    where: {
+      ...(filters.action ? { action: filters.action as never } : {}),
+      ...(from || to
+        ? { createdAt: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } }
+        : {}),
+      ...(search
+        ? {
+            OR: [
+              { actorLabel: { contains: search, mode: 'insensitive' as const } },
+              { entityType: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+    },
     orderBy: { createdAt: 'desc' },
     take: Math.min(limit, 500),
     select: {

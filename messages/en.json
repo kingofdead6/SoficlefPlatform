@@ -93,7 +93,6 @@
       "competencies": "Competency review",
       "remarks": "Remarks",
       "dashboard": "Dashboard",
-      "admin": "Administration",
       "training": "Training",
       "surveys": "Surveys",
       "meDashboard": "My dashboard",
@@ -124,7 +123,18 @@
       "managerOrganigram": "My org chart",
       "managerTeam": "My team",
       "managerReports": "Reports",
-      "managerAssistant": "Assistant"
+      "managerAssistant": "Assistant",
+      "adminConsole": "Console",
+      "adminUsers": "Accounts",
+      "adminRoles": "Roles & permissions",
+      "adminOrganization": "Structure",
+      "adminIntegrations": "Integrations",
+      "adminAi": "AI configuration",
+      "adminAudit": "Audit log",
+      "adminSecurity": "Security",
+      "adminBackups": "Backups",
+      "adminGdpr": "GDPR",
+      "adminSettings": "Settings"
     }
   },
   "shell": {

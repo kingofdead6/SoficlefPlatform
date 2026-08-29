@@ -93,7 +93,6 @@
       "competencies": "حصيلة الكفاءات",
       "remarks": "الملاحظات",
       "dashboard": "لوحة القيادة",
-      "admin": "الإدارة",
       "training": "التكوينات",
       "surveys": "الاستبيانات",
       "meDashboard": "لوحتي",
@@ -124,7 +123,18 @@
       "managerOrganigram": "هيكلي التنظيمي",
       "managerTeam": "فريقي",
       "managerReports": "المؤشرات",
-      "managerAssistant": "المساعد"
+      "managerAssistant": "المساعد",
+      "adminConsole": "لوحة النظام",
+      "adminUsers": "الحسابات",
+      "adminRoles": "الأدوار والصلاحيات",
+      "adminOrganization": "الهيكل",
+      "adminIntegrations": "عمليات الربط",
+      "adminAi": "إعداد الذكاء الاصطناعي",
+      "adminAudit": "سجل التدقيق",
+      "adminSecurity": "الأمن",
+      "adminBackups": "النسخ الاحتياطية",
+      "adminGdpr": "حماية البيانات",
+      "adminSettings": "الإعدادات"
     }
   },
   "shell": {

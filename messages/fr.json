@@ -93,7 +93,6 @@
       "competencies": "Bilan Compétences",
       "remarks": "Remarques",
       "dashboard": "Tableau de bord",
-      "admin": "Administration",
       "training": "Formations",
       "surveys": "Enquêtes",
       "meDashboard": "Mon tableau de bord",
@@ -124,7 +123,18 @@
       "managerOrganigram": "Mon organigramme",
       "managerTeam": "Mon équipe",
       "managerReports": "Indicateurs",
-      "managerAssistant": "Assistant"
+      "managerAssistant": "Assistant",
+      "adminConsole": "Console",
+      "adminUsers": "Comptes",
+      "adminRoles": "Rôles & permissions",
+      "adminOrganization": "Structure",
+      "adminIntegrations": "Intégrations",
+      "adminAi": "Configuration IA",
+      "adminAudit": "Journal d’audit",
+      "adminSecurity": "Sécurité",
+      "adminBackups": "Sauvegardes",
+      "adminGdpr": "RGPD",
+      "adminSettings": "Paramètres"
     }
   },
   "shell": {
