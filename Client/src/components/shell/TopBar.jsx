@@ -1,20 +1,24 @@
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { NotificationBell } from '../notifications/NotificationBell.jsx';
+import { LanguageSwitcher } from '../../i18n/LanguageSwitcher.jsx';
 import { NAV_ITEMS } from '../../lib/navigation.js';
 
 /** The label of the deepest nav entry matching the current path, for the page title. */
 function useCurrentTitle() {
   const { pathname } = useLocation();
+  const { t } = useTranslation();
   const match = NAV_ITEMS.filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)).sort(
     (a, b) => b.href.length - a.href.length,
   )[0];
-  return match?.labelFr ?? null;
+  return match ? t(match.labelKey) : null;
 }
 
 export function TopBar() {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const title = useCurrentTitle();
 
   return (
@@ -23,13 +27,14 @@ export function TopBar() {
       {user && (
         <div className="flex items-center gap-3 text-sm">
           <NotificationBell />
+          <LanguageSwitcher />
           <span className="hidden text-text-muted sm:inline">{user.displayName}</span>
           <button
             type="button"
             onClick={() => logout()}
-            className="rounded-app border border-border px-2.5 py-1 text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
+            className="shrink-0 whitespace-nowrap rounded-app border border-border px-2.5 py-1 text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
           >
-            Déconnexion
+            {t('common.actions.logout')}
           </button>
         </div>
       )}

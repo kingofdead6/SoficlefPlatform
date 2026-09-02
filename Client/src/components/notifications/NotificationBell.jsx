@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { notificationsApi } from '../../api/notifications.js';
 
 /** Small top-bar bell + dropdown, polling the same endpoint the full page reads. */
 export function NotificationBell() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const ref = useRef(null);
@@ -38,7 +40,7 @@ export function NotificationBell() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="relative rounded-app border border-border px-2 py-1.5 text-text-dim transition hover:border-red-brand hover:text-red-brand"
-        aria-label="Notifications"
+        aria-label={t('common.notifications.title')}
       >
         <span aria-hidden>🔔</span>
         {unreadCount > 0 && (
@@ -51,10 +53,10 @@ export function NotificationBell() {
       {open && (
         <div className="border-border bg-surface shadow-app rounded-app absolute right-0 z-20 mt-2 w-80 border">
           <div className="border-border border-b px-3 py-2 text-sm font-medium text-text">
-            Notifications
+            {t('common.notifications.title')}
           </div>
           {notifications.length === 0 ? (
-            <p className="text-text-dim px-3 py-4 text-sm">Aucune notification.</p>
+            <p className="text-text-dim px-3 py-4 text-sm">{t('common.notifications.empty')}</p>
           ) : (
             <ul className="divide-border max-h-80 divide-y overflow-y-auto">
               {notifications.slice(0, 8).map((notification) => (
@@ -72,7 +74,7 @@ export function NotificationBell() {
             onClick={() => setOpen(false)}
             className="text-red-strong border-border block border-t px-3 py-2 text-center text-xs font-medium"
           >
-            Voir tout →
+            {t('common.notifications.seeAll')}
           </Link>
         </div>
       )}

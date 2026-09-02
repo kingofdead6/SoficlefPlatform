@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+
+import { LanguageSwitcher } from '../../i18n/LanguageSwitcher.jsx';
 
 const DOT_SIZE = 22;
 
 const NAV = [
-  { to: '/', labelFr: 'Accueil', end: true },
-  { to: '/entreprise', labelFr: 'Entreprise' },
-  { to: '/strategie', labelFr: 'Stratégie' },
-  { to: '/organigramme', labelFr: 'Organigramme' },
+  { to: '/', labelKey: 'nav.public.home', end: true },
+  { to: '/entreprise', labelKey: 'nav.public.company' },
+  { to: '/strategie', labelKey: 'nav.public.strategy' },
+  { to: '/organigramme', labelKey: 'nav.public.orgChart' },
 ];
 
 /**
@@ -26,6 +29,7 @@ const NAV = [
  * static, because a control that must be animated into existence is unusable without it.
  */
 export default function DotNav() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [intro, setIntro] = useState('idle'); // idle | expanding | collapsing
   const introPlayed = useRef(false);
@@ -100,7 +104,7 @@ export default function DotNav() {
       <div className="fixed left-1/2 top-4 z-50 w-[min(94vw,720px)] -translate-x-1/2">
         <div className="flex items-center gap-3 rounded-full border border-border bg-surface px-4 py-2.5 shadow-app">
           <Brand />
-          <nav className="flex flex-1 flex-wrap items-center gap-1" aria-label="Navigation principale">
+          <nav className="flex flex-1 flex-wrap items-center gap-1" aria-label={t('nav.public.mainNav')}>
             {NAV.map((item) => (
               <NavLink
                 key={item.to}
@@ -112,15 +116,16 @@ export default function DotNav() {
                   }`
                 }
               >
-                {item.labelFr}
+                {t(item.labelKey)}
               </NavLink>
             ))}
           </nav>
+          <LanguageSwitcher />
           <Link
             to="/login"
-            className="rounded-full bg-red-brand px-4 py-1.5 text-sm font-medium text-white"
+            className="shrink-0 whitespace-nowrap rounded-full bg-red-brand px-4 py-1.5 text-sm font-medium text-white"
           >
-            Connexion
+            {t('nav.public.login')}
           </Link>
         </div>
       </div>
@@ -162,7 +167,7 @@ export default function DotNav() {
         {...(!expanded && {
           role: 'button',
           tabIndex: 0,
-          'aria-label': 'Ouvrir le menu',
+          'aria-label': t('nav.public.openMenu'),
           'aria-expanded': false,
           onKeyDown: (event) => {
             if (event.key === 'Enter' || event.key === ' ') {
@@ -314,17 +319,18 @@ export default function DotNav() {
               <Brand />
               <span aria-hidden className="mx-3.5 h-5 w-px shrink-0 bg-border" />
 
-              <nav className="flex flex-1 items-center gap-0.5" aria-label="Navigation principale">
+              <nav className="flex flex-1 items-center gap-0.5" aria-label={t('nav.public.mainNav')}>
                 {NAV.map((item) => (
                   <BarLink key={item.to} item={item} />
                 ))}
               </nav>
 
+              <LanguageSwitcher className="me-2" />
               <Link
                 to="/login"
-                className="me-1.5 shrink-0 rounded-full bg-red-brand px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-red-light"
+                className="me-1.5 shrink-0 whitespace-nowrap rounded-full bg-red-brand px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-red-light"
               >
-                Connexion
+                {t('nav.public.login')}
               </Link>
               <CloseButton onClick={() => setOpen(false)} />
             </motion.div>
@@ -347,7 +353,7 @@ export default function DotNav() {
                 <CloseButton onClick={() => setOpen(false)} />
               </div>
 
-              <nav className="flex flex-col gap-1" aria-label="Navigation principale">
+              <nav className="flex flex-col gap-1" aria-label={t('nav.public.mainNav')}>
                 {NAV.map((item) => (
                   <NavLink
                     key={item.to}
@@ -363,7 +369,7 @@ export default function DotNav() {
                   >
                     {({ isActive }) => (
                       <>
-                        {item.labelFr}
+                        {t(item.labelKey)}
                         <span aria-hidden className={isActive ? 'text-red-brand' : 'text-text-dim/50'}>
                           ›
                         </span>
@@ -373,12 +379,13 @@ export default function DotNav() {
                 ))}
               </nav>
 
-              <div className="mt-3.5 border-t border-border pt-3.5">
+              <div className="mt-3.5 flex items-center gap-3 border-t border-border pt-3.5">
+                <LanguageSwitcher />
                 <Link
                   to="/login"
-                  className="block rounded-2xl bg-red-brand py-3 text-center text-sm font-medium text-white"
+                  className="block flex-1 rounded-2xl bg-red-brand py-3 text-center text-sm font-medium text-white"
                 >
-                  Connexion
+                  {t('nav.public.login')}
                 </Link>
               </div>
             </motion.div>
@@ -392,8 +399,9 @@ export default function DotNav() {
 /* ------------------------------------------------------------------ pieces */
 
 function Brand() {
+  const { t } = useTranslation();
   return (
-    <Link to="/" className="flex shrink-0 items-center gap-2.5" aria-label="SOFICLEF — accueil">
+    <Link to="/" className="flex shrink-0 items-center gap-2.5" aria-label={t('nav.public.brandHome')}>
       <span
         aria-hidden
         className="grid h-7 w-7 place-items-center rounded-full bg-red-brand font-display text-xs text-white"
@@ -406,6 +414,7 @@ function Brand() {
 }
 
 function BarLink({ item }) {
+  const { t } = useTranslation();
   return (
     <NavLink
       to={item.to}
@@ -418,12 +427,13 @@ function BarLink({ item }) {
         }`
       }
     >
-      {item.labelFr}
+      {t(item.labelKey)}
     </NavLink>
   );
 }
 
 function CloseButton({ onClick }) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
@@ -431,7 +441,7 @@ function CloseButton({ onClick }) {
         event.stopPropagation();
         onClick();
       }}
-      aria-label="Fermer le menu"
+      aria-label={t('nav.public.closeMenu')}
       className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-text-dim transition-colors hover:bg-status-red/10 hover:text-status-red"
     >
       <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden>

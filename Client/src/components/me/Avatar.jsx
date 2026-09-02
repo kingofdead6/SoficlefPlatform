@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { cn } from '../../lib/cn.js';
 
 /**
@@ -27,6 +29,7 @@ export function initialsOf(name) {
 }
 
 export default function Avatar({ name, url, size = 'md', className }) {
+  const { t } = useTranslation();
   const dimensions = SIZES[size] ?? SIZES.md;
   const initials = initialsOf(name);
 
@@ -34,7 +37,7 @@ export default function Avatar({ name, url, size = 'md', className }) {
     return (
       <img
         src={url}
-        alt={name ? `Photo de ${name}` : ''}
+        alt={name ? t('common.avatarAlt', { name }) : ''}
         className={cn('shrink-0 rounded-full object-cover', dimensions, className)}
         onError={(event) => {
           event.currentTarget.style.display = 'none';

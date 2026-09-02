@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 /** Shared loading skeleton line — small pulse, respects prefers-reduced-motion via CSS. */
-export function PageLoading({ label = 'Chargement…' }) {
+export function PageLoading({ label }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-3 p-8 text-text-dim">
       <span className="h-2 w-2 animate-pulse rounded-full bg-red-brand" />
-      <span className="text-sm">{label}</span>
+      <span className="text-sm">{label ?? t('common.states.loading')}</span>
     </div>
   );
 }

@@ -1,12 +1,15 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { can, hasRole } from '../../lib/permissions.js';
-import { NAV_GROUP_LABELS, NAV_ITEMS } from '../../lib/navigation.js';
+import { NAV_GROUP_LABEL_KEYS, NAV_ITEMS } from '../../lib/navigation.js';
 import { cn } from '../../lib/cn.js';
 
 export function SidebarNav() {
   const { user } = useAuth();
+  // Hooks must run before the early return, or the hook order changes between renders.
+  const { t } = useTranslation();
   if (!user) return null;
 
   /*
@@ -71,7 +74,7 @@ export function SidebarNav() {
         {[...byGroup.entries()].map(([group, items]) => (
           <div key={group} className="mb-5">
             <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-text-dim/70">
-              {NAV_GROUP_LABELS[group] ?? group}
+              {NAV_GROUP_LABEL_KEYS[group] ? t(NAV_GROUP_LABEL_KEYS[group]) : group}
             </p>
             <div className="space-y-0.5">
               {items.map((item) => (
@@ -106,10 +109,10 @@ export function SidebarNav() {
                       */}
                       <span className="relative inline-grid">
                         <span aria-hidden className="invisible col-start-1 row-start-1 font-medium">
-                          {item.labelFr}
+                          {t(item.labelKey)}
                         </span>
                         <span className={cn('col-start-1 row-start-1', isActive ? 'font-medium' : 'font-normal')}>
-                          {item.labelFr}
+                          {t(item.labelKey)}
                         </span>
                       </span>
                     </>

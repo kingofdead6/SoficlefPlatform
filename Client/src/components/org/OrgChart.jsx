@@ -1,5 +1,6 @@
 import { memo, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Top-down organisation chart: a centred parent card with a horizontal row of children
@@ -56,6 +57,7 @@ const PersonIcon = () => (
  * anomaly, 'root' for the top of the chart.
  */
 const OrgNodeCard = memo(function OrgNodeCard({ node, tone, subtitle, badge, onSelect, reduce }) {
+  const { t } = useTranslation();
   const holderName = node.holder?.displayName ?? null;
   const initials = initialsOf(holderName);
 
@@ -92,7 +94,7 @@ const OrgNodeCard = memo(function OrgNodeCard({ node, tone, subtitle, badge, onS
         </span>
 
         <span className="w-full truncate text-[11px] leading-tight text-text-dim">
-          {holderName ?? (node.occupancyFr || 'Poste vacant')}
+          {holderName ?? (node.occupancyFr || t('common.org.vacantPosition'))}
         </span>
         <span className="w-full text-sm font-medium leading-snug text-text">{node.titleFr}</span>
 
