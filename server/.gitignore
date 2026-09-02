@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Real secrets. .env.example is the committed template and stays tracked.
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

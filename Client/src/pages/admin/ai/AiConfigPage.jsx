@@ -35,6 +35,7 @@ export default function AiConfigPage() {
   const [meta, setMeta] = useState(null);
   const [status, setStatus] = useState(null);
   const [agents, setAgents] = useState([]);
+  const [live, setLive] = useState({ provider: null, modelName: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [form, setForm] = useState({ provider: '', endpoint: '', model: '', monthlyQuota: '' });
@@ -56,6 +57,10 @@ export default function AiConfigPage() {
       setMeta({ agents: configRes.agents ?? [], providerConnected: configRes.providerConnected, envVar: configRes.envVar });
       setStatus(statusRes);
       setAgents(agentsRes.data ?? []);
+      // The *live* provider, read from the server's environment rather than from the saved
+      // configuration below: the two can disagree, and when they do it is this one that is
+      // actually answering questions.
+      setLive({ provider: agentsRes.provider ?? null, modelName: agentsRes.modelName ?? null });
       setForm({
         provider: configRes.data.provider ?? '',
         endpoint: configRes.data.endpoint ?? '',
@@ -154,25 +159,27 @@ export default function AiConfigPage() {
         <Tile label="Prompts renseignés" value={stats.prompts} />
       </motion.div>
 
-      {/* The banner that must never be missed. */}
+      {/* The banner that must never be missed — driven by the live environment, not the form. */}
       <div
         className={`mb-6 rounded-app border p-4 ${
-          meta.providerConnected
+          live.provider
             ? 'border-status-green/30 bg-status-green/5'
             : 'border-red-brand/40 bg-red-brand/5'
         }`}
       >
         <p className="text-sm font-medium text-text">
-          {meta.providerConnected
-            ? 'Un fournisseur est raccordé à l’environnement du serveur.'
+          {live.provider
+            ? `Fournisseur raccordé : ${live.provider}${live.modelName ? ` · ${live.modelName}` : ''}.`
             : 'Aucun fournisseur de modèle de langage n’est raccordé.'}
         </p>
         <p className="mt-1 text-sm text-text-dim">
-          {meta.providerConnected
-            ? 'Les réglages ci-dessous décrivent l’usage attendu ; leur consommation effective dépend de l’implémentation du client côté serveur.'
-            : 'C’est une décision d’architecture, pas un oubli : aucune fonction métier de la plateforme ne doit dépendre d’un service externe tant qu’il n’est pas contractualisé. Les réglages ci-dessous sont enregistrés et vous attendent — ils ne sont lus par personne aujourd’hui, et aucun appel à un modèle n’est émis depuis ce serveur.'}
+          {live.provider
+            ? 'Ce modèle reformule les réponses de l’assistant. Il ne consulte jamais la base : la recherche est faite en amont, avec les droits de la personne qui pose la question, et les sources citées proviennent toujours de cette recherche — jamais du texte produit par le modèle. Si l’appel échoue, l’assistant retombe sur la réponse issue de la seule recherche.'
+            : 'Les cinq agents répondent malgré tout, par recherche dans les données de la plateforme avec les droits de la personne qui interroge. Renseigner HF_API_KEY dans l’environnement du serveur ajoute la reformulation ; cela n’active pas la fonctionnalité, qui marche déjà.'}
         </p>
-        <p className="mt-2 font-mono text-[11px] text-text-dim">{meta.envVar}</p>
+        <p className="mt-2 font-mono text-[11px] text-text-dim">
+          {live.provider ? 'HF_API_KEY, HF_MODEL, HF_BASE_URL' : meta.envVar}
+        </p>
       </div>
 
       <AnimatePresence initial={false}>
@@ -282,7 +289,11 @@ export default function AiConfigPage() {
                               : 'bg-surface-2 text-text-dim'
                           }`}
                         >
-                          {agent?.live ? 'Opérationnel sans LLM' : 'En attente du fournisseur'}
+                          {agent?.live
+                            ? live.provider
+                              ? 'Opérationnel · reformulé'
+                              : 'Opérationnel sans LLM'
+                            : 'Sans étape de réponse'}
                         </span>
                       </div>
                       {agent?.purposeFr && <p className="mt-1 text-sm text-text-dim">{agent.purposeFr}</p>}
@@ -363,11 +374,15 @@ export default function AiConfigPage() {
       </section>
 
       <p className="rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-        Rien sur cette page n’émet d’appel vers un modèle de langage, et rien ne le lira tant
-        qu’un fournisseur ne sera pas contractualisé et raccordé (page Intégrations). Les
-        {' '}{status?.agentsOperational ?? stats.operational} agent(s) marqué(s) « opérationnel »
-        fonctionnent par recherche dans les données de la plateforme, avec les droits de la
-        personne qui pose la question — c’est ce qui existe réellement aujourd’hui.
+        Les réglages de ce formulaire sont enregistrés mais ne pilotent pas encore l’assistant :
+        celui-ci lit sa configuration dans l’environnement du serveur (HF_API_KEY, HF_MODEL,
+        HF_BASE_URL), pas dans cette table. Les{' '}
+        {status?.agentsOperational ?? stats.operational} agent(s) marqué(s) « opérationnel »
+        répondent par recherche dans les données de la plateforme, avec les droits de la personne
+        qui pose la question
+        {live.provider
+          ? ', puis font reformuler cette réponse par le modèle raccordé.'
+          : ', sans aucun appel à un modèle de langage.'}
       </p>
     </div>
   );

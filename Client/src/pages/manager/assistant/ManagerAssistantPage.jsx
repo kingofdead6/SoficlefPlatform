@@ -1,27 +1,70 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 
+import { assistantApi } from '../../../api/assistant.js';
 import { onboardingApi } from '../../../api/onboarding.js';
+import AssistantChat, { ProviderNote } from '../../../components/assistant/AssistantChat.jsx';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { sectionVariants, staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { cn } from '../../../lib/cn.js';
 
 /**
  * /app/manager/assistant (route guide §2.2, CORE).
- * "Agent 4: reminders, 'what's blocking X?', drafting feedback, procedure lookups."
  *
- * No LLM provider is wired into this platform anywhere (ADR-003) — there is no
- * generation step for drafting feedback or free-text procedure lookup. What *is* real:
- * reminders and "what's blocking X" are structured facts already computed by
- * domain/manager/alerts.js (alertsFor) from the manager's own recruits, so this page
- * surfaces those honestly instead of simulating a chat the platform can't back. The two
- * not-available sections are styled as calm, dashed-border empty states rather than
- * disabled-looking controls, so they read as an intentional product boundary.
+ * Two halves, and they answer different kinds of question:
+ *
+ *   - the assistant, which answers from what this manager may read — orientation and
+ *     onboarding, plus documents and competencies, which every account type gets;
+ *   - the alerts, which are structured facts already computed by domain/manager/alerts.js
+ *     from this manager's own recruits. Those stay: "what is blocking X" is answered better
+ *     by a computed list than by a sentence, and it always was.
+ *
+ * One boundary worth stating plainly on the page: the onboarding agent answers about the
+ * *asker's own* journey, never a recruit's. Choosing a subject is an explicit act that
+ * belongs on the recruit pages, where the perimeter check is visible; an assistant is not
+ * the place to make that choice implicitly. A manager's view of a recruit's journey is the
+ * "Qu'est-ce qui bloque ?" list below and the recruit's own page.
  */
+
+const SUGGESTIONS = {
+  orientation: [
+    'Qui gère les ressources humaines ?',
+    'À qui m’adresser pour la sécurité ?',
+    'Qui est responsable de la qualité ?',
+  ],
+  onboarding: [
+    'Quelles étapes de mon parcours restent à faire ?',
+    'Qu’est-ce qui est en retard chez moi ?',
+  ],
+  documents: [
+    'Où trouver la procédure d’entretien ?',
+    'Quel document décrit la période d’essai ?',
+  ],
+  competencies: [
+    'Quelles compétences sont attendues pour un directeur de production ?',
+    'Quelles compétences de management sont requises ?',
+  ],
+};
+
+const PLACEHOLDERS = {
+  orientation: 'Ex. : qui s’occupe des contrats de travail ?',
+  onboarding: 'Ex. : quelles étapes me restent à faire ?',
+  documents: 'Ex. : où est la procédure d’évaluation ?',
+  competencies: 'Ex. : quelles compétences pour ce poste ?',
+};
+
+/** The agents this page offers, in the order a manager reaches for them. */
+const PAGE_AGENTS = ['orientation', 'onboarding', 'documents', 'competencies'];
+
 export default function ManagerAssistantPage() {
   const [recruits, setRecruits] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [agents, setAgents] = useState([]);
+  const [provider, setProvider] = useState(null);
+  const [modelName, setModelName] = useState(null);
+  const [activeId, setActiveId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const reduce = useReducedMotion();
@@ -29,9 +72,15 @@ export default function ManagerAssistantPage() {
   useEffect(() => {
     (async () => {
       try {
-        const { data, alerts } = await onboardingApi.managerRecruits(false);
-        setRecruits(data);
-        setAlerts(alerts);
+        const [recruitsRes, agentsRes] = await Promise.all([
+          onboardingApi.managerRecruits(false),
+          assistantApi.agents().catch(() => ({ data: [] })),
+        ]);
+        setRecruits(recruitsRes.data);
+        setAlerts(recruitsRes.alerts);
+        setAgents(agentsRes.data ?? []);
+        setProvider(agentsRes.provider ?? null);
+        setModelName(agentsRes.modelName ?? null);
       } catch {
         setError("Impossible de charger l'assistant.");
       } finally {
@@ -39,6 +88,16 @@ export default function ManagerAssistantPage() {
       }
     })();
   }, []);
+
+  const usable = useMemo(
+    () =>
+      PAGE_AGENTS.map((id) => agents.find((agent) => agent.id === id)).filter(
+        (agent) => agent && agent.available !== false,
+      ),
+    [agents],
+  );
+
+  const active = usable.find((agent) => agent.id === activeId) ?? usable[0] ?? null;
 
   if (loading) return <PageLoading label="Chargement de l'assistant…" />;
   if (error) return <PageError message={error} />;
@@ -51,11 +110,67 @@ export default function ManagerAssistantPage() {
       <PageHeader
         eyebrow="Manager"
         title="Assistant manager"
-        subtitle="Aucun fournisseur de modèle de langage n'est raccordé à la plateforme (décision d'architecture). La rédaction de feedback et la recherche libre de procédures ne sont donc pas disponibles ici. Les rappels et les blocages, en revanche, sont des faits réels calculés depuis vos recrues."
+        subtitle="Posez une question : l’assistant cherche dans les données que vous êtes autorisé à consulter et cite ses sources. Les rappels et les blocages, plus bas, sont des faits calculés depuis vos recrues."
       />
 
       <div className="space-y-8">
         <motion.section variants={sectionVariants} initial={initialOrNone(reduce)} animate="visible">
+          {usable.length === 0 ? (
+            <EmptyState
+              title="Aucun agent disponible"
+              detail="Votre compte ne dispose des droits de lecture d’aucune des ressources que ces agents interrogent."
+              muted
+            />
+          ) : (
+            <>
+              <div className="mb-4 flex flex-wrap gap-2">
+                {usable.map((agent) => (
+                  <button
+                    key={agent.id}
+                    type="button"
+                    onClick={() => setActiveId(agent.id)}
+                    className={cn(
+                      'rounded-app border px-3 py-1.5 text-sm transition-colors',
+                      agent.id === active?.id
+                        ? 'border-red-brand bg-red-brand/10 font-medium text-red-brand'
+                        : 'border-border text-text-dim hover:border-red-brand hover:text-red-brand',
+                    )}
+                  >
+                    {agent.titleFr}
+                  </button>
+                ))}
+              </div>
+
+              {active && (
+                <AssistantChat
+                  key={active.id}
+                  agentId={active.id}
+                  titleFr={active.titleFr}
+                  purposeFr={active.purposeFr}
+                  provider={provider}
+                  modelName={modelName}
+                  suggestions={SUGGESTIONS[active.id] ?? []}
+                  placeholder={PLACEHOLDERS[active.id] ?? 'Posez votre question…'}
+                />
+              )}
+
+              {active?.id === 'onboarding' && (
+                <p className="mt-3 text-xs text-text-dim">
+                  Cet agent répond sur <strong>votre propre</strong> parcours. Pour l’avancement
+                  d’une recrue, utilisez la liste des blocages ci-dessous ou sa fiche : le choix du
+                  sujet y est explicite et contrôlé.
+                </p>
+              )}
+            </>
+          )}
+        </motion.section>
+
+        <motion.section
+          variants={sectionVariants}
+          initial={initialOrNone(reduce)}
+          animate="visible"
+          transition={{ delay: reduce ? 0 : 0.08 }}
+        >
           <h2 className="mb-3 font-display text-lg text-text">Rappels — entretiens à venir</h2>
           <motion.div variants={staggerContainer(0.06)} initial={initialOrNone(reduce)} animate="visible" className="space-y-2">
             {reminders.map((alert) => (
@@ -77,7 +192,7 @@ export default function ManagerAssistantPage() {
           variants={sectionVariants}
           initial={initialOrNone(reduce)}
           animate="visible"
-          transition={{ delay: reduce ? 0 : 0.08 }}
+          transition={{ delay: reduce ? 0 : 0.16 }}
         >
           <h2 className="mb-3 font-display text-lg text-text">Qu'est-ce qui bloque ?</h2>
           <motion.div variants={staggerContainer(0.06)} initial={initialOrNone(reduce)} animate="visible" className="space-y-2">
@@ -100,12 +215,12 @@ export default function ManagerAssistantPage() {
           variants={sectionVariants}
           initial={initialOrNone(reduce)}
           animate="visible"
-          transition={{ delay: reduce ? 0 : 0.16 }}
+          transition={{ delay: reduce ? 0 : 0.24 }}
         >
-          <h2 className="mb-3 font-display text-lg text-text">Rédiger un feedback</h2>
+          <h2 className="mb-3 font-display text-lg text-text">Préparer un entretien</h2>
           <EmptyState
-            title="Non disponible"
-            detail="La rédaction assistée dépend d'un fournisseur de modèle de langage, qui n'est pas raccordé. Utilisez la fiche d'entretien pour préparer vos points manuellement."
+            title="Rédaction non assistée"
+            detail="L’assistant ne rédige pas de feedback à votre place : il répond à partir de données existantes et cite ses sources, il n’en compose pas de nouvelles. Utilisez la fiche d’entretien pour préparer vos points."
             muted
           />
           {recruits.length > 0 && (
@@ -123,15 +238,9 @@ export default function ManagerAssistantPage() {
           )}
         </motion.section>
 
-        <motion.section
-          variants={sectionVariants}
-          initial={initialOrNone(reduce)}
-          animate="visible"
-          transition={{ delay: reduce ? 0 : 0.24 }}
-        >
-          <h2 className="mb-3 font-display text-lg text-text">Recherche de procédures</h2>
-          <EmptyState title="Non disponible" detail="Non disponible ici pour la même raison. Consultez la bibliothèque documentaire directement." muted />
-        </motion.section>
+        <div className="rounded-app border border-dashed border-border bg-surface-2/60 p-4">
+          <ProviderNote provider={provider} modelName={modelName} />
+        </div>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 
 import { assistantApi } from '../../../api/assistant.js';
 import { documentsApi } from '../../../api/documents.js';
+import AssistantChat, { ProviderNote } from '../../../components/assistant/AssistantChat.jsx';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
@@ -28,32 +29,31 @@ const RESOURCE_LABELS = {
  * /app/hr/ai-knowledge (route guide §2.3, CORE).
  * "Which documents feed each agent, re-index, test a question, review flagged answers."
  *
- * **The second honest page.** GET /assistant/agents returns the real structure — the five
- * agents, what each is permitted to read, and which one has an implemented answering step —
- * and that structure is what this page shows, faithfully.
+ * GET /assistant/agents returns the real structure — the five agents, what each is permitted
+ * to read, and what is currently answering — and that structure is what this page shows.
  *
- * The three other things the spec asks for do not exist and are not simulated:
- *  - "test a question": only Agent 1 (orientation) answers, and it does so by *retrieval*
- *    over the caller's visible org tree, not by generation. That one live path is offered
- *    here as what it actually is — a directory lookup — and the four other agents are marked
- *    unavailable rather than given a chat box that returns nothing.
+ * "Test a question" is now real for all five agents, against the *signed-in HR user's own*
+ * scope: that is the honest thing for a test bench to do, since an answer rendered under
+ * someone else's permissions would tell HR nothing about what a recruit will actually see.
+ *
+ * Two of the spec's asks still do not exist, and are not simulated:
  *  - "re-index": there is no vector index. Retrieval reads the database directly with the
  *    asker's own permissions, so there is nothing to rebuild.
- *  - "flagged answers": nothing generates answers, so no answer has ever been flagged, and
- *    no `flagged_answer` table exists.
+ *  - "flagged answers": no answer history is stored, so none has ever been flagged, and no
+ *    `flagged_answer` table exists.
  *
- * The design principle behind all three: an agent never sees a row its asker could not have
- * opened themselves, because retrieval runs under the asker's own scope. That is stated on
- * the page, because it is the part of the feature that *is* built.
+ * The design principle behind all of it: an agent never sees a row its asker could not have
+ * opened themselves, because retrieval runs under the asker's own scope — and the language
+ * model, when one is configured, only rephrases what retrieval already fetched.
  */
 export default function HrAiKnowledgePage() {
   const [agents, setAgents] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState(null);
-  const [asking, setAsking] = useState(false);
+  const [provider, setProvider] = useState(null);
+  const [modelName, setModelName] = useState(null);
+  const [testAgentId, setTestAgentId] = useState('orientation');
   const reduce = useReducedMotion();
 
   useEffect(() => {
@@ -64,6 +64,8 @@ export default function HrAiKnowledgePage() {
           documentsApi.list().catch(() => ({ data: [] })),
         ]);
         setAgents(agentsRes.data);
+        setProvider(agentsRes.provider ?? null);
+        setModelName(agentsRes.modelName ?? null);
         setDocuments(documentsRes.data ?? []);
       } catch {
         setError('Impossible de charger la configuration des agents.');
@@ -79,21 +81,9 @@ export default function HrAiKnowledgePage() {
   );
 
   const liveAgents = agents.filter((agent) => agent.live);
-
-  async function handleAsk(event) {
-    event.preventDefault();
-    if (question.trim().length < 2) return;
-    setAsking(true);
-    setAnswer(null);
-    try {
-      const result = await assistantApi.askOrientation(question.trim());
-      setAnswer(result);
-    } catch {
-      setAnswer({ answer: null, sources: [], failed: true });
-    } finally {
-      setAsking(false);
-    }
-  }
+  const testableAgents = agents.filter((agent) => agent.available !== false);
+  const testAgent =
+    testableAgents.find((agent) => agent.id === testAgentId) ?? testableAgents[0] ?? null;
 
   if (loading) return <PageLoading label="Chargement des agents…" />;
   if (error) return <PageError message={error} />;
@@ -164,12 +154,12 @@ export default function HrAiKnowledgePage() {
                 <p className="font-display text-lg text-text">{agent.titleFr}</p>
                 <span
                   className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                    agent.live
+                    agent.available !== false
                       ? 'bg-status-green/10 text-status-green'
                       : 'bg-surface-2 text-text-dim'
                   }`}
                 >
-                  {agent.live ? 'Opérationnel' : 'Non disponible'}
+                  {agent.available !== false ? 'Opérationnel' : 'Hors de vos droits'}
                 </span>
               </div>
               <p className="mt-1 text-sm text-text-dim">{agent.purposeFr}</p>
@@ -203,70 +193,53 @@ export default function HrAiKnowledgePage() {
       >
         <h2 className="mb-1 font-display text-xl text-text">Tester une question</h2>
         <p className="mb-4 text-sm text-text-dim">
-          Un seul agent répond aujourd’hui : l’agent d’orientation, et il le fait par recherche dans
-          l’organigramme visible, pas par génération de texte. Les quatre autres n’ont pas d’étape de
-          réponse implémentée — aucun fournisseur de modèle de langage n’est raccordé à cette
-          plateforme (décision d’architecture ADR-003). Aucune interface de conversation n’est donc
-          proposée pour eux : elle ne produirait rien de réel.
+          Les cinq agents répondent. Chacun cherche d’abord dans les données de la plateforme, avec
+          les droits de la personne qui pose la question — ici, les vôtres. Ce que vous voyez
+          ci-dessous est donc le comportement réel de l’agent <em>pour votre compte</em> : une
+          recrue interrogeant le même agent obtiendra les résultats de <em>son</em> périmètre, qui
+          peuvent être différents.
+        </p>
+        <p className="mb-4 text-sm text-text-dim">
+          <ProviderNote provider={provider} modelName={modelName} />
         </p>
 
-        <form onSubmit={handleAsk} className={`${CARD} space-y-3 p-5`}>
-          <label className="block text-sm font-medium text-text">
-            Question d’orientation — « à qui m’adresser pour… »
-          </label>
-          <div className="flex flex-wrap gap-2">
-            <input
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Qui s’occupe de la qualité ?"
-              maxLength={300}
-              className="min-w-[240px] flex-1 rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand"
-            />
-            <button
-              type="submit"
-              disabled={asking || question.trim().length < 2}
-              className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
-            >
-              {asking ? 'Recherche…' : 'Rechercher'}
-            </button>
-          </div>
+        {testableAgents.length === 0 ? (
+          <EmptyState
+            title="Aucun agent interrogeable"
+            detail="Votre compte ne dispose des droits de lecture d’aucune des ressources lues par ces agents."
+            muted
+          />
+        ) : (
+          <>
+            <div className="mb-4 flex flex-wrap gap-2">
+              {testableAgents.map((agent) => (
+                <button
+                  key={agent.id}
+                  type="button"
+                  onClick={() => setTestAgentId(agent.id)}
+                  className={`rounded-app border px-3 py-1.5 text-sm transition-colors ${
+                    agent.id === testAgent?.id
+                      ? 'border-red-brand bg-red-brand/10 font-medium text-red-brand'
+                      : 'border-border text-text-dim hover:border-red-brand hover:text-red-brand'
+                  }`}
+                >
+                  {agent.titleFr}
+                </button>
+              ))}
+            </div>
 
-          {answer && (
-            <motion.div
-              initial={reduce ? false : { opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="border-t border-border pt-3"
-            >
-              {answer.failed ? (
-                <p className="text-sm text-status-red">La recherche a échoué.</p>
-              ) : answer.answer === null ? (
-                <EmptyState
-                  title="Aucune réponse trouvée"
-                  detail="Rien dans votre organigramme visible ne correspond à cette question. L’agent ne devine pas : une réponse sans source n’est pas une réponse."
-                  muted
-                />
-              ) : (
-                <>
-                  <p className="text-sm text-text">{answer.answer}</p>
-                  {answer.sources?.length > 0 && (
-                    <div className="mt-3">
-                      <p className="mb-1 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-                        Sources
-                      </p>
-                      <ul className="space-y-1">
-                        {answer.sources.map((source, index) => (
-                          <li key={index} className="text-xs text-text-dim">
-                            {source.labelFr ?? source.label ?? JSON.stringify(source)}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </>
-              )}
-            </motion.div>
-          )}
-        </form>
+            {testAgent && (
+              <AssistantChat
+                key={testAgent.id}
+                agentId={testAgent.id}
+                purposeFr={testAgent.purposeFr}
+                provider={provider}
+                modelName={modelName}
+                emptyDetailFr="Posez une question pour observer ce que l’agent renvoie, et depuis quelles sources."
+              />
+            )}
+          </>
+        )}
       </motion.section>
 
       <motion.section
@@ -294,7 +267,7 @@ export default function HrAiKnowledgePage() {
         <h2 className="mb-1 font-display text-xl text-text">Réponses signalées</h2>
         <EmptyState
           title="Non disponible"
-          detail="Aucune réponse n’est générée, donc aucune n’a jamais pu être signalée : la plateforme ne comporte ni file de signalements ni historique de réponses. Cette revue prendra son sens le jour où une étape de génération existera."
+          detail="Aucun historique de réponses n’est conservé — ni file de signalements, ni table de réponses. Une réponse n’existe que le temps de la question qui l’a produite, ce qui évite de stocker en clair des extraits d’évaluations ou de parcours, mais rend impossible toute revue a posteriori."
           muted
         />
       </motion.section>
@@ -302,8 +275,10 @@ export default function HrAiKnowledgePage() {
       <section>
         <h2 className="mb-1 font-display text-xl text-text">Documents accessibles à l’agent 2</h2>
         <p className="mb-4 text-sm text-text-dim">
-          Les documents publiés que l’agent documentaire pourra consulter le jour où son étape de
-          réponse existera. Ce sont exactement ceux de la bibliothèque, sans copie ni index séparé.
+          Les documents publiés que l’agent documentaire consulte. Ce sont exactement ceux de la
+          bibliothèque, sans copie ni index séparé — et il applique la même règle d’audience :
+          un document réservé à certains départements reste invisible pour les autres, dans
+          l’assistant comme dans la bibliothèque.
         </p>
         {published.length === 0 ? (
           <EmptyState detail="Aucun document publié dans la bibliothèque." muted />
