@@ -42,6 +42,27 @@ const SYSTEM_PROMPT = [
   'Réponds en français, de façon concise : 2 à 4 phrases au maximum.',
 ].join('\n');
 
+/**
+ * The ungrounded prompt, used only when retrieval found nothing in the platform.
+ *
+ * The distinction it has to hold is narrow but important. General professional knowledge —
+ * what a probation period is, how ISO 9001 works, what an onboarding checklist usually
+ * contains — is genuinely useful and safe to answer. A SOFICLEF-specific fact — who holds
+ * a post, what this company's policy says, a figure from these records — is not, because
+ * the model has no way to know it and an invented one is indistinguishable from a real one
+ * to the reader.
+ *
+ * So the rule is not "never answer", it is "never answer *as if it came from here*".
+ */
+const GENERAL_PROMPT = [
+  "Tu es l'assistant interne d'une plateforme RH (SOFICLEF, industrie de la serrurerie en Algérie).",
+  "Aucune information interne ne correspond à cette question : réponds donc à partir de tes connaissances générales.",
+  'Tu peux expliquer des notions générales (RH, qualité, sécurité, formation, réglementation usuelle).',
+  "En revanche, tu ne dois JAMAIS affirmer un fait propre à SOFICLEF : ni nom de personne, ni poste occupé, ni chiffre, ni date, ni politique ou procédure interne. Tu ne les connais pas.",
+  "Si la question porte sur un fait interne, dis clairement que cette information ne figure pas dans la plateforme et oriente vers les RH ou le responsable concerné.",
+  'Réponds en français, de façon concise : 2 à 4 phrases au maximum.',
+].join('\n');
+
 /** The plain, model-free answer: the matched rows, one per line. What Agent 1 always did. */
 function retrievalAnswer(snippets) {
   return snippets.map((snippet) => snippet.detail).join('\n');
@@ -66,8 +87,41 @@ export async function answerWithAgent(user, agentId, question) {
   // Always first. The model is never the thing that reaches for data.
   const { snippets, sources } = await retrieve(user, question);
 
+  /*
+   * Nothing in the platform matched.
+   *
+   * Without a model there is nothing honest to say, so the caller still gets `no-match`.
+   * With one, the model may answer from general knowledge — but the result carries
+   * `grounded: false` and no sources, which is what lets the UI mark it as general
+   * knowledge rather than letting it pass as a platform fact.
+   */
   if (snippets.length === 0) {
-    return { agent: agentId, answer: null, sources: [], grounded: true, model: null, reason: 'no-match' };
+    if (!isConfigured()) {
+      return { agent: agentId, answer: null, sources: [], grounded: true, model: null, reason: 'no-match' };
+    }
+
+    const general = await chat({ system: GENERAL_PROMPT, user: `Question : ${question}` });
+
+    if (!general.ok) {
+      return {
+        agent: agentId,
+        answer: null,
+        sources: [],
+        grounded: true,
+        model: null,
+        reason: general.reason,
+      };
+    }
+
+    return {
+      agent: agentId,
+      answer: general.text,
+      // Deliberately empty: there is no platform source behind this answer, and inventing
+      // one would defeat the whole point of the distinction.
+      sources: [],
+      grounded: false,
+      model: 'hf',
+    };
   }
 
   // No key is a supported state: the assistant stays fully useful, just plainer.

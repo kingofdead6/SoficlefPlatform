@@ -153,7 +153,28 @@ export default function AssistantChat({
                 <div className="px-4 py-3">
                   {exchange.answer ? (
                     <>
+                      {/*
+                        The grounding badge is the whole point of the ungrounded path: an
+                        answer the model recalled must never be mistaken for one drawn from
+                        this platform's records. Shown above the text, not below it, so it
+                        is read first.
+                      */}
+                      {exchange.grounded === false && (
+                        <p className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-status-amber/40 bg-status-amber/10 px-2.5 py-1 text-[11px] font-medium text-status-amber">
+                          <span aria-hidden>◇</span>
+                          Connaissances générales — hors données SOFICLEF
+                        </p>
+                      )}
+
                       <p className="whitespace-pre-wrap text-sm text-text">{exchange.answer}</p>
+
+                      {exchange.grounded === false && (
+                        <p className="mt-2 text-xs text-text-dim">
+                          Aucune information interne ne correspondait à cette question. Cette
+                          réponse vient des connaissances générales du modèle : vérifiez-la auprès
+                          des RH avant de vous en servir.
+                        </p>
+                      )}
 
                       {exchange.reason && DEGRADED_FR[exchange.reason] && (
                         <p className="mt-2 text-xs text-text-dim">{DEGRADED_FR[exchange.reason]}</p>
