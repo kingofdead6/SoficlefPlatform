@@ -242,3 +242,15 @@ rh@soficlef.local — HR
 manager@soficlef.local — MANAGER
 nouveau.1@ through nouveau.4@soficlef.local — four EMPLOYEE recruits,
 plus attente@soficlef.local
+
+
+
+
+
+
+
+
+
+add to the hr dashboard something like trial period validation for new hires like the hr sees just the result and he can change its status if its more than 60% he confirms him if between 30 to 60% he prolongs the testing duration if less than 30% he fires him and the one that edits and there is a responsable of each emplyee when someone has someone under him its he who evaluates the ones under him 
+and for the hr in the documents page he can add documents and when he accepts a document it will be published in all the accounts in the hr departement
+add these informations to the previous pdf so it becomes a complete one keep its design paterns

@@ -1,0 +1,975 @@
+<title>SOFICLEF Route Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  /* ------------------------------------------------------------------
+     Tokens. Light palette on bare :root; both dark paths redefine only
+     these, so no colour is ever declared solely inside a media query.
+     ------------------------------------------------------------------ */
+  :root {
+    --ink:        #1a1d23;
+    --ink-soft:   #4d5560;
+    --ink-faint:  #7b8492;
+    --ground:     #ffffff;
+    --ground-alt: #f7f8fa;
+    --rule:       #e3e6ea;
+
+    --rail:       #2f6fd0;
+    --rail-bg:    #eef4fd;
+
+    --core-fg:    #1f7a4d;  --core-bg:  #e6f4ec;
+    --site-fg:    #2f6fd0;  --site-bg:  #e8f0fc;
+    --later-fg:   #67707d;  --later-bg: #f1f2f4;
+    --chain-fg:   #9a6412;  --chain-bg: #fdf3e0;
+    --new-fg:     #a3306b;  --new-bg:   #fcecf4;
+
+    --code-ink:   #dfe4ec;
+    --code-bg:    #1e2229;
+    --thead-bg:   #22262e;
+    --thead-fg:   #f2f4f7;
+
+    --measure: 74ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink:        #e7eaef;
+      --ink-soft:   #aeb6c2;
+      --ink-faint:  #7f8896;
+      --ground:     #14171c;
+      --ground-alt: #191d23;
+      --rule:       #2b3038;
+
+      --rail:       #7aa8ee;
+      --rail-bg:    #1b2432;
+
+      --core-fg:    #6fb98f;  --core-bg:  #14301f;
+      --site-fg:    #93bcf5;  --site-bg:  #16243a;
+      --later-fg:   #a2abb8;  --later-bg: #23272e;
+      --chain-fg:   #f0c06a;  --chain-bg: #322613;
+      --new-fg:     #f39cc6;  --new-bg:   #34182a;
+
+      --code-ink:   #dfe4ec;
+      --code-bg:    #0f1216;
+      --thead-bg:   #262b33;
+      --thead-fg:   #eef1f5;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink:        #e7eaef;
+    --ink-soft:   #aeb6c2;
+    --ink-faint:  #7f8896;
+    --ground:     #14171c;
+    --ground-alt: #191d23;
+    --rule:       #2b3038;
+
+    --rail:       #7aa8ee;
+    --rail-bg:    #1b2432;
+
+    --core-fg:    #6fb98f;  --core-bg:  #14301f;
+    --site-fg:    #93bcf5;  --site-bg:  #16243a;
+    --later-fg:   #a2abb8;  --later-bg: #23272e;
+    --chain-fg:   #f0c06a;  --chain-bg: #322613;
+    --new-fg:     #f39cc6;  --new-bg:   #34182a;
+
+    --code-ink:   #dfe4ec;
+    --code-bg:    #0f1216;
+    --thead-bg:   #262b33;
+    --thead-fg:   #eef1f5;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead h1 {
+    margin: 0;
+    font-size: clamp(2rem, 4.4vw, 2.9rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .masthead .lede {
+    margin: 14px 0 0;
+    max-width: var(--measure);
+    color: var(--ink-soft);
+  }
+  .masthead .lede em { color: var(--ink-faint); }
+  .masthead .bar {
+    height: 4px;
+    background: var(--ink);
+    margin: 26px 0 0;
+  }
+  .revision {
+    margin: 18px 0 0;
+    padding: 12px 16px;
+    background: var(--new-bg);
+    border-left: 3px solid var(--new-fg);
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    max-width: var(--measure);
+  }
+  .revision strong { color: var(--ink); }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 52px; }
+
+  h2 {
+    margin: 0 0 22px;
+    padding: 11px 0 11px 16px;
+    background: var(--rail-bg);
+    border-left: 4px solid var(--rail);
+    font-size: 1.24rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    margin: 34px 0 12px;
+    font-size: 1.03rem;
+    font-weight: 700;
+  }
+  h3 code { font-size: 0.94em; }
+
+  h4 {
+    margin: 26px 0 10px;
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+
+  p { max-width: var(--measure); margin: 0 0 14px; }
+  ul, ol { max-width: var(--measure); padding-left: 22px; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--ink-faint); }
+
+  a { color: var(--rail); }
+
+  /* ---------- code ---------- */
+  code {
+    font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+    font-size: 0.855em;
+    background: var(--ground-alt);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1px 5px;
+    white-space: nowrap;
+  }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 6px;
+    padding: 22px 24px;
+    overflow-x: auto;
+    margin: 0;
+  }
+  pre code {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: 0.82rem;
+    line-height: 1.62;
+    color: inherit;
+    white-space: pre;
+  }
+  pre .grp { color: #8a93a2; }
+
+  /* ---------- badges ---------- */
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .core  { background: var(--core-bg);  color: var(--core-fg); }
+  .site  { background: var(--site-bg);  color: var(--site-fg); }
+  .later { background: var(--later-bg); color: var(--later-fg); }
+  .chain { background: var(--chain-bg); color: var(--chain-fg); }
+  .newly { background: var(--new-bg);   color: var(--new-fg); }
+
+  /* ---------- tables ---------- */
+  .scroller { overflow-x: auto; margin: 0 0 18px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    min-width: 620px;
+  }
+  thead th {
+    background: var(--thead-bg);
+    color: var(--thead-fg);
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.74rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 9px 13px;
+    white-space: nowrap;
+  }
+  thead th:first-child {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.76rem;
+  }
+  tbody td {
+    padding: 11px 13px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--ground-alt); }
+  td.path code { white-space: nowrap; }
+  td.tags { white-space: nowrap; }
+  td.tags .tag + .tag { margin-top: 4px; }
+
+  .cannot {
+    max-width: var(--measure);
+    margin: 16px 0 0;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+
+  /* ---------- callout ---------- */
+  .note {
+    max-width: var(--measure);
+    margin: 18px 0;
+    padding: 14px 18px;
+    background: var(--ground-alt);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rail);
+    border-radius: 0 4px 4px 0;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+  .note strong { color: var(--ink); }
+  .note :last-child { margin-bottom: 0; }
+
+  .thresholds {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(196px, 1fr));
+    max-width: var(--measure);
+    margin: 18px 0 22px;
+    padding: 0;
+    list-style: none;
+  }
+  .thresholds li {
+    margin: 0;
+    padding: 13px 15px;
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--rail);
+    border-radius: 0 0 4px 4px;
+    background: var(--ground-alt);
+  }
+  .thresholds .band {
+    display: block;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.16rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .thresholds .what {
+    display: block;
+    margin-top: 3px;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .thresholds .who {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.83rem;
+    color: var(--ink-soft);
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-faint);
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 36px 18px 64px; }
+  }
+
+  @media print {
+    .page { max-width: none; padding: 0; }
+    pre, .scroller { break-inside: avoid; }
+    h2 { break-after: avoid; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <h1>SOFICLEF Onboarding Platform — Website &amp; API Route Guide</h1>
+    <p class="lede">
+      Every page, every path, every piece of functionality behind them.<br>
+      <em>Reconciled against the full role-by-role route spec (shared shell, provisioning chain, and the
+      four role portals) and kept in the same route-by-route format as your TRUST guide. Every route below
+      traces back to that spec.</em>
+    </p>
+    <div class="bar"></div>
+    <p class="revision">
+      <strong>Revision 2.</strong> Adds the trial-period validation chain (§2.3, §2.5, §3, §4) and
+      department-targeted document publishing (§2.3, §3). Everything new carries a
+      <span class="tag newly">New</span> badge so this revision can be read as a diff against the first.
+    </p>
+  </header>
+
+  <!-- ============================== 0 ============================== -->
+  <section>
+    <h2>0. How to read this document</h2>
+
+    <p>Every route below is tagged:</p>
+    <ul>
+      <li><span class="tag core">Core</span> — the actual product: the provisioning chain, the parcours
+        engine, and the five AI agents talking to real (or mock) data. Needed for any working demo to
+        Mostapha / Djaoudi. Build these first.</li>
+      <li><span class="tag site">Site</span> — needed so the platform looks and feels like a finished tool
+        when someone clicks around, but isn't part of the core "agents + parcours" story.</li>
+      <li><span class="tag later">Later</span> — real production scope, correctly out of scope until
+        SOFICLEF opens the access it depends on.</li>
+      <li><span class="tag newly">New</span> — added in revision 2; see the note at the top.</li>
+    </ul>
+
+    <p>
+      A <span class="tag chain">Chain</span> badge next to a route means it's built and fully working
+      <em>now</em> on mock data or on content pulled from SOFICLEF's public website — and is a chaining
+      point later: per the CDC's Plug &amp; Play clause, going live means pointing that one route at the
+      real data source, not rebuilding it. No route carrying that badge needs new code written when the
+      real data shows up, only its adapter re-pointed (see Section 5).
+    </p>
+
+    <p>
+      Suggested stack, matching what the CDC specifies: <strong>React / Next.js</strong> with Tailwind or
+      Bootstrap for every page below, <strong>Node.js or ASP.NET Core</strong> for the routes in Section 3,
+      <strong>Azure OpenAI / Copilot Studio / Azure AI Foundry</strong> behind the agent routes in
+      Section 4, and <strong>Microsoft Entra ID / Active Directory</strong> for auth once it's wired in.
+    </p>
+
+    <h3>0.1 Shared authenticated shell</h3>
+    <p>
+      All four roles sit inside the same shell: a top bar with global search, a notification bell (delays,
+      pending tasks, surveys), a language switcher (FR/EN/AR), and a profile menu with a role switcher. The
+      left sidebar changes per role. A persistent AI chat drawer is docked bottom-right — which of the five
+      agents answers there depends on the active role.
+    </p>
+    <p>Three routes are truly shared, not role-scoped — they render the same shell chrome no matter who's logged in:</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Path</th><th>Tag</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>/app/profile</code></td><td class="tags"><span class="tag site">Site</span></td><td>Personal account settings, plus the role switcher for anyone holding more than one role</td></tr>
+          <tr><td class="path"><code>/app/notifications</code></td><td class="tags"><span class="tag site">Site</span></td><td>Delays, pending tasks, survey reminders — feeds the top-bar bell</td></tr>
+          <tr><td class="path"><code>/app/help</code></td><td class="tags"><span class="tag site">Site</span></td><td>Contextual help</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      Org chart and documents are conceptually "every role has one," but the content and permissions differ
+      enough per role that each gets its own page instead — see <code>/app/me/organigram</code> vs.
+      <code>/app/hr/organigram</code>, and <code>/app/me/documents</code> vs.
+      <code>/app/hr/documents</code>, in Section 2.
+    </p>
+
+    <h3>0.2 The provisioning chain</h3>
+    <p>
+      This is the backbone of the whole platform — worth stating before any page list, because it decides
+      what every other route is allowed to show.
+    </p>
+    <ol>
+      <li><strong>SI / Admin</strong> creates the account in Entra ID / AD — sets professional email, phone,
+        platform role → account state <strong>CREATED — AWAITING ASSIGNMENT</strong></li>
+      <li><strong>HR</strong> assigns position, division/department, direct manager, hire date, onboarding
+        template, and equipment → account state <strong>ASSIGNED</strong>, the path is generated and the org
+        node is placed</li>
+      <li><strong>New hire</strong> logs in for the first time → welcome wizard → their own dashboard and
+        org chart</li>
+    </ol>
+
+    <p>Three consequences to build around, all <span class="tag core">Core</span>:</p>
+    <ul>
+      <li><strong>No path exists before HR assignment.</strong> A user who logs in while still at state 1
+        lands on <code>/pending</code> — a message and a contact link to HR, nothing else. No sidebar, no
+        documents, no assistant.</li>
+      <li><strong>HR can request, not create.</strong> HR's "Request an account" button opens a ticket to SI
+        (name, position, planned hire date). HR keeps the initiative on hiring without ever holding
+        account-creation permission — the exact separation the CDC's security section asks for.</li>
+      <li><strong>Reassignment is HR's, permanently.</strong> Changing position, manager, or department after
+        onboarding is an HR action that moves the org-chart node and may adjust the remaining path. SI never
+        touches it.</li>
+    </ul>
+
+    <h3>0.3 The evaluation chain <span class="tag newly">New</span></h3>
+    <p>
+      The trial period has its own chain, and it is deliberately separate from the provisioning one. It
+      answers a different question — not "may this account be used" but "does this person stay".
+    </p>
+    <ol>
+      <li><strong>The responsable evaluates.</strong> Whoever has people under them evaluates the ones under
+        them: the subject's <code>managerId</code> is the evaluator, not a role held in the abstract. They
+        score four criteria (skills, autonomy, integration, behaviour) from 1 to 5 and submit.</li>
+      <li><strong>The platform computes, and only suggests.</strong> The four scores give a percentage out
+        of 20, which maps to a suggested outcome by the thresholds in §2.5.</li>
+      <li><strong>HR decides.</strong> HR sees the result — score, percentage, suggestion, and the
+        responsable's own recommendation — and applies an outcome. HR may depart from the suggestion, and
+        must give a reason when they do.</li>
+    </ol>
+
+    <div class="note">
+      <p><strong>Why HR confirms rather than the system deciding.</strong> Ending someone's employment must
+      not be an automatic side-effect of arithmetic. The percentage is evidence a human acts on, and the
+      decision — including any departure from the suggestion — is recorded with its author and its reason.
+      A score alone has never been a dismissal.</p>
+    </div>
+  </section>
+
+  <!-- ============================== 1 ============================== -->
+  <section>
+    <h2>1. Site map, at a glance</h2>
+    <pre><code>/login
+/pending                                <span class="grp">landing page before HR assignment — no sidebar, no assistant</span>
+
+<span class="grp">Shared shell</span>
+/app/profile
+/app/notifications
+/app/help
+
+<span class="grp">New Hire — /app/me</span>
+/app/me
+/app/me/journey
+/app/me/journey/[taskId]
+/app/me/organigram
+/app/me/documents
+/app/me/files
+/app/me/training
+/app/me/training/[moduleId]
+/app/me/training/certificates
+/app/me/surveys
+/app/me/assistant
+/app/me/position
+/app/me/team
+
+<span class="grp">Manager — /app/manager  (plus everything under /app/me)</span>
+/app/manager
+/app/manager/recruits
+/app/manager/recruits/[id]
+/app/manager/recruits/[id]/tasks/new
+/app/manager/organigram
+/app/manager/evaluations
+/app/manager/evaluations/[id]
+/app/manager/interviews/[id]
+/app/manager/team
+/app/manager/reports
+/app/manager/assistant
+
+<span class="grp">HR — /app/hr</span>
+/app/hr
+/app/hr/employees/unassigned
+/app/hr/employees/[id]/assign
+/app/hr/employees/request
+/app/hr/employees
+/app/hr/employees/[id]
+/app/hr/organigram
+/app/hr/positions
+/app/hr/probation                       <span class="grp">← new in revision 2</span>
+/app/hr/templates
+/app/hr/templates/[id]
+/app/hr/documents
+/app/hr/training
+/app/hr/training/[id]/quiz
+/app/hr/surveys
+/app/hr/surveys/results
+/app/hr/analytics
+/app/hr/analytics/reports
+/app/hr/alerts
+/app/hr/ai-knowledge
+
+<span class="grp">SI / Administrator — /admin</span>
+/admin
+/admin/users
+/admin/users/provisioning
+/admin/roles
+/admin/organization
+/admin/integrations
+/admin/ai
+/admin/audit
+/admin/security
+/admin/backups
+/admin/gdpr
+/admin/settings</code></pre>
+  </section>
+
+  <!-- ============================== 2 ============================== -->
+  <section>
+    <h2>2. Frontend routes, by role</h2>
+
+    <h3>2.1 New Hire — <code>/app/me</code></h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Route</th><th>Tag</th><th>Page</th><th>Functionality</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>/app/me</code></td><td class="tags"><span class="tag core">Core</span></td><td>Dashboard</td><td>Progress ring (% path completed), next 3 tasks with deadlines, countdown to D-Day, current phase badge (pre-onboarding / day one / probation), quick links to manager and HR contact</td></tr>
+          <tr><td class="path"><code>/app/me/journey</code></td><td class="tags"><span class="tag core">Core</span></td><td>My Path</td><td>Roadmap grouped by phase; open a task, read instructions, upload a required document, mark as done, request help; blocked tasks show the responsible department</td></tr>
+          <tr><td class="path"><code>/app/me/journey/[taskId]</code></td><td class="tags"><span class="tag core">Core</span></td><td>Task detail</td><td>Description, owner, due date, attachments, e-signature (contract), status history, comment thread</td></tr>
+          <tr><td class="path"><code>/app/me/organigram</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag core">Core</span></td><td>My Org Chart</td><td>Tree centred on himself — upward to the division head, downward to direct reports if any, sideways to peers; cards show photo, name, position, department, email, extension; click a card for a read-only position sheet</td></tr>
+          <tr><td class="path"><code>/app/me/documents</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag site">Site</span></td><td>My Documents</td><td>Welcome guide, internal regulations, HR/quality procedures, IT charter; PDF/Word/PPT/video viewer; "read and accepted" acknowledgment with timestamp. <strong>Shows only documents targeted at this person's department, or published to all staff</strong> <span class="tag newly">New</span></td></tr>
+          <tr><td class="path"><code>/app/me/files</code></td><td class="tags"><span class="tag core">Core</span></td><td>My Files</td><td>Personal admin documents to submit (ID, diplomas, bank details, medical certificate) — upload, see HR validation status</td></tr>
+          <tr><td class="path"><code>/app/me/training</code></td><td class="tags"><span class="tag core">Core</span></td><td>Training</td><td>Mandatory + optional micro-learning (HSE, Quality, Internal regs, HR policy, IT security), progress per module</td></tr>
+          <tr><td class="path"><code>/app/me/training/[moduleId]</code></td><td class="tags"><span class="tag core">Core</span></td><td>Module player</td><td>Lesson content, auto-generated quiz, score, retry, certificate on pass</td></tr>
+          <tr><td class="path"><code>/app/me/training/certificates</code></td><td class="tags"><span class="tag site">Site</span></td><td>My Certificates</td><td>Downloadable certificates, issue dates</td></tr>
+          <tr><td class="path"><code>/app/me/surveys</code></td><td class="tags"><span class="tag site">Site</span></td><td>Surveys</td><td>Pending and completed surveys (D+07, D+30, D+60, D+90), answer form, confirmation</td></tr>
+          <tr><td class="path"><code>/app/me/assistant</code></td><td class="tags"><span class="tag core">Core</span></td><td>AI Assistant</td><td>Agent 1 (Welcome Assistant) with source-cited answers; Agent 2 (HR Coach) launches the D+15 check-in here</td></tr>
+          <tr><td class="path"><code>/app/me/position</code></td><td class="tags"><span class="tag site">Site</span></td><td>My Position</td><td>Job description: title, mission, reporting line, required skills, assigned equipment; embedded org-chart snippet</td></tr>
+          <tr><td class="path"><code>/app/me/team</code></td><td class="tags"><span class="tag site">Site</span></td><td>My Team</td><td>Manager card, peers, key contacts (HR, IT, HSE, Quality)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cannot">
+      Cannot do: see other employees' paths, evaluations, or KPIs; browse the org chart beyond his
+      configured depth; any HR or SI configuration. <strong>Never sees his own trial-period score or
+      outcome from this portal</strong> — that conversation belongs to his responsable and HR, not to a
+      dashboard tile. <span class="tag newly">New</span>
+    </p>
+
+    <h3>2.2 Manager — <code>/app/manager</code> <span style="font-weight:400">(plus everything in <code>/app/me</code>, since a manager is also an employee)</span></h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Route</th><th>Tag</th><th>Page</th><th>Functionality</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>/app/manager</code></td><td class="tags"><span class="tag core">Core</span></td><td>Dashboard</td><td>Card per recruit with % progress and status colour; alert panel (overdue tasks, blockages, upcoming D+30/D+90 interviews); own pending managerial tasks</td></tr>
+          <tr><td class="path"><code>/app/manager/recruits</code></td><td class="tags"><span class="tag core">Core</span></td><td>My Recruits</td><td>Table of onboarding employees (current + archived), filters by status/date/department. <strong>Scoped to the people who report to him</strong> <span class="tag newly">New</span></td></tr>
+          <tr><td class="path"><code>/app/manager/recruits/[id]</code></td><td class="tags"><span class="tag core">Core</span></td><td>Recruit detail</td><td>Tabs: Overview · Path · Tasks · Training results · Survey feedback · Evaluations · Documents; validate a task, comment, flag a blockage</td></tr>
+          <tr><td class="path"><code>/app/manager/recruits/[id]/tasks/new</code></td><td class="tags"><span class="tag site">Site</span></td><td>Assign task</td><td>Ad-hoc task: title, description, due date, owner, attachment</td></tr>
+          <tr><td class="path"><code>/app/manager/organigram</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag core">Core</span></td><td>My Org Chart</td><td>Same upward view as a new hire, plus full expansion of his entire sub-tree (N-1, N-2, …); onboarding badge with % progress on anyone currently in a path; vacant positions in his scope shown as empty nodes</td></tr>
+          <tr><td class="path"><code>/app/manager/evaluations</code></td><td class="tags"><span class="tag site">Site</span></td><td>Evaluations</td><td>Due and completed evaluations (D+30, D+90, end of probation)</td></tr>
+          <tr><td class="path"><code>/app/manager/evaluations/[id]</code></td><td class="tags"><span class="tag site">Site</span></td><td>Evaluation form</td><td>Scoring grid (skills, autonomy, integration, behaviour), comments, recommendation (validate / extend / terminate), submit to HR. <strong>Only the subject's own responsable may submit this</strong> <span class="tag newly">New</span></td></tr>
+          <tr><td class="path"><code>/app/manager/interviews/[id]</code></td><td class="tags"><span class="tag core">Core</span></td><td>Interview prep</td><td>Agent 4 generates a discussion canvas from progress, quiz scores and survey answers; editable, printable</td></tr>
+          <tr><td class="path"><code>/app/manager/team</code></td><td class="tags"><span class="tag site">Site</span></td><td>Team</td><td>His org unit: members, job descriptions, vacant positions</td></tr>
+          <tr><td class="path"><code>/app/manager/reports</code></td><td class="tags"><span class="tag site">Site</span></td><td>Reports</td><td>KPIs scoped to his tree: average onboarding time, completion rate, satisfaction of his recruits</td></tr>
+          <tr><td class="path"><code>/app/manager/assistant</code></td><td class="tags"><span class="tag core">Core</span></td><td>AI Assistant</td><td>Agent 4: reminders, "what's blocking X?", drafting feedback, procedure lookups</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cannot">
+      Cannot do: create accounts, modify path templates, see other managers' sub-trees, access user
+      administration. <strong>Cannot apply a trial-period outcome</strong> — he recommends, HR decides.
+      <span class="tag newly">New</span>
+    </p>
+
+    <h3>2.3 HR — <code>/app/hr</code></h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Route</th><th>Tag</th><th>Page</th><th>Functionality</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>/app/hr</code></td><td class="tags"><span class="tag core">Core</span></td><td>Dashboard</td><td>Counters (recruitments this month, onboardings in progress / completed / late), completion gauge, satisfaction score, alert feed, pending assignments badge. <strong>Plus a "trial periods to validate" tile linking to <code>/app/hr/probation</code></strong> <span class="tag newly">New</span></td></tr>
+          <tr><td class="path"><code>/app/hr/employees/unassigned</code></td><td class="tags"><span class="tag core">Core</span></td><td>Unassigned queue</td><td>SI-created accounts awaiting assignment, sorted by age of request so nobody sits in limbo</td></tr>
+          <tr><td class="path"><code>/app/hr/employees/[id]/assign</code></td><td class="tags"><span class="tag core">Core</span></td><td>Assignment form</td><td>Pick position (from the job description library), division/department, direct manager, hire date, onboarding template, assigned equipment; confirm → path generated, welcome email sent, org node placed. <strong>The direct manager chosen here becomes the responsable who will evaluate this person</strong> <span class="tag newly">New</span></td></tr>
+          <tr><td class="path"><code>/app/hr/employees/request</code></td><td class="tags"><span class="tag core">Core</span></td><td>Request account</td><td>Opens an SI ticket: candidate name, planned position, planned hire date, urgency</td></tr>
+          <tr><td class="path"><code>/app/hr/employees</code></td><td class="tags"><span class="tag core">Core</span></td><td>Employees</td><td>Full directory; search, filter by division/department/manager/status; export</td></tr>
+          <tr><td class="path"><code>/app/hr/employees/[id]</code></td><td class="tags"><span class="tag core">Core</span></td><td>Employee detail</td><td>Full record, path, documents, training, surveys, evaluations; reassign position/manager/department; restart or adjust path; archive</td></tr>
+          <tr><td class="path"><code>/app/hr/organigram</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag core">Core</span></td><td>Org chart</td><td>Whole company, expandable from any node; filters by division/manager; vacant positions highlighted; anomaly view (no manager, no holder, orphan nodes); drag a person to a different node (= reassignment, with confirmation)</td></tr>
+          <tr><td class="path"><code>/app/hr/positions</code></td><td class="tags"><span class="tag core">Core</span></td><td>Job descriptions</td><td>CRUD on job descriptions (title, mission, reporting line, required skills, assigned equipment); each one is a node in the org tree; links to a default path template</td></tr>
+          <tr><td class="path"><code>/app/hr/probation</code></td><td class="tags"><span class="tag core">Core</span> <span class="tag newly">New</span></td><td>Trial-period validation</td><td>The review queue: every recruit whose responsable has submitted an evaluation. HR sees the four scores, the computed percentage, the suggested outcome and the responsable's own recommendation — <strong>not the evaluation form</strong>. Applies confirm / extend / terminate; a departure from the suggestion requires a reason. Decision history per recruit. See §2.5.</td></tr>
+          <tr><td class="path"><code>/app/hr/templates</code></td><td class="tags"><span class="tag core">Core</span></td><td>Path templates</td><td>Library of onboarding paths by profile (executive, technician, operator…)</td></tr>
+          <tr><td class="path"><code>/app/hr/templates/[id]</code></td><td class="tags"><span class="tag core">Core</span></td><td>Template builder</td><td>Drag-and-drop task sequence: name, owner department (HR/IT/HSE/Quality/Manager), offset (D-7, D0, D+15…), mandatory flag, required document, dependencies</td></tr>
+          <tr><td class="path"><code>/app/hr/documents</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag site">Site</span></td><td>Document library</td><td>Upload/version/categorize; track acknowledgments. <strong>Publishing targets an audience: all staff, or named departments — accepting a document makes it appear in every account in those departments.</strong> See §2.6. <span class="tag newly">New</span></td></tr>
+          <tr><td class="path"><code>/app/hr/training</code></td><td class="tags"><span class="tag site">Site</span></td><td>Training catalogue</td><td>Create micro-learning modules, upload content, set which are mandatory per profile</td></tr>
+          <tr><td class="path"><code>/app/hr/training/[id]/quiz</code></td><td class="tags"><span class="tag site">Site</span></td><td>Quiz builder</td><td>Agent 3 generates questions from the module content, editable; pass threshold; certificate template</td></tr>
+          <tr><td class="path"><code>/app/hr/surveys</code></td><td class="tags"><span class="tag site">Site</span></td><td>Surveys</td><td>Configure questionnaires and milestones (D+07/30/60/90), channels, reminder rules</td></tr>
+          <tr><td class="path"><code>/app/hr/surveys/results</code></td><td class="tags"><span class="tag site">Site</span></td><td>Survey results</td><td>Scores per indicator (welcome quality, support, role understanding, manager relationship, ergonomics); filters by division/manager/period; individual responses</td></tr>
+          <tr><td class="path"><code>/app/hr/analytics</code></td><td class="tags"><span class="tag core">Core</span></td><td>KPI &amp; Reporting</td><td>All Module 10 indicators; filters by division and individual manager; period comparison; 6-month turnover</td></tr>
+          <tr><td class="path"><code>/app/hr/analytics/reports</code></td><td class="tags"><span class="tag later">Later</span></td><td>Report builder</td><td>Ask Agent 5 in natural language, get chart + narrative; export PDF/Excel; schedule recurring reports</td></tr>
+          <tr><td class="path"><code>/app/hr/alerts</code></td><td class="tags"><span class="tag site">Site</span></td><td>Alerts &amp; reminders</td><td>Rules engine: who gets reminded, after how long, escalation path</td></tr>
+          <tr><td class="path"><code>/app/hr/ai-knowledge</code></td><td class="tags"><span class="tag core">Core</span></td><td>AI knowledge base</td><td>Which documents feed each agent, re-index, test a question, review flagged answers</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cannot">
+      Cannot do: create or delete accounts, assign platform roles, configure integrations, change the
+      structural skeleton of the org chart (adding a whole new division is Admin). <strong>Cannot score an
+      evaluation</strong> — HR applies the outcome but never fills the responsable's grid.
+      <span class="tag newly">New</span>
+    </p>
+
+    <h3>2.4 SI / Administrator — <code>/admin</code></h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Route</th><th>Tag</th><th>Page</th><th>Functionality</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>/admin</code></td><td class="tags"><span class="tag site">Site</span></td><td>Console</td><td>System health, active sessions, connector status, error rate, storage</td></tr>
+          <tr><td class="path"><code>/admin/users</code></td><td class="tags"><span class="tag core">Core</span></td><td>Users</td><td>Create accounts (manual, Entra ID sync, or bulk import), professional email, phone, platform role, deactivate, reset access, link Entra identity</td></tr>
+          <tr><td class="path"><code>/admin/users/provisioning</code></td><td class="tags"><span class="tag core">Core</span></td><td>Provisioning queue</td><td>Account requests from HR waiting to be created, plus created-but-unassigned accounts with their age — the two-sided view of the handoff</td></tr>
+          <tr><td class="path"><code>/admin/roles</code></td><td class="tags"><span class="tag later">Later</span></td><td>Roles &amp; permissions</td><td>RBAC matrix: role × module × action (read / write / validate / delete); custom roles</td></tr>
+          <tr><td class="path"><code>/admin/organization</code></td><td class="tags"><span class="tag core">Core</span></td><td>Organization</td><td>Structural editing of the tree: divisions, departments, sites, create/move/merge position nodes, set <code>parent_position_id</code> — defines the skeleton HR fills</td></tr>
+          <tr><td class="path"><code>/admin/integrations</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag later">Later</span></td><td>Integrations</td><td>Entra ID / AD, HR API connectors, shared directories, SMTP; per-connector Mock ↔ Production toggle with test-connection — this is the literal Plug &amp; Play switch</td></tr>
+          <tr><td class="path"><code>/admin/ai</code></td><td class="tags"><span class="tag core">Core</span></td><td>AI configuration</td><td>Azure OpenAI / Copilot Studio / AI Foundry endpoints, model selection, quotas, per-agent enable/disable, prompt templates</td></tr>
+          <tr><td class="path"><code>/admin/audit</code></td><td class="tags"><span class="tag later">Later</span></td><td>Audit log</td><td>Full connection and action logging; filter by user/date/action; export. <strong>Every trial-period decision lands here, with its author and reason</strong> <span class="tag newly">New</span></td></tr>
+          <tr><td class="path"><code>/admin/security</code></td><td class="tags"><span class="tag later">Later</span></td><td>Security</td><td>Password/MFA policy, session duration, encryption status, IP restrictions</td></tr>
+          <tr><td class="path"><code>/admin/backups</code></td><td class="tags"><span class="tag later">Later</span></td><td>Backups</td><td>Schedule, history, restore, retention</td></tr>
+          <tr><td class="path"><code>/admin/gdpr</code></td><td class="tags"><span class="tag later">Later</span></td><td>GDPR</td><td>Consent register, retention rules, erasure and export requests</td></tr>
+          <tr><td class="path"><code>/admin/settings</code></td><td class="tags"><span class="tag site">Site</span></td><td>Settings</td><td>Branding, languages, email templates, milestone definitions, org chart visibility depth per role, feature flags</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ---------------- 2.5 ---------------- -->
+    <h3>2.5 Trial-period validation, end to end <span class="tag newly">New</span></h3>
+    <p>
+      Three actors, one direction of travel, and no step that can be skipped. Every stage is separately
+      authorised, so no single person can both score and decide.
+    </p>
+
+    <h4>Who evaluates whom</h4>
+    <p>
+      The rule is structural, not a role check: <strong>whoever has people under them evaluates the ones
+      under them.</strong> The subject's <code>managerId</code> names the responsable, and the platform
+      refuses an evaluation submitted by anyone who is neither that person nor covered by the same
+      organizational scope. A manager with nobody under them evaluates nobody. Reassigning someone to a new
+      manager moves the obligation with them — it is the same field the org chart reads.
+    </p>
+
+    <h4>The scoring</h4>
+    <p>
+      Four criteria — skills, autonomy, integration, behaviour — each rated 1 to 5, giving a total out of
+      20. The percentage is <code>total / 20 × 100</code>, and it is recomputed on the server at decision
+      time; a score arriving from a client is never trusted.
+    </p>
+
+    <ul class="thresholds">
+      <li><span class="band">&gt; 60 %</span><span class="what">Confirm</span><span class="who">The trial period ends successfully; the collaborator is confirmed in post.</span></li>
+      <li><span class="band">30 – 60 %</span><span class="what">Extend</span><span class="who">The trial period is prolonged; a further evaluation follows at the new end date.</span></li>
+      <li><span class="band">&lt; 30 %</span><span class="what">Terminate</span><span class="who">The trial period ends without confirmation. Never applied without an explicit HR action.</span></li>
+    </ul>
+
+    <div class="note">
+      <p><strong>The boundaries, stated once.</strong> Above 60 confirms. From 30 to 60 inclusive extends.
+      Below 30 terminates. The bands are exposed by the API as a constant so the interface and the server
+      never drift into disagreeing about a borderline case.</p>
+    </div>
+
+    <h4>What each actor sees</h4>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Actor</th><th>Sees</th><th>Can do</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Responsable</strong><br><span style="color:var(--ink-faint);font-size:0.86rem">the subject's manager</span></td><td>The evaluation form for people who report to him; his own past submissions</td><td>Score the four criteria, comment, recommend an outcome, submit. Cannot apply the outcome.</td></tr>
+          <tr><td><strong>HR</strong></td><td>The result only — scores, percentage, suggestion, and the responsable's recommendation. Not the form.</td><td>Apply confirm / extend / terminate. Depart from the suggestion, with a recorded reason.</td></tr>
+          <tr><td><strong>The collaborator</strong></td><td>Nothing, in this portal</td><td>Nothing. The outcome reaches them through their responsable and HR, not a dashboard tile.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Rules the implementation enforces</h4>
+    <ul>
+      <li>A decision is refused if the instance already carries a non-<code>ONGOING</code> outcome — the
+        trial period is decided once, and a change of mind is a new, separately audited act.</li>
+      <li><code>reasonFr</code> is <strong>required</strong> whenever the applied outcome differs from the
+        suggested one. Agreeing with the arithmetic needs no justification; overriding it does.</li>
+      <li>The percentage and the suggestion are recomputed server-side from the stored scores at the moment
+        of decision.</li>
+      <li>Every decision writes a <code>ProbationDecision</code> row — score, suggestion, applied outcome,
+        reason, author, timestamp — and an audit entry. The history is readable per recruit.</li>
+    </ul>
+
+    <!-- ---------------- 2.6 ---------------- -->
+    <h3>2.6 Document publishing and audience <span class="tag newly">New</span></h3>
+    <p>
+      Until this revision every document in the library was visible to everyone who could read documents.
+      Publishing now carries an audience.
+    </p>
+    <ul>
+      <li><strong>All staff</strong> — the previous behaviour, still the default.</li>
+      <li><strong>Named departments</strong> — the document appears only in the accounts of people in those
+        departments, matched against the person's division or service. Accepting a document for the HR
+        department publishes it to every HR account, which is the case that prompted this.</li>
+    </ul>
+    <p>
+      HR and Admin always see every document regardless of audience: you cannot manage a library whose
+      contents are hidden from you. The audience narrows who <em>receives</em> a document, not who
+      administers it.
+    </p>
+    <div class="note">
+      <p><strong>Audience is not access control.</strong> It decides which library a person's
+      <code>/app/me/documents</code> shows, and it is enforced in the query rather than in the interface.
+      It is not a confidentiality boundary for material that must not leave a department — that would need
+      a classification on the document and a rule at the storage layer, neither of which exists today.</p>
+    </div>
+  </section>
+
+  <!-- ============================== 3 ============================== -->
+  <section>
+    <h2>3. Backend API — the routes your frontend actually calls</h2>
+
+    <h4>Auth &amp; provisioning</h4>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Method &amp; Path</th><th>Tag</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>POST /v1/auth/login</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag core">Core</span></td><td>Session/token issuance; mock login now, chained to Entra ID/AD SSO later</td></tr>
+          <tr><td class="path"><code>GET /v1/auth/session</code></td><td class="tags"><span class="tag core">Core</span></td><td>Current user, role, account state</td></tr>
+          <tr><td class="path"><code>POST /v1/admin/users</code></td><td class="tags"><span class="tag core">Core</span></td><td>SI creates an account → state CREATED</td></tr>
+          <tr><td class="path"><code>GET /v1/admin/users/provisioning</code></td><td class="tags"><span class="tag core">Core</span></td><td>Backs the two-sided provisioning queue</td></tr>
+          <tr><td class="path"><code>POST /v1/hr/account-requests</code></td><td class="tags"><span class="tag core">Core</span></td><td>HR → SI ticket ("Request an account")</td></tr>
+          <tr><td class="path"><code>POST /v1/employees/{id}/assign</code></td><td class="tags"><span class="tag core">Core</span></td><td>HR assignment action → state ASSIGNED, generates the path, places the org node, sets the responsable</td></tr>
+          <tr><td class="path"><code>PATCH /v1/employees/{id}/reassign</code></td><td class="tags"><span class="tag core">Core</span></td><td>HR-only move of position/manager/department after onboarding</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Employees, journey &amp; org chart</h4>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Method &amp; Path</th><th>Tag</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>GET /v1/employees</code></td><td class="tags"><span class="tag core">Core</span></td><td>Directory, search/filter/export</td></tr>
+          <tr><td class="path"><code>GET /v1/employees/{id}</code></td><td class="tags"><span class="tag core">Core</span></td><td>Full record, including the responsable</td></tr>
+          <tr><td class="path"><code>GET /v1/employees/{id}/journey</code></td><td class="tags"><span class="tag core">Core</span></td><td>A collaborator's roadmap + status</td></tr>
+          <tr><td class="path"><code>PATCH /v1/tasks/{id}</code></td><td class="tags"><span class="tag core">Core</span></td><td>Mark done, comment, attach proof</td></tr>
+          <tr><td class="path"><code>POST /v1/employees/{id}/journey/tasks</code></td><td class="tags"><span class="tag site">Site</span></td><td>Manager's ad-hoc task</td></tr>
+          <tr><td class="path"><code>POST /v1/employees/{id}/files</code></td><td class="tags"><span class="tag core">Core</span></td><td>Personal admin-document upload</td></tr>
+          <tr><td class="path"><code>PATCH /v1/employees/{id}/files/{fileId}</code></td><td class="tags"><span class="tag core">Core</span></td><td>HR validates a submitted file</td></tr>
+          <tr><td class="path"><code>GET /v1/organigram</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag core">Core</span></td><td>Scoped tree query (self-centered / sub-tree / whole company, by role)</td></tr>
+          <tr><td class="path"><code>PATCH /v1/organigram/nodes/{id}</code></td><td class="tags"><span class="tag core">Core</span></td><td>HR drag-and-drop reassignment</td></tr>
+          <tr><td class="path"><code>POST /v1/admin/organization/nodes</code></td><td class="tags"><span class="tag core">Core</span></td><td>Admin structural CRUD — divisions, departments, position nodes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Trial period <span class="tag newly">New</span></h4>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Method &amp; Path</th><th>Tag</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>GET /v1/probation/queue</code></td><td class="tags"><span class="tag core">Core</span></td><td>HR's review queue: every instance with a submitted evaluation and an outcome still <code>ONGOING</code> — subject, responsable, four scores, computed percentage, suggested outcome, the responsable's recommendation</td></tr>
+          <tr><td class="path"><code>POST /v1/probation/decide</code></td><td class="tags"><span class="tag core">Core</span></td><td>Applies confirm / extend / terminate. Recomputes the percentage server-side; requires a reason when the decision departs from the suggestion; refuses an instance already decided; writes the decision row and the audit entry</td></tr>
+          <tr><td class="path"><code>GET /v1/probation/decisions?instanceId=</code></td><td class="tags"><span class="tag core">Core</span></td><td>Decision history for one recruit — who decided, what, why, when</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Positions, templates &amp; training</h4>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Method &amp; Path</th><th>Tag</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>GET /v1/positions</code> · <code>POST /v1/positions</code></td><td class="tags"><span class="tag core">Core</span></td><td>Job description library</td></tr>
+          <tr><td class="path"><code>GET /v1/path-templates</code> · <code>POST /v1/path-templates</code></td><td class="tags"><span class="tag core">Core</span></td><td>Onboarding path library</td></tr>
+          <tr><td class="path"><code>GET /v1/path-templates/{id}</code> · <code>PATCH …</code></td><td class="tags"><span class="tag core">Core</span></td><td>Template builder</td></tr>
+          <tr><td class="path"><code>GET /v1/documents</code> / <code>{id}</code> / <code>download</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag site">Site</span></td><td>Document library read — <strong>filtered by the caller's department against the document's audience</strong> <span class="tag newly">New</span></td></tr>
+          <tr><td class="path"><code>POST /v1/documents</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag site">Site</span></td><td>HR upload/version a document</td></tr>
+          <tr><td class="path"><code>POST /v1/documents/{id}/publish</code></td><td class="tags"><span class="tag site">Site</span> <span class="tag newly">New</span></td><td>Accept and publish: marks the document available and applies its audience (all staff, or named departments) in one audited action</td></tr>
+          <tr><td class="path"><code>GET /v1/documents/departments</code></td><td class="tags"><span class="tag site">Site</span> <span class="tag newly">New</span></td><td>The real department values available as publishing targets, so the audience picker is never free text</td></tr>
+          <tr><td class="path"><code>GET /v1/training/modules</code></td><td class="tags"><span class="tag core">Core</span></td><td>Course catalogue</td></tr>
+          <tr><td class="path"><code>POST /v1/training/modules</code></td><td class="tags"><span class="tag site">Site</span></td><td>HR creates a module</td></tr>
+          <tr><td class="path"><code>POST /v1/training/modules/{id}/quiz</code></td><td class="tags"><span class="tag site">Site</span></td><td>Agent 3 generates a quiz</td></tr>
+          <tr><td class="path"><code>POST /v1/employees/{id}/training/{moduleId}/attempt</code></td><td class="tags"><span class="tag core">Core</span></td><td>Score, retry, certificate issuance</td></tr>
+          <tr><td class="path"><code>GET /v1/employees/{id}/certificates</code></td><td class="tags"><span class="tag site">Site</span></td><td>Certificate list</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Surveys, evaluations &amp; reporting</h4>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Method &amp; Path</th><th>Tag</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>POST /v1/surveys/trigger</code></td><td class="tags"><span class="tag site">Site</span></td><td>Scheduled fire at D+07/30/60/90</td></tr>
+          <tr><td class="path"><code>GET</code> · <code>POST /v1/surveys/{id}/responses</code></td><td class="tags"><span class="tag site">Site</span></td><td>Response collection</td></tr>
+          <tr><td class="path"><code>GET /v1/surveys/results</code></td><td class="tags"><span class="tag site">Site</span></td><td>Aggregated results, filterable</td></tr>
+          <tr><td class="path"><code>GET /v1/evaluations</code> · <code>POST /v1/evaluations</code></td><td class="tags"><span class="tag site">Site</span></td><td>D+30/D+90/end-of-probation evaluations. <strong>Writable only by the subject's responsable</strong> <span class="tag newly">New</span></td></tr>
+          <tr><td class="path"><code>PATCH /v1/evaluations/{id}</code></td><td class="tags"><span class="tag site">Site</span></td><td>Submit to HR — this is what places the recruit in HR's probation queue</td></tr>
+          <tr><td class="path"><code>GET /v1/analytics/kpi</code></td><td class="tags"><span class="tag core">Core</span></td><td>Module 10 indicators</td></tr>
+          <tr><td class="path"><code>POST /v1/analytics/reports/query</code></td><td class="tags"><span class="tag later">Later</span></td><td>Agent 5 natural-language reporting</td></tr>
+          <tr><td class="path"><code>GET /v1/alerts/rules</code> · <code>POST …</code></td><td class="tags"><span class="tag site">Site</span></td><td>Reminder/escalation rules engine</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Agents</h4>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Method &amp; Path</th><th>Tag</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>POST /v1/agents/welcome-assistant/chat</code></td><td class="tags"><span class="tag core">Core</span></td><td>Agent 1</td></tr>
+          <tr><td class="path"><code>POST /v1/agents/hr-coach/check-in</code></td><td class="tags"><span class="tag core">Core</span></td><td>Agent 2 — auto-fires at D+15, manually triggerable for a demo</td></tr>
+          <tr><td class="path"><code>POST /v1/agents/trainer/quiz</code></td><td class="tags"><span class="tag site">Site</span></td><td>Agent 3</td></tr>
+          <tr><td class="path"><code>POST /v1/agents/manager-assistant/interview-prep</code></td><td class="tags"><span class="tag core">Core</span></td><td>Agent 4</td></tr>
+          <tr><td class="path"><code>POST /v1/agents/hr-analyst/query</code></td><td class="tags"><span class="tag later">Later</span></td><td>Agent 5 — backs <code>/app/hr/analytics/reports</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Admin configuration</h4>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Method &amp; Path</th><th>Tag</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>GET</code> · <code>PATCH /v1/admin/roles</code></td><td class="tags"><span class="tag later">Later</span></td><td>RBAC matrix</td></tr>
+          <tr><td class="path"><code>GET /v1/admin/integrations</code> · <code>PATCH …/{id}</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag later">Later</span></td><td>Connector config + Mock ↔ Production toggle</td></tr>
+          <tr><td class="path"><code>GET</code> · <code>PATCH /v1/admin/ai-config</code></td><td class="tags"><span class="tag core">Core</span></td><td>Agent endpoints, models, quotas, prompts</td></tr>
+          <tr><td class="path"><code>GET /v1/admin/audit</code></td><td class="tags"><span class="tag later">Later</span></td><td>Connection/action log, export</td></tr>
+          <tr><td class="path"><code>GET</code> · <code>PATCH /v1/admin/security</code></td><td class="tags"><span class="tag later">Later</span></td><td>Password/MFA/session policy</td></tr>
+          <tr><td class="path"><code>GET</code> · <code>POST /v1/admin/backups</code></td><td class="tags"><span class="tag later">Later</span></td><td>Schedule, restore, retention</td></tr>
+          <tr><td class="path"><code>GET</code> · <code>POST /v1/admin/gdpr</code></td><td class="tags"><span class="tag later">Later</span></td><td>Consent, retention, erasure/export</td></tr>
+          <tr><td class="path"><code>GET</code> · <code>PATCH /v1/admin/settings</code></td><td class="tags"><span class="tag site">Site</span></td><td>Branding, languages, milestones, feature flags</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================== 4 ============================== -->
+  <section>
+    <h2>4. Internal service layer — nothing outside your own backend calls these directly</h2>
+    <p>Keep these entirely off the public router; the routes in Sections 2–3 are the only doors in.</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Internal path</th><th>Tag</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="path"><code>internal/provisioning/state-machine</code></td><td class="tags"><span class="tag core">Core</span></td><td>Enforces CREATED → ASSIGNED; the one place "no path exists before HR assignment" is checked, so <code>/pending</code>, the unassigned queue, and path generation can't drift out of sync</td></tr>
+          <tr><td class="path"><code>internal/probation/thresholds</code></td><td class="tags"><span class="tag core">Core</span> <span class="tag newly">New</span></td><td>Pure, dependency-free: turns four scores into a percentage and a percentage into a suggested outcome. The 30 / 60 boundaries live here once, and both the API and the interface read them from here rather than restating them</td></tr>
+          <tr><td class="path"><code>internal/probation/decision</code></td><td class="tags"><span class="tag core">Core</span> <span class="tag newly">New</span></td><td>Applies an outcome in one transaction: recompute, require a reason on divergence, refuse an already-decided instance, write the decision row, move the instance's outcome, audit. The single place a trial period is ever resolved</td></tr>
+          <tr><td class="path"><code>internal/rbac/guard</code></td><td class="tags"><span class="tag core">Core</span></td><td>Single permission-check point (role × module × action) that every route above reads — this is where "HR can request but not create", "reassignment is HR's only" and "the responsable evaluates, HR decides" actually live</td></tr>
+          <tr><td class="path"><code>internal/documents/audience</code></td><td class="tags"><span class="tag core">Core</span> <span class="tag newly">New</span></td><td>Resolves a caller's department against a document's audience, and is applied in the query rather than after it — so a document a person isn't addressed by is never fetched, not merely hidden</td></tr>
+          <tr><td class="path"><code>internal/agents/router</code></td><td class="tags"><span class="tag core">Core</span></td><td>Dispatches to the right of the five agents by caller role + intent</td></tr>
+          <tr><td class="path"><code>internal/knowledge/retrieve</code></td><td class="tags"><span class="tag core">Core</span></td><td>RAG lookup against the guide d'accueil / FAQ / procedures corpus; must return which document it drew from</td></tr>
+          <tr><td class="path"><code>internal/knowledge/mock-corpus</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag core">Core</span></td><td>Stand-in knowledge base built from SOFICLEF's public website plus realistic generic HR content; swapped for the real document base once RH grants access</td></tr>
+          <tr><td class="path"><code>internal/org-chart/tree</code></td><td class="tags"><span class="tag core">Core</span></td><td>The structural tree engine behind every <code>/organigram</code> page — self-centered view, sub-tree expansion, whole-company view, and HR's drag-drop reassignment all read/write the same node table</td></tr>
+          <tr><td class="path"><code>internal/org-chart/mock-directory</code></td><td class="tags"><span class="tag chain">Chain</span> <span class="tag core">Core</span></td><td>Populates the tree with mock/public-derived people and positions until Entra ID sync is switched on at <code>/admin/integrations</code></td></tr>
+          <tr><td class="path"><code>internal/scheduler/survey-tick</code></td><td class="tags"><span class="tag site">Site</span></td><td>Cron job firing surveys and the Agent 2 check-in at the right day offsets (D+7/15/30/60/90)</td></tr>
+          <tr><td class="path"><code>internal/kpi/aggregate</code></td><td class="tags"><span class="tag core">Core</span></td><td>Computes every dashboard number (completion rate, satisfaction by direction, average onboarding time, turnover) from the raw journey/survey/employee tables</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================== 5 ============================== -->
+  <section>
+    <h2>5. Cross-cutting functionality, not tied to one route</h2>
+
+    <p>
+      <strong>The provisioning chain is one seam, not three separate checks.</strong> "No path before
+      assignment," "HR requests but can't create," and "reassignment is HR's alone" are all enforced inside
+      <code>internal/provisioning/state-machine</code> and <code>internal/rbac/guard</code> — not as
+      scattered <code>if role ==</code> checks sprinkled through <code>/pending</code>,
+      <code>/app/hr/employees/request</code>, and <code>/app/hr/employees/[id]</code>. Add a fifth role
+      later without touching those three pages.
+    </p>
+
+    <p>
+      <strong>The evaluation chain is a second seam of the same kind.</strong> <span class="tag newly">New</span>
+      "The responsable evaluates," "HR decides," and "a divergence needs a reason" live in
+      <code>internal/probation/*</code> and the same RBAC guard — never as a role test inside the
+      evaluation form or the probation page. The consequence worth stating: the interface can be rebuilt,
+      or a fifth actor added to the chain, without any of those three rules moving.
+    </p>
+
+    <p>
+      <strong>One seam per data type, not a hundred rewrites.</strong> Every route carrying the
+      <span class="tag chain">Chain</span> badge reads its data through a thin adapter — one for the
+      knowledge base, one for the org-chart directory, one for documents. Flipping
+      <code>/admin/integrations</code> later means pointing three adapters at Entra ID/AD and SOFICLEF's
+      real document store, never touching the route code above them. That's the CDC's Plug &amp; Play
+      clause; the discipline is keeping every mock-vs-real decision inside the adapter.
+    </p>
+
+    <p>
+      <strong>Source citation is enforced once.</strong> <code>internal/knowledge/retrieve</code> is the
+      only place any agent touches the document base, so the "must cite its source" requirement lives there
+      — not duplicated separately inside Agents 1, 3, and 4. <code>/app/hr/ai-knowledge</code> is the one
+      screen that lets HR test and audit it.
+    </p>
+
+    <p>
+      <strong>One org tree, four readers.</strong> The self-centered tree
+      (<code>/app/me/organigram</code>), the sub-tree expansion (<code>/app/manager/organigram</code>), the
+      whole-company view with drag-reassign (<code>/app/hr/organigram</code>) and — since revision 2 — the
+      responsable lookup behind every evaluation all read the same
+      <code>internal/org-chart/tree</code>. A reassignment made in one view is immediately correct in the
+      others, <em>and</em> immediately moves who evaluates whom. <span class="tag newly">New</span>
+    </p>
+
+    <p>
+      <strong>Two renderings of one task list.</strong> A journey task shows up as a checklist item
+      (<code>/app/me/journey</code>), a progress bar (<code>/app/manager/recruits/[id]</code>), and a
+      completion-rate number (<code>/app/hr/analytics</code>) — all three read the same tasks table so they
+      can't drift out of sync.
+    </p>
+
+    <p>
+      <strong>An outcome is written once and read everywhere.</strong> <span class="tag newly">New</span>
+      The trial-period result is a field on the onboarding instance, so the recruit card
+      (<code>/app/manager/recruits</code>), the employee record
+      (<code>/app/hr/employees/[id]</code>), the turnover figure (<code>/app/hr/analytics</code>) and the
+      audit trail all describe the same decision rather than four approximations of it.
+    </p>
+  </section>
+
+  <!-- ============================== 6 ============================== -->
+  <section>
+    <h2>6. What this means for the build</h2>
+
+    <p>
+      Everything tagged <span class="tag core">Core</span> across Sections 2–4 is the real build list: the
+      provisioning chain end to end (create → assign → first login), the journey engine, the org-chart tree
+      on mock data, the trial-period chain, and the agents talking to the mock knowledge base — exactly
+      what the CDC's Plug &amp; Play clause front-loads, since none of it depends on SOFICLEF granting
+      access first.
+    </p>
+
+    <p>
+      Everything tagged <span class="tag site">Site</span> rounds the platform out once
+      <span class="tag core">Core</span> works end to end — worth doing once there's something real to
+      click through. Everything tagged <span class="tag later">Later</span> (real Entra ID/AD wiring, the
+      RBAC matrix editor, audit/security/backup/GDPR consoles, the conversational reporting layer)
+      shouldn't get engineering time yet — note that it exists in the demo, and move on. The
+      <span class="tag chain">Chain</span> badges are your checklist for the day SOFICLEF opens real
+      access: swap the adapters, touch nothing else.
+    </p>
+
+    <p>
+      The two additions in revision 2 are both <span class="tag core">Core</span>, and neither waits on
+      SOFICLEF: the trial-period chain runs entirely on data the platform already holds, and document
+      audiences resolve against the department fields the directory already carries. They are demo-ready
+      in the same sense the parcours engine is.
+    </p>
+  </section>
+
+  <footer>
+    SOFICLEF Onboarding Platform — Route Guide · Revision 2
+  </footer>
+</div>

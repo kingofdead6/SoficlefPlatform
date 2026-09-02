@@ -1,0 +1,32 @@
+{
+  "name": "soficlef-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SOFICLEF platform — Express + Prisma backend (migrated from Next.js)",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "start": "node index.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "pg": "^8.23.0",
+    "argon2": "^0.41.1",
+    "cloudinary": "^2.5.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "multer": "^2.0.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "prisma": "^7.9.1"
+  },
+  "main": "index.js"
+}

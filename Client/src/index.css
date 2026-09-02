@@ -1,0 +1,161 @@
+@import 'tailwindcss';
+
+/**
+ * SOFICLEF design tokens, ported from SoficlefPlatform/src/styles/tokens.css.
+ * Red-on-white identity: red is a sparing accent, cards are quiet/bordered, data is
+ * monospaced. i18n/RTL and the Arabic font swap are dropped per the migration brief
+ * (French-only UI, no next-intl).
+ */
+@theme {
+  --color-red-brand: #c8102e;
+  --color-red-strong: #a00c24;
+  --color-red-deep: #7f0a1d;
+  --color-red-light: #e11d38;
+  --color-red-accent: #f2879a;
+
+  --color-bg: #fbfafa;
+  --color-surface: #ffffff;
+  --color-surface-2: #f4f1f1;
+  --color-border: #e6e0e1;
+
+  --color-status-green: #116b41;
+  --color-status-red: #8b0012;
+  --color-status-amber: #8a5a00;
+  --color-status-blue: #1e4d8c;
+
+  --color-text: #171314;
+  --color-text-muted: #4e4547;
+  --color-text-dim: #6b6164;
+
+  --radius-app: 10px;
+  --shadow-app: 0 1px 4px rgba(23, 19, 20, 0.07);
+  --shadow-app-lifted: 0 6px 20px -6px rgba(127, 10, 29, 0.18);
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+:root {
+  --red-dim: rgba(200, 16, 46, 0.08);
+  --red-veil: rgba(200, 16, 46, 0.16);
+  --sidebar-w: 268px;
+  --topbar-h: 52px;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+/* ---------------------------------------------------------------------------
+   Scrollbars.
+   Firefox gets the two-property standard; WebKit/Blink get the pseudo-elements.
+   Both are driven by the same tokens, so the bar follows the theme instead of
+   staying grey-on-grey. Kept at 10px: thin enough to read as a detail, wide
+   enough to remain a comfortable drag target.
+   --------------------------------------------------------------------------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 999px;
+  /* The transparent border shrinks the visible thumb without shrinking the
+     hit area — the bar looks slim but stays easy to grab. */
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-red-accent);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: var(--color-red-brand);
+}
+
+/* Where a scroll container meets a corner (a table scrolling both ways). */
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* The page's own bar carries a touch more brand than nested containers do. */
+html {
+  scrollbar-color: var(--color-red-accent) transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background-color: var(--color-red-accent);
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-red-brand);
+}
+
+/* Anchor jumps and scrollTo() glide rather than teleport — overridden below
+   for anyone who has asked for reduced motion. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Custom cursor.
+
+   `has-cursor` is set on <body> by the Cursor component, and only after it has
+   confirmed a fine pointer and that reduced motion is off. Hiding the native
+   cursor from a plain media query would leave touch users, and anyone whose
+   custom cursor failed to mount, with no pointer at all.
+   --------------------------------------------------------------------------- */
+body.has-cursor,
+body.has-cursor a,
+body.has-cursor button,
+body.has-cursor [role='button'],
+body.has-cursor label,
+body.has-cursor summary {
+  cursor: none;
+}
+
+/* Text inputs keep their caret: an I-beam tells you the field is editable, and
+   the disc cannot express that. */
+body.has-cursor input,
+body.has-cursor textarea,
+body.has-cursor select {
+  cursor: auto;
+}

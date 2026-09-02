@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./src/assets/Logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      The three faces named in index.css's @theme block. They were declared as tokens but
+      never loaded, so the whole site silently fell back to Georgia and system sans.
+
+      preconnect to both hosts: the CSS comes from fonts.googleapis.com but the font files
+      themselves come from fonts.gstatic.com, so connecting to only the first still leaves
+      a full handshake in front of the actual download.
+
+      display=swap so text paints in the fallback immediately rather than sitting invisible
+      while the webfont downloads.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+
+    <title>SOFICLEF</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
