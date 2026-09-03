@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { positionsApi } from '../../../api/organization.js';
 import { useAuth } from '../../../auth/AuthContext.jsx';
@@ -34,6 +35,7 @@ const fieldClass =
  * a field the chart itself already carried.
  */
 export default function MeOrganigramPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [nodes, setNodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,12 +51,12 @@ export default function MeOrganigramPage() {
         const { data } = await positionsApi.tree();
         setNodes(data);
       } catch {
-        setError('Impossible de charger l’organigramme.');
+        setError(t('me.organigram.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   /** The caller's own post, so the chart can mark "vous êtes ici". */
   const myNodeId = useMemo(
@@ -126,58 +128,58 @@ export default function MeOrganigramPage() {
     [loading, visibleNodes],
   );
 
-  if (loading) return <PageLoading label="Chargement de l’organigramme…" />;
+  if (loading) return <PageLoading label={t('me.organigram.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Mon espace"
-        title="Organigramme"
-        subtitle="Votre position dans l’organisation : votre chaîne hiérarchique vers le haut, vos collègues de même niveau, et les postes rattachés au vôtre."
+        eyebrow={t('me.eyebrow')}
+        title={t('me.organigram.title')}
+        subtitle={t('me.organigram.subtitle')}
       />
 
       {nodes.length === 0 ? (
         <EmptyState
-          title="Organigramme indisponible"
-          detail="Aucun poste n’est encore rattaché à votre compte, il n’y a donc pas de point de départ pour dessiner votre organigramme. Les RH l’activent au moment de votre affectation."
+          title={t('me.organigram.unavailableTitle')}
+          detail={t('me.organigram.unavailableDetail')}
           muted
         />
       ) : (
         <>
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <SheetTile label="Mon poste" value={stats.me?.titleFr ?? 'Non affecté'} />
-            <SheetTile label="Mon responsable" value={stats.manager?.holder?.displayName ?? stats.manager?.titleFr ?? '—'} />
-            <CountTile label="Collègues de même niveau" value={stats.peers.length} />
-            <CountTile label="Postes rattachés au mien" value={stats.reports.length} />
+            <SheetTile label={t('me.organigram.myPosition')} value={stats.me?.titleFr ?? t('me.organigram.unassigned')} />
+            <SheetTile
+              label={t('me.organigram.myManager')}
+              value={stats.manager?.holder?.displayName ?? stats.manager?.titleFr ?? '—'}
+            />
+            <CountTile label={t('me.organigram.peers')} value={stats.peers.length} />
+            <CountTile label={t('me.organigram.directReports')} value={stats.reports.length} />
           </div>
 
           <div className={`${CARD} mb-6 flex flex-wrap items-center gap-3 p-4`}>
             <input
               type="search"
-              placeholder="Rechercher un poste, une personne, une structure…"
+              placeholder={t('me.organigram.searchPlaceholder')}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className={`${fieldClass} min-w-[240px] flex-1`}
             />
             <span className="text-sm text-text-dim">
-              {visibleNodes.length} / {nodes.length} postes visibles
+              {t('me.organigram.visibleCount', { visible: visibleNodes.length, total: nodes.length })}
             </span>
           </div>
 
-          <p className="mb-4 text-xs text-text-dim">
-            Vous ne voyez qu’une fenêtre autour de votre poste : la profondeur affichée vers le haut et vers le
-            bas est un paramètre de la plateforme, appliqué côté serveur.
-          </p>
+          <p className="mb-4 text-xs text-text-dim">{t('me.organigram.windowNote')}</p>
 
           <div className={`overflow-x-auto ${CARD} p-6`}>
             <OrgChart
               nodes={visibleNodes}
-              emptyLabel="Aucun poste ne correspond à cette recherche."
+              emptyLabel={t('me.organigram.noSearchMatch')}
               onSelect={setSelected}
               toneOf={(node) => (node.id === myNodeId ? 'root' : node.isVacant ? 'vacant' : undefined)}
               subtitleOf={(node) => node.organizationUnitNameFr ?? undefined}
-              badgeOf={(node) => (node.id === myNodeId ? 'Vous' : undefined)}
+              badgeOf={(node) => (node.id === myNodeId ? t('me.organigram.youBadge') : undefined)}
             />
           </div>
         </>
@@ -227,6 +229,7 @@ function CountTile({ label, value }) {
  * accept. Saying "consultation seule" on the panel is more useful than a disabled button.
  */
 function PositionSheet({ node, isMe, manager, reports, onClose, reduce }) {
+  const { t } = useTranslation();
   const holder = node.holder;
 
   return (
@@ -249,7 +252,7 @@ function PositionSheet({ node, isMe, manager, reports, onClose, reduce }) {
         <div className="mb-6 flex items-start justify-between gap-4 border-b border-border pb-5">
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-red-brand">
-              Fiche de poste · consultation seule
+              {t('me.organigram.sheet.readOnlyBadge')}
             </p>
             <h2 className="font-display text-2xl leading-tight text-red-deep">{node.titleFr}</h2>
             <p className="mt-1 font-mono text-xs text-text-dim">{node.code}</p>
@@ -259,7 +262,7 @@ function PositionSheet({ node, isMe, manager, reports, onClose, reduce }) {
             onClick={onClose}
             className="shrink-0 rounded-app border border-border px-3 py-1.5 text-sm text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
           >
-            Fermer
+            {t('common.actions.close')}
           </button>
         </div>
 
@@ -267,20 +270,24 @@ function PositionSheet({ node, isMe, manager, reports, onClose, reduce }) {
           <Avatar name={holder?.displayName} url={holder?.avatarUrl} />
           <div className="min-w-0">
             <p className="truncate font-medium text-text">
-              {holder?.displayName ?? (node.occupancyFr || 'Poste vacant')}
+              {holder?.displayName ?? (node.occupancyFr || t('me.organigram.sheet.vacantPosition'))}
             </p>
-            <p className="truncate text-sm text-text-dim">{node.organizationUnitNameFr ?? 'Sans structure'}</p>
+            <p className="truncate text-sm text-text-dim">
+              {node.organizationUnitNameFr ?? t('me.organigram.sheet.noStructure')}
+            </p>
             {isMe && (
               <span className="mt-1 inline-block rounded-full bg-red-brand/10 px-2 py-0.5 text-[11px] font-medium text-red-brand">
-                C’est vous
+                {t('me.organigram.sheet.thisIsYou')}
               </span>
             )}
           </div>
         </div>
 
         <dl className="space-y-4">
-          <SheetField label="Département / structure">{node.organizationUnitNameFr ?? '—'}</SheetField>
-          <SheetField label="E-mail">
+          <SheetField label={t('me.organigram.sheet.departmentLabel')}>
+            {node.organizationUnitNameFr ?? '—'}
+          </SheetField>
+          <SheetField label={t('common.labels.email')}>
             {holder?.email ? (
               <a href={`mailto:${holder.email}`} className="text-red-brand hover:underline">
                 {holder.email}
@@ -289,36 +296,39 @@ function PositionSheet({ node, isMe, manager, reports, onClose, reduce }) {
               '—'
             )}
           </SheetField>
-          <SheetField label="Poste téléphonique">{holder?.phone ?? '—'}</SheetField>
-          <SheetField label="Rattaché à">
-            {manager ? `${manager.titleFr}${manager.holder ? ` — ${manager.holder.displayName}` : ''}` : 'Aucun poste supérieur visible'}
+          <SheetField label={t('me.organigram.sheet.extensionLabel')}>{holder?.phone ?? '—'}</SheetField>
+          <SheetField label={t('me.organigram.sheet.reportsToLabel')}>
+            {manager
+              ? `${manager.titleFr}${manager.holder ? ` — ${manager.holder.displayName}` : ''}`
+              : t('me.organigram.sheet.noManagerVisible')}
           </SheetField>
-          <SheetField label="Postes rattachés">
+          <SheetField label={t('me.organigram.sheet.directReportsLabel')}>
             {reports.length === 0 ? (
-              'Aucun'
+              t('common.states.none')
             ) : (
               <ul className="mt-1 space-y-1">
                 {reports.map((report) => (
                   <li key={report.id} className="text-sm text-text-dim">
                     {report.titleFr}
-                    {report.holder ? ` — ${report.holder.displayName}` : ' — vacant'}
+                    {report.holder
+                      ? ` — ${report.holder.displayName}`
+                      : ` — ${t('me.organigram.sheet.vacant')}`}
                   </li>
                 ))}
               </ul>
             )}
           </SheetField>
-          <SheetField label="Occupation">
+          <SheetField label={t('me.organigram.sheet.occupancyLabel')}>
             {node.isVacant ? (
-              <span className="text-status-red">{node.occupancyFr || 'Poste vacant'}</span>
+              <span className="text-status-red">{node.occupancyFr || t('me.organigram.sheet.vacantPosition')}</span>
             ) : (
-              (node.occupancyFr ?? 'Poste occupé')
+              (node.occupancyFr ?? t('me.organigram.sheet.occupied'))
             )}
           </SheetField>
         </dl>
 
         <p className="mt-8 border-t border-border pt-5 text-xs text-text-dim">
-          Cette fiche reprend ce que l’organigramme expose sur ce poste. Le détail complet d’un emploi (missions,
-          tâches, compétences requises) relève du référentiel des fiches de poste, accessible aux RH.
+          {t('me.organigram.sheet.footnote')}
         </p>
       </motion.aside>
     </motion.div>
