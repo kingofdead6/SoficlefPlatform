@@ -32,29 +32,29 @@ import { cn } from '../../../lib/cn.js';
 /** Suggestion chips, three per agent at most — resolved through i18n at render time. */
 const SUGGESTION_KEYS = {
   orientation: [
-    'manager.assistant.suggestions.orientation.1',
-    'manager.assistant.suggestions.orientation.2',
-    'manager.assistant.suggestions.orientation.3',
+    'managerAssistant.suggestions.orientation.1',
+    'managerAssistant.suggestions.orientation.2',
+    'managerAssistant.suggestions.orientation.3',
   ],
   onboarding: [
-    'manager.assistant.suggestions.onboarding.1',
-    'manager.assistant.suggestions.onboarding.2',
+    'managerAssistant.suggestions.onboarding.1',
+    'managerAssistant.suggestions.onboarding.2',
   ],
   documents: [
-    'manager.assistant.suggestions.documents.1',
-    'manager.assistant.suggestions.documents.2',
+    'managerAssistant.suggestions.documents.1',
+    'managerAssistant.suggestions.documents.2',
   ],
   competencies: [
-    'manager.assistant.suggestions.competencies.1',
-    'manager.assistant.suggestions.competencies.2',
+    'managerAssistant.suggestions.competencies.1',
+    'managerAssistant.suggestions.competencies.2',
   ],
 };
 
 const PLACEHOLDER_KEYS = {
-  orientation: 'manager.assistant.placeholders.orientation',
-  onboarding: 'manager.assistant.placeholders.onboarding',
-  documents: 'manager.assistant.placeholders.documents',
-  competencies: 'manager.assistant.placeholders.competencies',
+  orientation: 'managerAssistant.placeholders.orientation',
+  onboarding: 'managerAssistant.placeholders.onboarding',
+  documents: 'managerAssistant.placeholders.documents',
+  competencies: 'managerAssistant.placeholders.competencies',
 };
 
 /** The agents this page offers, in the order a manager reaches for them. */
@@ -85,7 +85,7 @@ export default function ManagerAssistantPage() {
         setProvider(agentsRes.provider ?? null);
         setModelName(agentsRes.modelName ?? null);
       } catch {
-        setError(t('manager.assistant.loadError'));
+        setError(t('managerAssistant.loadError'));
       } finally {
         setLoading(false);
       }
@@ -102,7 +102,7 @@ export default function ManagerAssistantPage() {
 
   const active = usable.find((agent) => agent.id === activeId) ?? usable[0] ?? null;
 
-  if (loading) return <PageLoading label={t('manager.assistant.loading')} />;
+  if (loading) return <PageLoading label={t('managerAssistant.loading')} />;
   if (error) return <PageError message={error} />;
 
   const reminders = alerts.filter((a) => a.kind === 'evaluation');
@@ -112,16 +112,16 @@ export default function ManagerAssistantPage() {
     <div>
       <PageHeader
         eyebrow={t('manager.eyebrow')}
-        title={t('manager.assistant.title')}
-        subtitle={t('manager.assistant.subtitle')}
+        title={t('managerAssistant.title')}
+        subtitle={t('managerAssistant.subtitle')}
       />
 
       <div className="space-y-8">
         <motion.section variants={sectionVariants} initial={initialOrNone(reduce)} animate="visible">
           {usable.length === 0 ? (
             <EmptyState
-              title={t('manager.assistant.noAgentsTitle')}
-              detail={t('manager.assistant.noAgentsDetail')}
+              title={t('managerAssistant.noAgentsTitle')}
+              detail={t('managerAssistant.noAgentsDetail')}
               muted
             />
           ) : (
@@ -156,13 +156,13 @@ export default function ManagerAssistantPage() {
                   placeholder={
                     PLACEHOLDER_KEYS[active.id]
                       ? t(PLACEHOLDER_KEYS[active.id])
-                      : t('manager.assistant.placeholders.fallback')
+                      : t('managerAssistant.placeholders.fallback')
                   }
                 />
               )}
 
               {active?.id === 'onboarding' && (
-                <p className="mt-3 text-xs text-text-dim">{t('manager.assistant.ownJourneyNotice')}</p>
+                <p className="mt-3 text-xs text-text-dim">{t('managerAssistant.ownJourneyNotice')}</p>
               )}
             </>
           )}
@@ -174,7 +174,7 @@ export default function ManagerAssistantPage() {
           animate="visible"
           transition={{ delay: reduce ? 0 : 0.08 }}
         >
-          <h2 className="mb-3 font-display text-lg text-text">{t('manager.assistant.remindersTitle')}</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('managerAssistant.remindersTitle')}</h2>
           <motion.div variants={staggerContainer(0.06)} initial={initialOrNone(reduce)} animate="visible" className="space-y-2">
             {reminders.map((alert) => (
               <motion.div key={alert.id} variants={staggerItem}>
@@ -188,7 +188,7 @@ export default function ManagerAssistantPage() {
               </motion.div>
             ))}
           </motion.div>
-          {reminders.length === 0 && <EmptyState detail={t('manager.assistant.noReminders')} muted />}
+          {reminders.length === 0 && <EmptyState detail={t('managerAssistant.noReminders')} muted />}
         </motion.section>
 
         <motion.section
@@ -197,7 +197,7 @@ export default function ManagerAssistantPage() {
           animate="visible"
           transition={{ delay: reduce ? 0 : 0.16 }}
         >
-          <h2 className="mb-3 font-display text-lg text-text">{t('manager.assistant.blockersTitle')}</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('managerAssistant.blockersTitle')}</h2>
           <motion.div variants={staggerContainer(0.06)} initial={initialOrNone(reduce)} animate="visible" className="space-y-2">
             {blockers.map((alert) => (
               <motion.div key={alert.id} variants={staggerItem}>
@@ -211,7 +211,7 @@ export default function ManagerAssistantPage() {
               </motion.div>
             ))}
           </motion.div>
-          {blockers.length === 0 && <EmptyState detail={t('manager.assistant.noBlockers')} muted />}
+          {blockers.length === 0 && <EmptyState detail={t('managerAssistant.noBlockers')} muted />}
         </motion.section>
 
         <motion.section
@@ -220,10 +220,10 @@ export default function ManagerAssistantPage() {
           animate="visible"
           transition={{ delay: reduce ? 0 : 0.24 }}
         >
-          <h2 className="mb-3 font-display text-lg text-text">{t('manager.assistant.prepareTitle')}</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('managerAssistant.prepareTitle')}</h2>
           <EmptyState
-            title={t('manager.assistant.noDraftingTitle')}
-            detail={t('manager.assistant.noDraftingDetail')}
+            title={t('managerAssistant.noDraftingTitle')}
+            detail={t('managerAssistant.noDraftingDetail')}
             muted
           />
           {recruits.length > 0 && (
