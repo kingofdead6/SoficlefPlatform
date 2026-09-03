@@ -29,7 +29,7 @@ visibly labelled as such and never presented as platform data.
 
 ## Demo accounts
 
-Every account below uses the password **`Soficlef#2026Demo`** (or the value of
+Every account below uses the password **`Pwd123456`** (or the value of
 `SEED_DEMO_PASSWORD` if the deployment overrides it).
 
 | Email | Role | Portal |
