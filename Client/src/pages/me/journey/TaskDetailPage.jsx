@@ -465,7 +465,7 @@ export default function TaskDetailPage() {
             <h2 className={`mb-1 ${SECTION_TITLE}`}>{t('me.task.files.title')}</h2>
             <p className="mb-4 text-xs text-text-dim">
               {t('me.task.files.help')}
-              <Link to="/app/me/files" className="ml-1 font-medium text-red-brand hover:underline">
+              <Link to="/app/me/files" className="ms-1 font-medium text-red-brand hover:underline">
                 {t('me.task.files.linkLabel')}
               </Link>
               .
@@ -491,7 +491,7 @@ export default function TaskDetailPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  className="w-full text-xs text-text-dim file:mr-3 file:rounded-app file:border file:border-border file:bg-surface-2 file:px-3 file:py-1.5 file:text-xs file:text-text"
+                  className="w-full text-xs text-text-dim file:me-3 file:rounded-app file:border file:border-border file:bg-surface-2 file:px-3 file:py-1.5 file:text-xs file:text-text"
                 />
                 <button
                   type="submit"
@@ -516,10 +516,10 @@ export default function TaskDetailPage() {
             {history.length === 0 ? (
               <EmptyState detail={t('me.task.history.empty')} muted />
             ) : (
-              <ol className="space-y-3 border-l border-border pl-4">
+              <ol className="space-y-3 border-s border-border ps-4">
                 {history.map((entry, index) => (
                   <li key={`${entry.at}-${index}`} className="relative">
-                    <span className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-red-brand" aria-hidden />
+                    <span className="absolute -start-[21px] top-1.5 h-2 w-2 rounded-full bg-red-brand" aria-hidden />
                     <p className="text-sm text-text">
                       {entry.from
                         ? `${t(STATUS_LABEL_KEYS[entry.from] ?? '', { defaultValue: entry.from })} → `

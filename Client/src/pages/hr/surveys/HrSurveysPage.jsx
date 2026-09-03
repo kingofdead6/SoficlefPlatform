@@ -211,7 +211,7 @@ export default function HrSurveysPage() {
         <div className={`overflow-hidden ${CARD}`}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+              <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                 <th className="px-4 py-3 font-medium">{t('hr.surveys.table.indicator')}</th>
                 <th className="px-4 py-3 font-medium">{t('hr.surveys.table.average')}</th>
                 <th className="px-4 py-3 font-medium">{t('hr.surveys.table.score')}</th>

@@ -170,7 +170,7 @@ export default function HrAssignEmployeePage() {
         to="/app/hr/employees/unassigned"
         className="mb-4 inline-block text-sm text-red-brand hover:underline"
       >
-        ← Retour à la file d’affectation
+        <span aria-hidden className="rtl:-scale-x-100">←</span> Retour à la file d’affectation
       </Link>
 
       <motion.div

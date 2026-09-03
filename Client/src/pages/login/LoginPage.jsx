@@ -130,9 +130,9 @@ export default function LoginPage() {
         {/* The mobile header: the brand panel is hidden below lg, so the mark comes here. */}
         <Link
           to="/"
-          className="absolute left-5 top-6 inline-flex items-center gap-2 text-sm text-text-dim transition-colors hover:text-red-brand lg:hidden"
+          className="absolute start-5 top-6 inline-flex items-center gap-2 text-sm text-text-dim transition-colors hover:text-red-brand lg:hidden"
         >
-          <span aria-hidden>←</span> {t('auth.login.backToSite')}
+          <span aria-hidden className="rtl:-scale-x-100">←</span> {t('auth.login.backToSite')}
         </Link>
 
         <motion.div
@@ -218,7 +218,7 @@ export default function LoginPage() {
               to="/"
               className="mt-3 hidden items-center gap-1.5 font-medium text-red-brand hover:underline lg:inline-flex"
             >
-              <span aria-hidden>←</span> {t('auth.login.backToSite')}
+              <span aria-hidden className="rtl:-scale-x-100">←</span> {t('auth.login.backToSite')}
             </Link>
           </div>
         </motion.div>

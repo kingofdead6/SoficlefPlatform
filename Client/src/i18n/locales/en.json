@@ -60,7 +60,8 @@
       "en": "English",
       "fr": "French",
       "switcherLabel": "Language selection",
-      "switchTo": "Switch to {{language}}"
+      "switchTo": "Switch to {{language}}",
+      "ar": "Arabic"
     },
     "no": "No",
     "notifications": {

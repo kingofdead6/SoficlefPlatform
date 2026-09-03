@@ -115,7 +115,7 @@ export default function RecruitsPage() {
                 to={`/app/manager/recruits/${recruit.userId}`}
                 className="text-sm font-medium text-red-brand hover:underline"
               >
-                {t('managerRecruits.viewRecord')} →
+                {t('managerRecruits.viewRecord')} <span aria-hidden className="rtl:-scale-x-100">→</span>
               </Link>
             </motion.div>
           </motion.li>

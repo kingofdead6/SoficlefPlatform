@@ -208,7 +208,7 @@ export default function Takeover() {
               <span data-rule aria-hidden className="mb-5 block h-px w-full bg-red-accent/60 md:mb-6" />
               <p
                 data-sub
-                className="text-left text-[19px] font-medium leading-[1.5] tracking-[-0.01em] text-surface/85 sm:text-xl md:text-2xl md:leading-[1.55]"
+                className="text-start text-[19px] font-medium leading-[1.5] tracking-[-0.01em] text-surface/85 sm:text-xl md:text-2xl md:leading-[1.55]"
               >
                 {translate('public.takeover.body')}
               </p>

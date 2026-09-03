@@ -51,7 +51,7 @@ export default function JobDescriptionListPage() {
       <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+            <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
               <th className="px-4 py-2 font-medium">{t('jobDescription.columns.code')}</th>
               <th className="px-4 py-2 font-medium">{t('jobDescription.columns.jobTitle')}</th>
               <th className="px-4 py-2 font-medium">{t('jobDescription.columns.version')}</th>
@@ -74,7 +74,7 @@ export default function JobDescriptionListPage() {
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-2 text-right">
+                <td className="px-4 py-2 text-end">
                   <Link to={`/job-description/${document.jobDescriptionId}`} className="font-medium text-red-brand hover:underline">
                     {t('common.actions.open')}
                   </Link>

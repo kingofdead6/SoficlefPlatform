@@ -103,7 +103,7 @@ export default function KaizenPage() {
           <ol className="space-y-2">
             {programme.priorityActionsJ30.map((action) => (
               <li key={action.id} className="rounded-app border border-border bg-surface p-3 text-[13px] shadow-app">
-                <span className="mr-2 font-mono text-text-dim">{action.dayLabelFr}</span>
+                <span className="me-2 font-mono text-text-dim">{action.dayLabelFr}</span>
                 {action.textFr}
               </li>
             ))}
@@ -161,7 +161,7 @@ function MissionPanel({ mission, mayEdit, statuses, onStatusChange }) {
       {mission.gaps.length > 0 && (
         <div>
           <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-brand">{t('kaizen.gaps')}</h4>
-          <table className="w-full text-left text-[13px]">
+          <table className="w-full text-start text-[13px]">
             <thead>
               <tr className="text-text-dim">
                 <th className="pb-2 font-medium">{t('kaizen.columns.domain')}</th>
@@ -185,7 +185,7 @@ function MissionPanel({ mission, mayEdit, statuses, onStatusChange }) {
       {mission.actions.length > 0 && (
         <div>
           <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-brand">{t('kaizen.actionPlan')}</h4>
-          <table className="w-full text-left text-[13px]">
+          <table className="w-full text-start text-[13px]">
             <thead>
               <tr className="text-text-dim">
                 <th className="pb-2 font-medium">{t('kaizen.columns.action')}</th>

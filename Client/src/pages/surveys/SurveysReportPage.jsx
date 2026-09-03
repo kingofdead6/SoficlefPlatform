@@ -53,7 +53,7 @@ export default function SurveysReportPage() {
       <div className="mb-6 overflow-hidden rounded-app border border-border bg-surface shadow-app">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+            <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
               <th className="px-4 py-2 font-medium">{t('surveys.columns.indicator')}</th>
               <th className="px-4 py-2 font-medium">{t('surveys.columns.average')}</th>
               <th className="px-4 py-2 font-medium">{t('surveys.stats.score')}</th>
@@ -80,7 +80,7 @@ export default function SurveysReportPage() {
       <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+            <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
               <th className="px-4 py-2 font-medium">{t('surveys.columns.milestone')}</th>
               <th className="px-4 py-2 font-medium">{t('surveys.stats.score')}</th>
               <th className="px-4 py-2 font-medium">{t('surveys.columns.responses')}</th>

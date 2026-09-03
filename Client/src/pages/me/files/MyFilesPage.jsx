@@ -247,7 +247,7 @@ export default function MyFilesPage() {
                           ref={(element) => {
                             fileInputs.current[file.id] = element;
                           }}
-                          className="w-full text-xs text-text-dim file:mr-3 file:rounded-app file:border file:border-border file:bg-surface-2 file:px-3 file:py-1.5 file:text-xs file:text-text"
+                          className="w-full text-xs text-text-dim file:me-3 file:rounded-app file:border file:border-border file:bg-surface-2 file:px-3 file:py-1.5 file:text-xs file:text-text"
                         />
                         <input
                           type="text"

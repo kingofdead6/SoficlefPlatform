@@ -272,7 +272,7 @@ export default function HrAiKnowledgePage() {
           <div className={`overflow-hidden ${CARD}`}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                   <th className="px-4 py-3 font-medium">{t('hr.knowledge.documents.table.document')}</th>
                   <th className="px-4 py-3 font-medium">{t('hr.knowledge.documents.table.reference')}</th>
                   <th className="px-4 py-3 font-medium">{t('hr.knowledge.documents.table.file')}</th>
@@ -296,7 +296,7 @@ export default function HrAiKnowledgePage() {
           to="/app/hr/documents"
           className="mt-3 inline-block text-sm text-red-brand hover:underline"
         >
-          {t('hr.knowledge.documents.manage')} →
+          {t('hr.knowledge.documents.manage')} <span aria-hidden className="rtl:-scale-x-100">→</span>
         </Link>
       </section>
     </div>

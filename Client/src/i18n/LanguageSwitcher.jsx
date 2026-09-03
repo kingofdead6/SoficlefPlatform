@@ -3,24 +3,32 @@ import { useTranslation } from 'react-i18next';
 const LANGUAGES = [
   { code: 'fr', label: 'FR' },
   { code: 'en', label: 'EN' },
+  { code: 'ar', label: 'AR' },
 ];
 
 /**
- * Compact FR/EN segmented control.
+ * Compact FR/EN/AR segmented control.
  *
- * Two real buttons rather than a single toggle: the current language is announced by
+ * Three real buttons rather than a dropdown: the current language is announced by
  * aria-pressed on each, so a screen-reader user hears which one is active instead of
  * having to infer it from a label that changes meaning.
+ *
+ * The control's own layout direction is pinned to ltr regardless of the active language:
+ * "FR / EN / AR" is a fixed, memorised order for a switcher, and letting it flip under
+ * Arabic would make it the one control in the app that changes shape every time it's used.
  *
  * `tone="light"` is for the dark/!translucent public bar; the default suits the app shell.
  */
 export function LanguageSwitcher({ tone = 'default', className = '' }) {
   const { t, i18n } = useTranslation();
-  const active = i18n.language?.startsWith('en') ? 'en' : 'fr';
+  const active = LANGUAGES.some((language) => language.code === i18n.language)
+    ? i18n.language
+    : 'fr';
 
   return (
     <div
       role="group"
+      dir="ltr"
       aria-label={t('common.language.switcherLabel')}
       className={`inline-flex shrink-0 items-center gap-0.5 rounded-full border p-0.5 ${
         tone === 'light' ? 'border-white/25 bg-white/10' : 'border-border bg-surface-2'

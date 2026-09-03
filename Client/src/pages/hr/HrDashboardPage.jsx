@@ -221,7 +221,7 @@ export default function HrDashboardPage() {
             >
               {t('hr.dashboard.assignmentQueue')}
               {pending.length > 0 && (
-                <span className="ml-2 rounded-full bg-white/25 px-1.5 py-0.5 text-xs font-semibold">
+                <span className="ms-2 rounded-full bg-white/25 px-1.5 py-0.5 text-xs font-semibold">
                   {pending.length}
                 </span>
               )}
@@ -254,7 +254,7 @@ export default function HrDashboardPage() {
               <div>
                 <h2 className="font-display text-xl text-text">
                   {t('hr.dashboard.probation.title')}
-                  <span className="ml-2 rounded-full bg-red-brand/10 px-2 py-0.5 text-sm font-medium text-red-brand">
+                  <span className="ms-2 rounded-full bg-red-brand/10 px-2 py-0.5 text-sm font-medium text-red-brand">
                     {probation.length}
                   </span>
                 </h2>
@@ -279,7 +279,7 @@ export default function HrDashboardPage() {
                   className="rounded-app border border-border px-3 py-1.5 text-xs text-text-dim"
                 >
                   <span className="font-medium text-text">{entry.subject.displayName}</span>
-                  <span className="ml-2 font-mono">{entry.scorePercent} %</span>
+                  <span className="ms-2 font-mono">{entry.scorePercent} %</span>
                 </li>
               ))}
               {probation.length > 6 && (

@@ -45,7 +45,7 @@ export default function ManagerArchivePage() {
       <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+            <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
               <th className="px-4 py-3 font-medium">{t('common.labels.employee')}</th>
               <th className="px-4 py-3 font-medium">{t('common.labels.position')}</th>
               <th className="px-4 py-3 font-medium">{t('manager.archive.startedOn')}</th>
@@ -62,7 +62,7 @@ export default function ManagerArchivePage() {
                 <td className="px-4 py-3 text-text">{recruit.displayName}</td>
                 <td className="px-4 py-3 text-text-dim">{recruit.positionFr ?? '—'}</td>
                 <td className="px-4 py-3 text-text-dim">{new Date(recruit.startDate).toLocaleDateString(localeOf(i18n))}</td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-end">
                   <Link to={`/app/manager/recruits/${recruit.userId}`} className="text-xs font-medium text-red-brand hover:underline">
                     {t('manager.archive.viewRecord')}
                   </Link>

@@ -55,7 +55,7 @@ export default function RecruitDetailPage() {
   return (
     <div>
       <Link to="/app/manager/recruits" className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← {t('manager.recruitDetail.backToRecruits')}
+        <span aria-hidden className="rtl:-scale-x-100">←</span> {t('manager.recruitDetail.backToRecruits')}
       </Link>
       <motion.div
         initial={reduce ? false : { opacity: 0, y: -8 }}

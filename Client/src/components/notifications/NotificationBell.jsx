@@ -44,14 +44,14 @@ export function NotificationBell() {
       >
         <span aria-hidden>🔔</span>
         {unreadCount > 0 && (
-          <span className="bg-red-brand absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] text-white">
+          <span className="bg-red-brand absolute -end-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] text-white">
             {unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="border-border bg-surface shadow-app rounded-app absolute right-0 z-20 mt-2 w-80 border">
+        <div className="border-border bg-surface shadow-app rounded-app absolute end-0 z-20 mt-2 w-80 border">
           <div className="border-border border-b px-3 py-2 text-sm font-medium text-text">
             {t('common.notifications.title')}
           </div>

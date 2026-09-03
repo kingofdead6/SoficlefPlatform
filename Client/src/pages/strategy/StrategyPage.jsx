@@ -43,13 +43,13 @@ export default function StrategyPage() {
             {t('strategy.marketTargets')}
           </h3>
           <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
-            <table className="w-full text-left text-[13px]">
+            <table className="w-full text-start text-[13px]">
               <thead className="bg-surface-2 text-text-dim">
                 <tr>
                   <th className="px-4 py-2 font-medium">{t('strategy.columns.market')}</th>
                   <th className="px-4 py-2 font-medium">{t('strategy.columns.strategy')}</th>
-                  <th className="px-4 py-2 text-right font-medium">{t('strategy.columns.marketShareTarget')}</th>
-                  <th className="px-4 py-2 text-right font-medium">{t('strategy.columns.revenueTarget')}</th>
+                  <th className="px-4 py-2 text-end font-medium">{t('strategy.columns.marketShareTarget')}</th>
+                  <th className="px-4 py-2 text-end font-medium">{t('strategy.columns.revenueTarget')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -57,8 +57,8 @@ export default function StrategyPage() {
                   <tr key={market.id} className="border-t border-border">
                     <td className="px-4 py-2 text-text">{market.marketFr}</td>
                     <td className="px-4 py-2 text-text">{market.strategyFr}</td>
-                    <td className="px-4 py-2 text-right font-mono text-text">{market.marketShareTargetFr}</td>
-                    <td className="px-4 py-2 text-right font-mono text-text">{market.revenueTargetFr}</td>
+                    <td className="px-4 py-2 text-end font-mono text-text">{market.marketShareTargetFr}</td>
+                    <td className="px-4 py-2 text-end font-mono text-text">{market.revenueTargetFr}</td>
                   </tr>
                 ))}
               </tbody>

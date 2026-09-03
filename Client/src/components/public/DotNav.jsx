@@ -150,7 +150,7 @@ export default function DotNav() {
     <div
       className={
         isMobile
-          ? 'fixed right-4 top-4 z-50 flex flex-col items-end'
+          ? 'fixed end-4 top-4 z-50 flex flex-col items-end'
           : 'fixed left-1/2 top-5 z-50 flex -translate-x-1/2 flex-col items-center'
       }
     >

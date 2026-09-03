@@ -2,10 +2,16 @@
  * Shared date-locale helper.
  *
  * en-GB rather than en-US on purpose: this is an Algerian company and its users read dates
- * as D/M/Y in both languages. en-US would silently reorder every date on the English side.
+ * as D/M/Y in every language. en-US would silently reorder every date on the English side.
+ * ar-DZ (Algeria) for the same reason on the Arabic side: it keeps D/M/Y order and Western
+ * (Latin) digits, unlike ar-EG or ar-SA which default to Eastern Arabic numerals — this app
+ * never shows those elsewhere (scores, counts, phone extensions stay Latin), so the dates
+ * must not be the one place that switches numeral systems.
  */
 export function localeOf(i18n) {
-  return i18n?.language === 'en' ? 'en-GB' : 'fr-FR';
+  if (i18n?.language === 'en') return 'en-GB';
+  if (i18n?.language === 'ar') return 'ar-DZ';
+  return 'fr-FR';
 }
 
 /** Convenience: format a date value with the caller's active language. */

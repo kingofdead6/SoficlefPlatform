@@ -696,13 +696,13 @@ const SECONDARY_BUTTON =
 
 function UnitBranch({ nodes, depth, selectedId, onSelect }) {
   return (
-    <ul className={depth === 0 ? 'space-y-0.5' : 'space-y-0.5 border-l border-border pl-3'}>
+    <ul className={depth === 0 ? 'space-y-0.5' : 'space-y-0.5 border-s border-border ps-3'}>
       {nodes.map((node) => (
         <li key={node.id}>
           <button
             type="button"
             onClick={() => onSelect(node.id)}
-            className={`flex w-full items-center justify-between gap-2 rounded-app px-2 py-1.5 text-left text-sm transition-colors ${
+            className={`flex w-full items-center justify-between gap-2 rounded-app px-2 py-1.5 text-start text-sm transition-colors ${
               selectedId === node.id
                 ? 'bg-red-brand/10 text-red-deep'
                 : 'text-text hover:bg-surface-2'

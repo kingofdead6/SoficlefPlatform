@@ -245,7 +245,7 @@ export default function PositionPage() {
                 <div className={`overflow-x-auto ${CARD}`}>
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                      <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                         <th className="px-4 py-3 font-medium">{t('me.position.skills.table.competency')}</th>
                         <th className="px-4 py-3 font-medium">{t('me.position.skills.table.family')}</th>
                         <th className="px-4 py-3 font-medium">{t('me.position.skills.table.required')}</th>

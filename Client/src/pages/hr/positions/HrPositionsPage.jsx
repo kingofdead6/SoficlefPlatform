@@ -401,7 +401,7 @@ export default function HrPositionsPage() {
         <div className={`overflow-x-auto ${CARD}`}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+              <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                 <th className="px-4 py-3 font-medium">{t('hr.positions.table.code')}</th>
                 <th className="px-4 py-3 font-medium">{t('hr.positions.table.title')}</th>
                 <th className="px-4 py-3 font-medium">{t('hr.positions.table.structure')}</th>

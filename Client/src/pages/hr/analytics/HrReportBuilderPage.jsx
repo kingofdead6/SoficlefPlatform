@@ -224,7 +224,7 @@ export default function HrReportBuilderPage() {
                 variants={staggerItem}
                 onClick={() => toggle(section.id)}
                 aria-pressed={active}
-                className={`rounded-app border p-4 text-left transition-colors ${
+                className={`rounded-app border p-4 text-start transition-colors ${
                   active
                     ? 'border-red-brand bg-red-brand/5 shadow-app'
                     : 'border-border bg-surface text-text-dim hover:border-red-brand/50'
@@ -259,7 +259,7 @@ export default function HrReportBuilderPage() {
           <div className={`max-h-[32rem] overflow-auto ${CARD}`}>
             <table className="w-full text-sm">
               <thead className="sticky top-0">
-                <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                   <th className="px-4 py-3 font-medium">{t('hr.reportBuilder.table.section')}</th>
                   <th className="px-4 py-3 font-medium">{t('hr.reportBuilder.table.indicator')}</th>
                   <th className="px-4 py-3 font-medium">{t('hr.reportBuilder.table.value')}</th>

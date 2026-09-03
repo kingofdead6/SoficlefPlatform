@@ -91,11 +91,11 @@ function DecisionHistory({ instanceId }) {
   return (
     <ul className="space-y-2">
       {rows.map((row) => (
-        <li key={row.id} className="border-l-2 border-border pl-3 text-xs">
+        <li key={row.id} className="border-s-2 border-border ps-3 text-xs">
           <p className="font-medium text-text">
             {OUTCOME_LABELS[row.decidedOutcome] ?? row.decidedOutcome}
             {row.decidedOutcome !== row.suggestedOutcome && (
-              <span className="ml-2 rounded-full bg-status-amber/10 px-2 py-0.5 text-[10px] font-medium text-status-amber">
+              <span className="ms-2 rounded-full bg-status-amber/10 px-2 py-0.5 text-[10px] font-medium text-status-amber">
                 différente de la suggestion
               </span>
             )}
@@ -182,7 +182,7 @@ function ProbationCard({ entry, onDecided }) {
           </p>
         </div>
 
-        <div className="text-right">
+        <div className="text-end">
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={entry.scorePercent} suffix=" %" />
           </p>
@@ -246,7 +246,7 @@ function ProbationCard({ entry, onDecided }) {
             >
               {outcome.labelFr}
               {isSuggested && (
-                <span className="ml-1.5 text-[10px] font-normal opacity-70">suggéré</span>
+                <span className="ms-1.5 text-[10px] font-normal opacity-70">suggéré</span>
               )}
             </button>
           );

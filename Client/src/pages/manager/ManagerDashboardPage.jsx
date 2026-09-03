@@ -233,7 +233,7 @@ export default function ManagerDashboardPage() {
           <div className={`overflow-hidden ${CARD}`}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                   <th className="px-4 py-3 font-medium">{t('common.labels.employee')}</th>
                   <th className="px-4 py-3 font-medium">{t('manager.dashboard.dayColumn')}</th>
                   <th className="px-4 py-3 font-medium">{t('manager.dashboard.stepsColumn')}</th>
@@ -268,7 +268,7 @@ export default function ManagerDashboardPage() {
                             }
                           />
                         </div>
-                        <span className="w-9 shrink-0 text-right font-mono text-xs text-text-dim">{recruit.percent}%</span>
+                        <span className="w-9 shrink-0 text-end font-mono text-xs text-text-dim">{recruit.percent}%</span>
                       </div>
                     </td>
                   </tr>

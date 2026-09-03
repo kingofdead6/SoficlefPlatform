@@ -464,7 +464,7 @@ function MatrixGrid({ resources, granted, catalogue, onToggle, t }) {
     <div className="overflow-x-auto rounded-app border border-border">
       <table className="w-full min-w-130 text-sm">
         <thead>
-          <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+          <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
             <th className="px-4 py-2 font-medium">{t('admin.roles.matrix.module')}</th>
             {ACTION_COLUMNS.map((action) => (
               <th key={action} className="px-3 py-2 text-center font-medium">

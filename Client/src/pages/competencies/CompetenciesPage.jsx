@@ -76,7 +76,7 @@ export default function CompetenciesPage() {
           <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                   <th className="px-4 py-2 font-medium">{t('competencies.columns.competency')}</th>
                   <th className="px-4 py-2 font-medium">{t('competencies.columns.family')}</th>
                   <th className="px-4 py-2 font-medium">{t('competencies.columns.required')}</th>

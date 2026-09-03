@@ -86,7 +86,7 @@ export default function EvaluationDetailPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <Link to="/app/manager/evaluations" className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← {t('manager.evaluationDetail.backToEvaluations')}
+        <span aria-hidden className="rtl:-scale-x-100">←</span> {t('manager.evaluationDetail.backToEvaluations')}
       </Link>
 
       <motion.div

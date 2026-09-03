@@ -254,7 +254,7 @@ export default function GdprPage() {
           <div className={`overflow-hidden ${CARD}`}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                   <th className="px-4 py-3 font-medium">{t('admin.gdpr.register.type')}</th>
                   <th className="px-4 py-3 font-medium">{t('admin.gdpr.register.person')}</th>
                   <th className="px-4 py-3 font-medium">{t('admin.gdpr.register.receivedOn')}</th>
@@ -287,13 +287,13 @@ export default function GdprPage() {
                         {t(`admin.gdpr.statuses.${request.status}`, request.status)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-end">
                       {request.status === 'OPEN' && (
                         <>
                           <button
                             type="button"
                             onClick={() => setStatus(request, 'DONE')}
-                            className="mr-3 text-xs font-medium text-red-brand hover:underline"
+                            className="me-3 text-xs font-medium text-red-brand hover:underline"
                           >
                             {t('admin.gdpr.register.close')}
                           </button>

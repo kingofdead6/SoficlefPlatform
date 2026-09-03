@@ -73,7 +73,7 @@ export default function AssignTaskPage() {
   return (
     <div className="mx-auto max-w-xl">
       <Link to={`/app/manager/recruits/${userId}`} className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← {t('manager.backTo', { name: recruit.displayName })}
+        <span aria-hidden className="rtl:-scale-x-100">←</span> {t('manager.backTo', { name: recruit.displayName })}
       </Link>
 
       <motion.div

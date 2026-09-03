@@ -177,7 +177,7 @@ export default function AccountRequestsPage() {
           <div className="overflow-x-auto rounded-app border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-border border-b text-left text-text-dim">
+                <tr className="border-border border-b text-start text-text-dim">
                   <th className="px-3 py-2 font-medium">{t('accountRequests.columns.candidate')}</th>
                   <th className="px-3 py-2 font-medium">{t('common.labels.position')}</th>
                   <th className="px-3 py-2 font-medium">{t('accountRequests.fields.urgency')}</th>

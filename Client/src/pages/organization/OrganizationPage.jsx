@@ -43,7 +43,7 @@ export default function OrganizationPage() {
         <div className="overflow-x-auto rounded-app border border-border bg-surface shadow-app">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-text-dim">
+              <tr className="border-b border-border text-start text-text-dim">
                 <th className="px-3 py-2">{t('organization.columns.code')}</th>
                 <th className="px-3 py-2">{t('common.labels.name')}</th>
                 <th className="px-3 py-2">{t('common.labels.type')}</th>

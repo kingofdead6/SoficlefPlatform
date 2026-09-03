@@ -231,7 +231,7 @@ export default function SurveysPage() {
                         </dt>
                         <dd className="text-sm font-medium text-text">
                           {t('me.surveys.scoreOutOfFive', { score: response.score })}
-                          <span className="ml-2 font-normal text-text-dim">
+                          <span className="ms-2 font-normal text-text-dim">
                             {(() => {
                               const scaleKey = SCALE.find((entry) => entry.value === response.score)?.labelKey;
                               return scaleKey ? t(scaleKey) : null;

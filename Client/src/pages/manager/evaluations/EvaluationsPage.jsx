@@ -48,7 +48,7 @@ export default function EvaluationsPage() {
       <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+            <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
               <th className="px-4 py-3 font-medium">{t('common.labels.employee')}</th>
               <th className="px-4 py-3 font-medium">{t('manager.evaluations.milestoneColumn')}</th>
               <th className="px-4 py-3 font-medium">{t('common.labels.dueDate')}</th>
@@ -61,7 +61,7 @@ export default function EvaluationsPage() {
                 <td className="px-4 py-3 text-text">{row.recruit.displayName}</td>
                 <td className="px-4 py-3 text-text-dim">{row.milestone}</td>
                 <td className="px-4 py-3 text-text-dim">{new Date(row.dueDate).toLocaleDateString(localeOf(i18n))}</td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-end">
                   <Link to={`/app/manager/evaluations/${row.id}`} className="font-medium text-red-brand hover:underline">
                     {t('manager.evaluations.evaluateAction')}
                   </Link>

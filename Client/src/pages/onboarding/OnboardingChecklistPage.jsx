@@ -37,7 +37,7 @@ export default function OnboardingChecklistPage() {
       <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+            <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
               <th className="px-4 py-2 font-medium">{t('onboarding.checklist.columns.employee')}</th>
               <th className="px-4 py-2 font-medium">{t('onboarding.checklist.columns.template')}</th>
               <th className="px-4 py-2 font-medium">{t('onboarding.checklist.columns.startDate')}</th>
@@ -54,7 +54,7 @@ export default function OnboardingChecklistPage() {
                   {new Date(summary.startDate).toLocaleDateString(localeOf(i18n))}
                 </td>
                 <td className="px-4 py-2 text-text-dim">{summary.progress.percent}%</td>
-                <td className="px-4 py-2 text-right">
+                <td className="px-4 py-2 text-end">
                   <Link
                     to={`/app/me/journey?subjectUserId=${summary.subjectUserId}&instanceId=${summary.instanceId}`}
                     className="font-medium text-red-brand hover:underline"

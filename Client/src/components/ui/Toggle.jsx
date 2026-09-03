@@ -14,18 +14,24 @@ import { cn } from '../../lib/cn.js';
  *    `left` class with Framer's `layout` prop, so the layout animation and the class change
  *    drove the same property against each other.
  *
- * Both are fixed the same way: anchor the knob at `left` and move it with a transform whose
- * distance is computed from the geometry, so the maths is stated once instead of guessed
- * per copy. Transform-only movement is also the cheap one to animate.
+ * Both are fixed the same way: anchor the knob at the inline start and move it with a
+ * transform whose distance is computed from the geometry, so the maths is stated once
+ * instead of guessed per copy. Transform-only movement is also the cheap one to animate.
  *
  * Sizes keep knob and inset fixed and vary only the track, so the "on" offset is always
  * `track - knob - 2 × inset`.
+ *
+ * The anchor (`start-0.5`) is a logical property and flips automatically under `dir="rtl"`,
+ * but `translate-x-*` does not — a physical transform moves toward the same screen edge
+ * regardless of direction, which would slide the knob to the visual left even started from
+ * the right anchor under RTL. `rtl:-translate-x-*` supplies the mirrored value so "on"
+ * always means "moved toward the end", in either direction.
  */
 const SIZES = {
   // track 44px, knob 20px, inset 2px → travel 20px
-  md: { track: 'h-6 w-11', knob: 'h-5 w-5', offset: 'translate-x-5' },
+  md: { track: 'h-6 w-11', knob: 'h-5 w-5', offset: 'translate-x-5 rtl:-translate-x-5' },
   // track 48px, knob 20px, inset 2px → travel 24px
-  lg: { track: 'h-6 w-12', knob: 'h-5 w-5', offset: 'translate-x-6' },
+  lg: { track: 'h-6 w-12', knob: 'h-5 w-5', offset: 'translate-x-6 rtl:-translate-x-6' },
 };
 
 const TONES = {
@@ -76,8 +82,8 @@ export default function Toggle({
       <span
         aria-hidden
         className={cn(
-          // Anchored left, moved by transform: one origin, one property in motion.
-          'absolute left-0.5 top-1/2 -translate-y-1/2 rounded-full bg-white shadow',
+          // Anchored at the inline start, moved by transform: one origin, one property in motion.
+          'absolute start-0.5 top-1/2 -translate-y-1/2 rounded-full bg-white shadow',
           'transition-transform duration-200 ease-out motion-reduce:transition-none',
           geometry.knob,
           checked ? geometry.offset : 'translate-x-0',

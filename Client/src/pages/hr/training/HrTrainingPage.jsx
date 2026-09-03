@@ -324,7 +324,7 @@ export default function HrTrainingPage() {
                       to={`/app/hr/training/${entry.code}/quiz`}
                       className="font-medium text-red-brand hover:underline"
                     >
-                      {t('hr.training.quiz')} →
+                      {t('hr.training.quiz')} <span aria-hidden className="rtl:-scale-x-100">→</span>
                     </Link>
                   )}
                 </div>

@@ -61,7 +61,7 @@ export default function InterviewPrepPage() {
     <div className="mx-auto max-w-3xl">
       <div className="mb-4 flex items-center justify-between print:hidden">
         <Link to={`/app/manager/recruits/${userId}`} className="text-sm text-red-brand hover:underline">
-          ← {t('manager.backTo', { name: data.displayName })}
+          <span aria-hidden className="rtl:-scale-x-100">←</span> {t('manager.backTo', { name: data.displayName })}
         </Link>
         <button
           onClick={() => window.print()}

@@ -175,7 +175,13 @@ export function SidebarNav() {
       {/* Desktop: a permanent column, part of the flex layout. */}
       <div className="sticky top-0 hidden h-screen shrink-0 border-e border-border lg:block">{nav}</div>
 
-      {/* Mobile/tablet: an off-canvas drawer over the content, opened from TopBar's hamburger. */}
+      {/*
+        Mobile/tablet: an off-canvas drawer over the content, opened from TopBar's hamburger.
+        Anchored to the inline start (start-0) so it sits on the reading-start edge in both
+        directions; the entry transform is a raw Framer x value rather than a Tailwind class,
+        so it does not flip automatically under dir="rtl" the way `border-e`/`start-0` do —
+        `document.dir` is read directly to pick which edge it slides in from.
+      */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -187,12 +193,20 @@ export function SidebarNav() {
             onClick={() => setOpen(false)}
           >
             <motion.div
-              initial={reduce ? { x: 0 } : { x: '-100%' }}
+              initial={
+                reduce
+                  ? { x: 0 }
+                  : { x: document.documentElement.dir === 'rtl' ? '100%' : '-100%' }
+              }
               animate={{ x: 0 }}
-              exit={reduce ? { x: 0 } : { x: '-100%' }}
+              exit={
+                reduce
+                  ? { x: 0 }
+                  : { x: document.documentElement.dir === 'rtl' ? '100%' : '-100%' }
+              }
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
               onClick={(event) => event.stopPropagation()}
-              className="h-full max-w-[85vw] border-e border-border shadow-app-lifted"
+              className="absolute start-0 h-full max-w-[85vw] border-e border-border shadow-app-lifted"
             >
               {nav}
             </motion.div>

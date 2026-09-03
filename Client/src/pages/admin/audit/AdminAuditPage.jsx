@@ -276,7 +276,7 @@ export default function AdminAuditPage() {
         <div className={`overflow-x-auto ${CARD}`}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+              <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                 <th className="px-4 py-3 font-medium">{t('admin.audit.table.date')}</th>
                 <th className="px-4 py-3 font-medium">{t('admin.audit.table.actor')}</th>
                 <th className="px-4 py-3 font-medium">{t('admin.audit.table.action')}</th>

@@ -205,7 +205,7 @@ export default function HrSurveyResultsPage() {
         <div className={`overflow-hidden ${CARD}`}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+              <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                 <th className="px-4 py-3 font-medium">{t('hr.surveys.table.indicator')}</th>
                 <th className="px-4 py-3 font-medium">{t('hr.surveys.table.average')}</th>
                 <th className="w-1/2 px-4 py-3 font-medium">{t('hr.surveys.table.score')}</th>
@@ -238,7 +238,7 @@ export default function HrSurveyResultsPage() {
                             }
                           />
                         </div>
-                        <span className="w-10 shrink-0 text-right font-mono text-xs text-text-dim">
+                        <span className="w-10 shrink-0 text-end font-mono text-xs text-text-dim">
                           {indicator.percent}%
                         </span>
                       </div>
@@ -294,7 +294,7 @@ export default function HrSurveyResultsPage() {
           <div className={`overflow-hidden ${CARD}`}>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                   <th className="px-4 py-3 font-medium">{t('hr.surveyResults.table.employee')}</th>
                   <th className="px-4 py-3 font-medium">{t('hr.surveyResults.table.milestone')}</th>
                   <th className="px-4 py-3 font-medium">{t('hr.surveyResults.table.structure')}</th>

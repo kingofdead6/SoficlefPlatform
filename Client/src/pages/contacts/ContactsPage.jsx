@@ -33,14 +33,14 @@ export default function ContactsPage() {
       <h1 className="font-display text-2xl text-red-deep">{t('contacts.title')}</h1>
 
       <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
-        <table className="w-full text-left text-[13px]">
+        <table className="w-full text-start text-[13px]">
           <thead className="bg-surface-2 text-text-dim">
             <tr>
               <th className="px-4 py-2 font-medium">{t('contacts.columns.extension')}</th>
               <th className="px-4 py-2 font-medium">{t('contacts.columns.initials')}</th>
               <th className="px-4 py-2 font-medium">{t('common.labels.name')}</th>
               <th className="px-4 py-2 font-medium">{t('contacts.columns.role')}</th>
-              <th className="px-4 py-2 text-right font-medium">{t('contacts.columns.priority')}</th>
+              <th className="px-4 py-2 text-end font-medium">{t('contacts.columns.priority')}</th>
             </tr>
           </thead>
           <tbody>
@@ -50,7 +50,7 @@ export default function ContactsPage() {
                 <td className="px-4 py-2 font-mono text-text">{contact.initials}</td>
                 <td className="px-4 py-2 text-text">{contact.nameFr}</td>
                 <td className="px-4 py-2 text-text">{contact.roleFr}</td>
-                <td className="px-4 py-2 text-right">
+                <td className="px-4 py-2 text-end">
                   <span
                     className={`rounded-app px-2 py-1 text-[11px] ${
                       contact.priorityRank === 'S1' ? 'bg-red-brand/10 text-red-brand' : 'bg-surface-2 text-text-dim'

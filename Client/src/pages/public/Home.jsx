@@ -274,7 +274,7 @@ export default function Home() {
                       to={capability.to}
                       className="mt-4 text-sm font-medium text-red-brand hover:underline"
                     >
-                      {t(capability.linkKey)} →
+                      {t(capability.linkKey)} <span aria-hidden className="rtl:-scale-x-100">→</span>
                     </Link>
                   )}
                 </div>

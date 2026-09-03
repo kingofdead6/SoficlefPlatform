@@ -132,7 +132,7 @@ export default function HrEmployeeDetailPage() {
   return (
     <div>
       <Link to="/app/hr/employees" className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← Retour au répertoire
+        <span aria-hidden className="rtl:-scale-x-100">←</span> Retour au répertoire
       </Link>
 
       <PageHeader
@@ -298,7 +298,7 @@ export default function HrEmployeeDetailPage() {
             <div className={`overflow-hidden ${CARD}`}>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                  <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                     <th className="px-4 py-3 font-medium">Module</th>
                     <th className="px-4 py-3 font-medium">Obligatoire</th>
                     <th className="px-4 py-3 font-medium">Score</th>
@@ -350,7 +350,7 @@ export default function HrEmployeeDetailPage() {
                   {employee.documentAcknowledgements.map((ack, index) => (
                     <li key={`${ack.document.titleFr}-${index}`} className="text-sm">
                       <span className="text-text">{ack.document.titleFr}</span>
-                      <span className="ml-2 text-xs text-text-dim">
+                      <span className="ms-2 text-xs text-text-dim">
                         {formatDate(ack.acceptedAt)}
                       </span>
                     </li>
@@ -388,7 +388,7 @@ export default function HrEmployeeDetailPage() {
             <div className={`overflow-hidden ${CARD}`}>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                  <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                     <th className="px-4 py-3 font-medium">Poste</th>
                     <th className="px-4 py-3 font-medium">Structure</th>
                     <th className="px-4 py-3 font-medium">Du</th>

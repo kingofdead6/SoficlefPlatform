@@ -71,7 +71,7 @@ export default function ManagementPage() {
                 <h4 className="font-display text-text">{node.titleFr}</h4>
                 {node.holderFr && <p className="mt-1 text-[13px] text-text">{node.holderFr}</p>}
                 {childrenOf(node.id).length > 0 && (
-                  <ul className="mt-3 space-y-2 border-l-2 border-border pl-4">
+                  <ul className="mt-3 space-y-2 border-s-2 border-border ps-4">
                     {childrenOf(node.id).map((child) => (
                       <li key={child.id} className="text-[13px] text-text">
                         <span className="font-medium">{child.titleFr}</span>
@@ -92,7 +92,7 @@ export default function ManagementPage() {
           <ol className="space-y-2">
             {actions.map((action) => (
               <li key={action.id} className="rounded-app border border-border bg-surface p-3 text-[13px] shadow-app">
-                <span className="mr-2 font-mono text-text-dim">{action.dayLabelFr}</span>
+                <span className="me-2 font-mono text-text-dim">{action.dayLabelFr}</span>
                 {action.textFr}
               </li>
             ))}

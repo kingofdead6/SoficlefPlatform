@@ -203,7 +203,7 @@ export default function Entreprise() {
                   {index < MILESTONES.length - 1 && (
                     <span
                       aria-hidden
-                      className="absolute left-[7px] top-4 h-full w-px bg-border"
+                      className="absolute start-[7px] top-4 h-full w-px bg-border"
                     />
                   )}
                   <span

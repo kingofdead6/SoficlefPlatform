@@ -54,7 +54,7 @@ export default function TeamPage() {
           <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                   <th className="px-4 py-3 font-medium">{t('managerTeamPage.table.name')}</th>
                   <th className="px-4 py-3 font-medium">{t('managerTeamPage.table.position')}</th>
                   <th className="px-4 py-3 font-medium" />
@@ -65,7 +65,7 @@ export default function TeamPage() {
                   <motion.tr key={node.id} variants={rowVariants} className="border-b border-border last:border-0 hover:bg-surface-2/60">
                     <td className="px-4 py-3 text-text">{node.holder.displayName}</td>
                     <td className="px-4 py-3 text-text-dim">{node.titleFr}</td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-end">
                       <Link to="/job-description" className="text-xs font-medium text-red-brand hover:underline">
                         {t('managerTeamPage.jobDescriptions')}
                       </Link>
@@ -90,7 +90,7 @@ export default function TeamPage() {
           <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
+                <tr className="border-b border-border bg-surface-2 text-start text-text-muted">
                   <th className="px-4 py-3 font-medium">{t('managerTeamPage.table.position')}</th>
                   <th className="px-4 py-3 font-medium">{t('managerTeamPage.table.occupation')}</th>
                 </tr>

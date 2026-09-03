@@ -113,7 +113,7 @@ export default function HrQuizBuilderPage() {
   return (
     <div>
       <Link to="/app/hr/training" className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← Retour au catalogue
+        <span aria-hidden className="rtl:-scale-x-100">←</span> Retour au catalogue
       </Link>
 
       <PageHeader
