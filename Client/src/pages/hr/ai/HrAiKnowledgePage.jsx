@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { assistantApi } from '../../../api/assistant.js';
 import { documentsApi } from '../../../api/documents.js';
@@ -14,15 +15,9 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
 
 /** The platform resources an agent may read, in French. */
 const RESOURCE_LABELS = {
-  position: 'Postes',
-  assignment: 'Affectations',
-  organization_unit: 'Structures',
-  document: 'Bibliothèque documentaire',
-  onboarding_instance: 'Parcours d’intégration',
-  onboarding_task: 'Étapes de parcours',
-  training: 'Catalogue de formation',
-  competency: 'Référentiel de compétences',
-  job_description: 'Fiches de poste',
+  position: 'position', assignment: 'assignment', organization_unit: 'organizationUnit',
+  document: 'document', onboarding_instance: 'onboardingInstance', onboarding_task: 'onboardingTask',
+  training: 'training', competency: 'competency', job_description: 'jobDescription',
 };
 
 /**
@@ -47,6 +42,7 @@ const RESOURCE_LABELS = {
  * model, when one is configured, only rephrases what retrieval already fetched.
  */
 export default function HrAiKnowledgePage() {
+  const { t } = useTranslation();
   const [agents, setAgents] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,12 +64,12 @@ export default function HrAiKnowledgePage() {
         setModelName(agentsRes.modelName ?? null);
         setDocuments(documentsRes.data ?? []);
       } catch {
-        setError('Impossible de charger la configuration des agents.');
+        setError(t('hr.knowledge.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const published = useMemo(
     () => documents.filter((doc) => doc.availability === 'AVAILABLE'),
@@ -85,15 +81,15 @@ export default function HrAiKnowledgePage() {
   const testAgent =
     testableAgents.find((agent) => agent.id === testAgentId) ?? testableAgents[0] ?? null;
 
-  if (loading) return <PageLoading label="Chargement des agents…" />;
+  if (loading) return <PageLoading label={t('hr.knowledge.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Base de connaissances des agents"
-        subtitle="Ce que chaque agent est autorisé à lire, et l’état réel de la fonctionnalité."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.knowledge.title')}
+        subtitle={t('hr.knowledge.subtitle')}
       />
 
       <motion.div
@@ -104,7 +100,7 @@ export default function HrAiKnowledgePage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Agents définis
+            {t('hr.knowledge.stats.defined')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={agents.length} />
@@ -112,7 +108,7 @@ export default function HrAiKnowledgePage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Agents opérationnels
+            {t('hr.knowledge.stats.operational')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={liveAgents.length} />
@@ -120,7 +116,7 @@ export default function HrAiKnowledgePage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Documents publiés
+            {t('hr.knowledge.stats.published')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={published.length} />
@@ -134,12 +130,9 @@ export default function HrAiKnowledgePage() {
         animate="visible"
         className="mb-10"
       >
-        <h2 className="mb-1 font-display text-xl text-text">Sources de chaque agent</h2>
+        <h2 className="mb-1 font-display text-xl text-text">{t('hr.knowledge.sources.title')}</h2>
         <p className="mb-4 text-sm text-text-dim">
-          Les sources ne sont pas des fichiers indexés mais des ressources de la plateforme, lues
-          avec les permissions et le périmètre de la personne qui pose la question. Un agent ne peut
-          donc jamais faire apparaître une ligne que son interlocuteur n’aurait pas pu ouvrir
-          lui-même.
+          {t('hr.knowledge.sources.detail')}
         </p>
 
         <motion.div
@@ -159,14 +152,14 @@ export default function HrAiKnowledgePage() {
                       : 'bg-surface-2 text-text-dim'
                   }`}
                 >
-                  {agent.available !== false ? 'Opérationnel' : 'Hors de vos droits'}
+                  {agent.available !== false ? t('hr.knowledge.operational') : t('hr.knowledge.outOfScope')}
                 </span>
               </div>
               <p className="mt-1 text-sm text-text-dim">{agent.purposeFr}</p>
 
               <div className="mt-4 border-t border-border pt-3">
                 <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-                  Lit
+                  {t('hr.knowledge.reads')}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {agent.reads.map((resource) => (
@@ -174,7 +167,7 @@ export default function HrAiKnowledgePage() {
                       key={resource}
                       className="rounded-full bg-red-brand/10 px-2 py-0.5 text-xs text-red-brand"
                     >
-                      {RESOURCE_LABELS[resource] ?? resource}
+                      {RESOURCE_LABELS[resource] ? t(`hr.knowledge.resources.${RESOURCE_LABELS[resource]}`) : resource}
                     </span>
                   ))}
                 </div>
@@ -191,13 +184,9 @@ export default function HrAiKnowledgePage() {
         transition={{ delay: reduce ? 0 : 0.06 }}
         className="mb-10"
       >
-        <h2 className="mb-1 font-display text-xl text-text">Tester une question</h2>
+        <h2 className="mb-1 font-display text-xl text-text">{t('hr.knowledge.test.title')}</h2>
         <p className="mb-4 text-sm text-text-dim">
-          Les cinq agents répondent. Chacun cherche d’abord dans les données de la plateforme, avec
-          les droits de la personne qui pose la question — ici, les vôtres. Ce que vous voyez
-          ci-dessous est donc le comportement réel de l’agent <em>pour votre compte</em> : une
-          recrue interrogeant le même agent obtiendra les résultats de <em>son</em> périmètre, qui
-          peuvent être différents.
+          {t('hr.knowledge.test.detail')}
         </p>
         <p className="mb-4 text-sm text-text-dim">
           <ProviderNote provider={provider} modelName={modelName} />
@@ -205,8 +194,8 @@ export default function HrAiKnowledgePage() {
 
         {testableAgents.length === 0 ? (
           <EmptyState
-            title="Aucun agent interrogeable"
-            detail="Votre compte ne dispose des droits de lecture d’aucune des ressources lues par ces agents."
+            title={t('hr.knowledge.test.emptyTitle')}
+            detail={t('hr.knowledge.test.emptyDetail')}
             muted
           />
         ) : (
@@ -235,7 +224,7 @@ export default function HrAiKnowledgePage() {
                 purposeFr={testAgent.purposeFr}
                 provider={provider}
                 modelName={modelName}
-                emptyDetailFr="Posez une question pour observer ce que l’agent renvoie, et depuis quelles sources."
+                emptyDetailFr={t('hr.knowledge.test.emptyChat')}
               />
             )}
           </>
@@ -249,10 +238,10 @@ export default function HrAiKnowledgePage() {
         transition={{ delay: reduce ? 0 : 0.12 }}
         className="mb-10"
       >
-        <h2 className="mb-1 font-display text-xl text-text">Réindexation</h2>
+        <h2 className="mb-1 font-display text-xl text-text">{t('hr.knowledge.reindex.title')}</h2>
         <EmptyState
-          title="Sans objet"
-          detail="Il n’y a pas d’index à reconstruire : la recherche interroge directement la base, à chaque question, avec les permissions de la personne qui demande. C’est ce qui garantit qu’un agent ne peut pas conserver, dans un index périmé, une donnée à laquelle son interlocuteur n’a plus accès."
+          title={t('hr.knowledge.reindex.emptyTitle')}
+          detail={t('hr.knowledge.reindex.detail')}
           muted
         />
       </motion.section>
@@ -264,32 +253,29 @@ export default function HrAiKnowledgePage() {
         transition={{ delay: reduce ? 0 : 0.18 }}
         className="mb-10"
       >
-        <h2 className="mb-1 font-display text-xl text-text">Réponses signalées</h2>
+        <h2 className="mb-1 font-display text-xl text-text">{t('hr.knowledge.flagged.title')}</h2>
         <EmptyState
-          title="Non disponible"
-          detail="Aucun historique de réponses n’est conservé — ni file de signalements, ni table de réponses. Une réponse n’existe que le temps de la question qui l’a produite, ce qui évite de stocker en clair des extraits d’évaluations ou de parcours, mais rend impossible toute revue a posteriori."
+          title={t('hr.knowledge.flagged.emptyTitle')}
+          detail={t('hr.knowledge.flagged.detail')}
           muted
         />
       </motion.section>
 
       <section>
-        <h2 className="mb-1 font-display text-xl text-text">Documents accessibles à l’agent 2</h2>
+        <h2 className="mb-1 font-display text-xl text-text">{t('hr.knowledge.documents.title')}</h2>
         <p className="mb-4 text-sm text-text-dim">
-          Les documents publiés que l’agent documentaire consulte. Ce sont exactement ceux de la
-          bibliothèque, sans copie ni index séparé — et il applique la même règle d’audience :
-          un document réservé à certains départements reste invisible pour les autres, dans
-          l’assistant comme dans la bibliothèque.
+          {t('hr.knowledge.documents.detail')}
         </p>
         {published.length === 0 ? (
-          <EmptyState detail="Aucun document publié dans la bibliothèque." muted />
+          <EmptyState detail={t('hr.knowledge.documents.empty')} muted />
         ) : (
           <div className={`overflow-hidden ${CARD}`}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Document</th>
-                  <th className="px-4 py-3 font-medium">Référence</th>
-                  <th className="px-4 py-3 font-medium">Fichier</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.knowledge.documents.table.document')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.knowledge.documents.table.reference')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.knowledge.documents.table.file')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -298,7 +284,7 @@ export default function HrAiKnowledgePage() {
                     <td className="px-4 py-3 text-text">{doc.titleFr}</td>
                     <td className="px-4 py-3 font-mono text-xs text-text-dim">{doc.slug}</td>
                     <td className="px-4 py-3 text-xs text-text-dim">
-                      {doc.fileName ?? 'Aucun fichier joint'}
+                      {doc.fileName ?? t('hr.knowledge.documents.noFile')}
                     </td>
                   </tr>
                 ))}
@@ -310,7 +296,7 @@ export default function HrAiKnowledgePage() {
           to="/app/hr/documents"
           className="mt-3 inline-block text-sm text-red-brand hover:underline"
         >
-          Gérer la bibliothèque documentaire →
+          {t('hr.knowledge.documents.manage')} →
         </Link>
       </section>
     </div>
