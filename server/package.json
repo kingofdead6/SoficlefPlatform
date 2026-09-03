@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "SOFICLEF platform — Express + Prisma backend (migrated from Next.js)",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",

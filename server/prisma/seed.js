@@ -16,10 +16,14 @@
 import 'dotenv/config';
 import argon2 from 'argon2';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@prisma/client';
+// Default import, not `import { PrismaClient }` — see the comment in
+// src/infrastructure/db/client.js for why the named import breaks on some Node versions.
+import prismaClientPkg from '@prisma/client';
 
 import { ALL_PERMISSIONS, ROLE_PERMISSIONS, parsePermission } from '../src/domain/auth/permissions.js';
 import { ROLES } from '../src/domain/auth/roles.js';
+
+const { PrismaClient } = prismaClientPkg;
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is required to seed');

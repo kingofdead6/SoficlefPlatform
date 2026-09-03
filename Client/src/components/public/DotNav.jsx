@@ -101,7 +101,7 @@ export default function DotNav() {
   /* -------------------------------------------------------------- reduced motion */
   if (reduce) {
     return (
-      <div className="fixed left-1/2 top-4 z-50 w-[min(94vw,720px)] -translate-x-1/2">
+      <div className="fixed left-1/2 top-4 z-50 w-[min(94vw,800px)] -translate-x-1/2">
         <div className="flex items-center gap-3 rounded-full border border-border bg-surface px-4 py-2.5 shadow-app">
           <Brand />
           <nav className="flex flex-1 flex-wrap items-center gap-1" aria-label={t('nav.public.mainNav')}>
@@ -136,7 +136,7 @@ export default function DotNav() {
   const pillAnimate = expanded
     ? isMobile
       ? { width: 'min(92vw, 420px)', height: 'auto', borderRadius: 24 }
-      : { width: 690, height: 60, borderRadius: 30 }
+      : { width: 760, height: 60, borderRadius: 30 }
     : { width: DOT_SIZE, height: DOT_SIZE, borderRadius: 999 };
 
   const pillTransition =
