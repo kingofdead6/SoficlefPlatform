@@ -1,15 +1,37 @@
+import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { can, hasRole } from '../../lib/permissions.js';
 import { NAV_GROUP_LABEL_KEYS, NAV_ITEMS } from '../../lib/navigation.js';
 import { cn } from '../../lib/cn.js';
+import { useSidebar } from './SidebarContext.jsx';
 
+/**
+ * Below `lg`, the sidebar is an off-canvas drawer rather than a permanent column: at phone
+ * and tablet widths, `--sidebar-w` (268px) plus a usable content area no longer both fit,
+ * so the nav slides in over the content instead of squeezing it. TopBar renders the
+ * hamburger that opens it; `useSidebar` (SidebarContext) is the shared open/closed state
+ * so the two components don't need prop-drilling through AppShell.
+ */
 export function SidebarNav() {
   const { user } = useAuth();
   // Hooks must run before the early return, or the hook order changes between renders.
   const { t } = useTranslation();
+  const { open, setOpen } = useSidebar();
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, setOpen]);
+
   if (!user) return null;
 
   /*
@@ -61,13 +83,25 @@ export function SidebarNav() {
     .map((part) => part[0]?.toUpperCase())
     .join('');
 
-  return (
-    <nav className="sticky top-0 flex h-screen w-[var(--sidebar-w)] shrink-0 flex-col border-e border-border bg-surface">
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <span className="grid h-8 w-8 place-items-center rounded-app bg-red-brand font-display text-sm text-white">
-          S
-        </span>
-        <span className="font-display text-lg leading-none text-red-deep">SOFICLEF</span>
+  const nav = (
+    <nav className="flex h-full w-[var(--sidebar-w)] flex-col bg-surface">
+      <div className="flex items-center justify-between gap-2.5 px-5 py-5">
+        <div className="flex items-center gap-2.5">
+          <span className="grid h-8 w-8 place-items-center rounded-app bg-red-brand font-display text-sm text-white">
+            S
+          </span>
+          <span className="font-display text-lg leading-none text-red-deep">SOFICLEF</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label={t('common.actions.close')}
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-app text-text-dim transition-colors hover:bg-surface-2 hover:text-text lg:hidden"
+        >
+          <span aria-hidden className="text-lg leading-none">
+            ×
+          </span>
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 pb-4">
@@ -134,5 +168,37 @@ export function SidebarNav() {
         </span>
       </div>
     </nav>
+  );
+
+  return (
+    <>
+      {/* Desktop: a permanent column, part of the flex layout. */}
+      <div className="sticky top-0 hidden h-screen shrink-0 border-e border-border lg:block">{nav}</div>
+
+      {/* Mobile/tablet: an off-canvas drawer over the content, opened from TopBar's hamburger. */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={reduce ? { opacity: 1 } : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduce ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-text/20 lg:hidden"
+            onClick={() => setOpen(false)}
+          >
+            <motion.div
+              initial={reduce ? { x: 0 } : { x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={reduce ? { x: 0 } : { x: '-100%' }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(event) => event.stopPropagation()}
+              className="h-full max-w-[85vw] border-e border-border shadow-app-lifted"
+            >
+              {nav}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
