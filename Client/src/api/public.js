@@ -1,4 +1,6 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+import { API_URL } from '../../api.js';
+
+const BASE_URL = API_URL;
 
 /**
  * A minimal, unauthenticated fetch for the anonymous marketing pages — deliberately not

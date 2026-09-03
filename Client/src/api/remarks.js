@@ -1,6 +1,7 @@
 import { api } from './client.js';
+import { API_URL } from '../../api.js';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1';
+const BASE_URL = API_URL;
 
 export const remarksApi = {
   list: () => api.get('/remarks'),
