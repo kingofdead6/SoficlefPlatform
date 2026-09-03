@@ -36,16 +36,18 @@ export const ROLE_PERMISSIONS = {
   ],
   MANAGER: [
     'organization_unit:read', 'position:read', 'assignment:read', 'job:read', 'job_description:read',
-    'competency:read', 'assessment:read', 'assessment:assess', 'onboarding_instance:read',
+    'competency:read', 'assessment:read', 'assessment:assess', 'onboarding_instance:read', 'onboarding_instance:validate',
     'onboarding_task:read', 'onboarding_task:update', 'onboarding_task:validate',
     'kaizen_action:read', 'kaizen_action:update', 'document:read', 'report:read', 'dashboard:read',
     'notification:read', 'notification:update', 'survey:read', 'training:read',
+    'quest:create', 'quest:read', 'quest:update',
   ],
   EMPLOYEE: [
     'organization_unit:read', 'position:read', 'assignment:read', 'job:read', 'job_description:read',
     'competency:read', 'assessment:read', 'onboarding_instance:read', 'onboarding_task:read', 'onboarding_task:update',
     'remark:read', 'remark:create', 'remark:delete', 'document:read', 'dashboard:read',
     'notification:read', 'notification:update', 'survey:read', 'survey:update', 'training:read', 'training:update',
+    'quest:read', 'quest:update',
   ],
 };
 

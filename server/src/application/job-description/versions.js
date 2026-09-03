@@ -1,4 +1,4 @@
-import { assertCan } from '../../domain/auth/authorization.js';
+import { assertCanAnyScope } from '../../domain/auth/authorization.js';
 import { availableActions } from '../../domain/workflow/job-description.js';
 import { prisma } from '../../infrastructure/db/client.js';
 
@@ -21,7 +21,7 @@ async function namesOf(ids) {
 function actionAllowedFor(user, action) {
   const required = action === 'submit' || action === 'reopen' ? 'update' : 'validate';
   try {
-    assertCan(user, required, 'job_description');
+    assertCanAnyScope(user, required, 'job_description');
     return true;
   } catch {
     return false;
@@ -29,7 +29,7 @@ function actionAllowedFor(user, action) {
 }
 
 export async function loadDossier(user, jobDescriptionId) {
-  assertCan(user, 'read', 'job_description');
+  assertCanAnyScope(user, 'read', 'job_description');
 
   const document = await prisma.jobDescription.findUnique({
     where: { id: jobDescriptionId },
@@ -113,7 +113,7 @@ export function snapshotFrom(document) {
 
 /** Every job description with its position and current status — for the list view. */
 export async function listJobDescriptions(user) {
-  assertCan(user, 'read', 'job_description');
+  assertCanAnyScope(user, 'read', 'job_description');
 
   const documents = await prisma.jobDescription.findMany({
     orderBy: { jobTitleFr: 'asc' },

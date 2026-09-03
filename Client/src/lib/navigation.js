@@ -14,8 +14,8 @@ export const NAV_ITEMS = [
   { id: 'meTraining', href: '/app/me/training', group: 'me', labelKey: 'nav.items.meTraining', end: true, requires: { resource: 'training', action: 'read' } },
   { id: 'meCertificates', href: '/app/me/training/certificates', group: 'me', labelKey: 'nav.items.meCertificates', requires: { resource: 'training', action: 'read' } },
   { id: 'meSurveys', href: '/app/me/surveys', group: 'me', labelKey: 'nav.items.meSurveys', requires: { resource: 'survey', action: 'read' } },
-  { id: 'meAssistant', href: '/app/me/assistant', group: 'me', labelKey: 'nav.items.meAssistant', requires: { resource: 'organization_unit', action: 'read' } },
   { id: 'meQuests', href: '/app/me/quests', group: 'me', labelKey: 'nav.items.meQuests', requires: { resource: 'quest', action: 'read' } },
+  { id: 'meAssistant', href: '/app/me/assistant', group: 'me', labelKey: 'nav.items.meAssistant', requires: { resource: 'organization_unit', action: 'read' } },
 
   { id: 'dashboard', href: '/dashboard', group: 'steering', labelKey: 'nav.items.dashboard', requires: { resource: 'dashboard', action: 'read' } },
 

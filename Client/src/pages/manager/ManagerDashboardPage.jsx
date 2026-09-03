@@ -119,6 +119,12 @@ export default function ManagerDashboardPage() {
               {t('manager.dashboard.calendar')}
             </Link>
             <Link
+              to="/app/manager/quests"
+              className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
+            >
+              {t('manager.quests.title')}
+            </Link>
+            <Link
               to="/app/manager/recruits"
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >

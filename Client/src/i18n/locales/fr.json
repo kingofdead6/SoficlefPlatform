@@ -2739,7 +2739,8 @@
         "answered": "Répondus",
         "milestones": "Points d’étape",
         "open": "Ouverts",
-        "overdue": "En retard"
+        "overdue": "En retard",
+        "total": "Points d’étape"
       },
       "indicators": {
         "MANAGER_RELATIONSHIP": {
@@ -2761,9 +2762,29 @@
         "WORKING_CONDITIONS": {
           "help": "Locaux, matériel, sécurité, organisation.",
           "label": "Conditions de travail"
+        },
+        "welcomeQuality": {
+          "label": "Qualité de l’accueil",
+          "help": "Votre arrivée, le premier jour, la préparation de votre poste."
+        },
+        "supportLevel": {
+          "label": "Accompagnement",
+          "help": "La disponibilité de ceux qui vous aident à prendre vos marques."
+        },
+        "roleClarity": {
+          "label": "Clarté du rôle",
+          "help": "Savez-vous ce qu’on attend de vous et comment cela se mesure ?"
+        },
+        "managerRelationship": {
+          "label": "Relation avec le manager",
+          "help": "Échanges, retours, points d’étape."
+        },
+        "workingConditions": {
+          "label": "Conditions de travail",
+          "help": "Locaux, matériel, sécurité, organisation."
         }
       },
-      "indicatorsFilled": "{{answered}} / {{total}} indicateurs renseignés",
+      "indicatorsFilled": "{{count}} / {{total}} indicateurs renseignés",
       "loadFailed": "Impossible de charger vos enquêtes.",
       "loading": "Chargement de vos enquêtes…",
       "notOpen": "Pas encore ouvert",
@@ -2773,13 +2794,18 @@
       "pickOne": "Répondez à au moins un indicateur avant d’envoyer.",
       "respond": "Répondre",
       "respondedOn": " · répondu le {{date}}",
-      "roundTitle": "Point d’étape J+{{days}}",
+      "roundTitle": "Point d’étape J+{{dayOffset}}",
       "scale": {
         "1": "Très insatisfait",
         "2": "Insatisfait",
         "3": "Neutre",
         "4": "Satisfait",
-        "5": "Très satisfait"
+        "5": "Très satisfait",
+        "veryDissatisfied": "Très insatisfait",
+        "dissatisfied": "Insatisfait",
+        "neutral": "Neutre",
+        "satisfied": "Satisfait",
+        "verySatisfied": "Très satisfait"
       },
       "score": "{{score}} / 5",
       "sending": "Envoi…",
@@ -2788,7 +2814,22 @@
       "submitOk": "Merci. Votre réponse à l’enquête J+{{days}} a bien été enregistrée.",
       "subtitle": "Quatre points d’étape — J+7, J+30, J+60 et J+90 — pour dire comment se passe votre intégration. Vos réponses individuelles ne sont pas affichées nominativement dans les tableaux de bord RH.",
       "title": "Mes enquêtes de satisfaction",
-      "yourComment": "Votre commentaire"
+      "yourComment": "Votre commentaire",
+      "loadError": "Impossible de charger vos enquêtes.",
+      "dueDate": "Échéance : {{date}}",
+      "answeredOn": "répondu le {{date}}",
+      "answerAction": "Répondre",
+      "scoreOutOfFive": "{{score}} / 5",
+      "notYetOpen": "Cette enquête s’ouvrira à son échéance : elle mesure votre ressenti à ce moment précis du parcours.",
+      "needAtLeastOne": "Répondez à au moins un indicateur avant d’envoyer.",
+      "submitSuccess": "Merci. Votre réponse à l’enquête J+{{dayOffset}} a bien été enregistrée.",
+      "submitAction": "Envoyer ma réponse",
+      "status": {
+        "answered": "Répondu",
+        "overdue": "En retard",
+        "open": "Ouvert",
+        "notYetOpen": "Pas encore ouvert"
+      }
     },
     "task": {
       "acknowledge": {

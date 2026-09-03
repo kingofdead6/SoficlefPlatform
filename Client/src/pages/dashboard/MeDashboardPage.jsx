@@ -134,6 +134,12 @@ export default function MeDashboardPage() {
               {t('me.dashboard.myJourney')}
             </Link>
             <Link
+              to="/app/me/quests"
+              className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
+            >
+              {t('me.quests.title')}
+            </Link>
+            <Link
               to="/app/me/assistant"
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >

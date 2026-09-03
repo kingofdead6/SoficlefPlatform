@@ -2733,13 +2733,14 @@
       "commentLabel": "Comment (optional)",
       "commentPlaceholder": "What went well, what could be improved…",
       "due": "Due: {{date}}",
-      "emptyDetail": "The review points are created at the same time as your onboarding journey.",
+      "emptyDetail": "Check-ins are created at the same time as your onboarding journey.",
       "emptyTitle": "No survey scheduled",
       "figures": {
         "answered": "Answered",
         "milestones": "Review points",
         "open": "Open",
-        "overdue": "Overdue"
+        "overdue": "Overdue",
+        "total": "Check-ins"
       },
       "indicators": {
         "MANAGER_RELATIONSHIP": {
@@ -2761,9 +2762,29 @@
         "WORKING_CONDITIONS": {
           "help": "Premises, equipment, safety, organisation.",
           "label": "Working conditions"
+        },
+        "welcomeQuality": {
+          "label": "Quality of welcome",
+          "help": "Your arrival, the first day, how your workstation was prepared."
+        },
+        "supportLevel": {
+          "label": "Support",
+          "help": "How available the people helping you settle in have been."
+        },
+        "roleClarity": {
+          "label": "Role clarity",
+          "help": "Do you know what is expected of you and how it is measured?"
+        },
+        "managerRelationship": {
+          "label": "Relationship with your manager",
+          "help": "Conversations, feedback, check-ins."
+        },
+        "workingConditions": {
+          "label": "Working conditions",
+          "help": "Premises, equipment, safety, organisation."
         }
       },
-      "indicatorsFilled": "{{answered}} / {{total}} indicators answered",
+      "indicatorsFilled": "{{count}} / {{total}} indicators filled in",
       "loadFailed": "Could not load your surveys.",
       "loading": "Loading your surveys…",
       "notOpen": "Not open yet",
@@ -2773,22 +2794,42 @@
       "pickOne": "Answer at least one indicator before sending.",
       "respond": "Answer",
       "respondedOn": " · answered on {{date}}",
-      "roundTitle": "Review point D+{{days}}",
+      "roundTitle": "Check-in D+{{dayOffset}}",
       "scale": {
         "1": "Very dissatisfied",
         "2": "Dissatisfied",
         "3": "Neutral",
         "4": "Satisfied",
-        "5": "Very satisfied"
+        "5": "Very satisfied",
+        "veryDissatisfied": "Very dissatisfied",
+        "dissatisfied": "Dissatisfied",
+        "neutral": "Neutral",
+        "satisfied": "Satisfied",
+        "verySatisfied": "Very satisfied"
       },
       "score": "{{score}} / 5",
       "sending": "Sending…",
       "submit": "Send my answers",
-      "submitFailed": "Your answers could not be sent.",
+      "submitFailed": "Sending your answer failed.",
       "submitOk": "Thank you. Your answers to the D+{{days}} survey have been recorded.",
-      "subtitle": "Four review points — D+7, D+30, D+60 and D+90 — to say how your onboarding is going. Your individual answers are not shown by name in the HR dashboards.",
+      "subtitle": "Four check-ins — D+7, D+30, D+60 and D+90 — to say how your onboarding is going. Your individual answers are not shown by name in HR dashboards.",
       "title": "My satisfaction surveys",
-      "yourComment": "Your comment"
+      "yourComment": "Your comment",
+      "loadError": "Could not load your surveys.",
+      "dueDate": "Due: {{date}}",
+      "answeredOn": "answered on {{date}}",
+      "answerAction": "Answer",
+      "scoreOutOfFive": "{{score}} / 5",
+      "notYetOpen": "This survey will open on its due date: it measures how you feel at that specific point in the journey.",
+      "needAtLeastOne": "Answer at least one indicator before sending.",
+      "submitSuccess": "Thank you. Your answer to the D+{{dayOffset}} survey has been recorded.",
+      "submitAction": "Send my answer",
+      "status": {
+        "answered": "Answered",
+        "overdue": "Overdue",
+        "open": "Open",
+        "notYetOpen": "Not yet open"
+      }
     },
     "task": {
       "acknowledge": {

@@ -111,7 +111,7 @@ export default function SurveysPage() {
 
   async function submit(round) {
     if (Object.keys(scores).length === 0) {
-      setNotice({ tone: 'error', textFr: 'Répondez à au moins un indicateur avant d’envoyer.' });
+      setNotice({ tone: 'error', text: t('me.surveys.needAtLeastOne') });
       return;
     }
 
@@ -123,43 +123,38 @@ export default function SurveysPage() {
       await load();
       setNotice({
         tone: 'ok',
-        textFr: `Merci. Votre réponse à l’enquête J+${round.dayOffset} a bien été enregistrée.`,
+        text: t('me.surveys.submitSuccess', { dayOffset: round.dayOffset }),
       });
     } catch (err) {
       setNotice({
         tone: 'error',
-        textFr:
-          err instanceof ApiError && err.body?.message ? err.body.message : "L'envoi de votre réponse a échoué.",
+        text: err instanceof ApiError && err.body?.message ? err.body.message : t('me.surveys.submitFailed'),
       });
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement de vos enquêtes…" />;
+  if (loading) return <PageLoading label={t('me.surveys.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Mon espace"
-        title="Mes enquêtes de satisfaction"
-        subtitle="Quatre points d’étape — J+7, J+30, J+60 et J+90 — pour dire comment se passe votre intégration. Vos réponses individuelles ne sont pas affichées nominativement dans les tableaux de bord RH."
+        eyebrow={t('me.eyebrow')}
+        title={t('me.surveys.title')}
+        subtitle={t('me.surveys.subtitle')}
       />
 
       {rounds.length === 0 ? (
-        <EmptyState
-          title="Aucune enquête programmée"
-          detail="Les points d’étape sont créés en même temps que votre parcours d’intégration."
-          muted
-        />
+        <EmptyState title={t('me.surveys.emptyTitle')} detail={t('me.surveys.emptyDetail')} muted />
       ) : (
         <>
           <div data-gsap="band" className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Figure label="Points d’étape" value={summary.total} />
-            <Figure label="Répondus" value={summary.answered} />
-            <Figure label="Ouverts" value={summary.open} tone={summary.open > 0 ? 'red' : undefined} />
-            <Figure label="En retard" value={summary.overdue} tone={summary.overdue > 0 ? 'red' : undefined} />
+            <Figure label={t('me.surveys.figures.total')} value={summary.total} />
+            <Figure label={t('me.surveys.figures.answered')} value={summary.answered} />
+            <Figure label={t('me.surveys.figures.open')} value={summary.open} tone={summary.open > 0 ? 'red' : undefined} />
+            <Figure label={t('me.surveys.figures.overdue')} value={summary.overdue} tone={summary.overdue > 0 ? 'red' : undefined} />
           </div>
 
           <AnimatePresence>
@@ -175,7 +170,7 @@ export default function SurveysPage() {
                     : 'border-status-red/40 bg-status-red/5 text-status-red',
                 )}
               >
-                {notice.textFr}
+                {notice.text}
               </motion.p>
             )}
           </AnimatePresence>
@@ -200,13 +195,15 @@ export default function SurveysPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <h2 className="font-display text-lg text-text">Point d’étape J+{round.dayOffset}</h2>
+                      <h2 className="font-display text-lg text-text">
+                        {t('me.surveys.roundTitle', { dayOffset: round.dayOffset })}
+                      </h2>
                       <StatusPill round={round} />
                     </div>
                     <p className="text-sm text-text-dim">
-                      Échéance : {new Date(round.dueDate).toLocaleDateString('fr-FR')}
+                      {t('me.surveys.dueDate', { date: new Date(round.dueDate).toLocaleDateString(localeOf(i18n)) })}
                       {round.answeredAt
-                        ? ` · répondu le ${new Date(round.answeredAt).toLocaleDateString('fr-FR')}`
+                        ? ` · ${t('me.surveys.answeredOn', { date: new Date(round.answeredAt).toLocaleDateString(localeOf(i18n)) })}`
                         : ''}
                     </p>
                   </div>
@@ -217,7 +214,7 @@ export default function SurveysPage() {
                       onClick={() => startRound(round)}
                       className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
                     >
-                      Répondre
+                      {t('me.surveys.answerAction')}
                     </button>
                   )}
                 </div>
@@ -228,19 +225,24 @@ export default function SurveysPage() {
                     {round.responses.map((response) => (
                       <div key={response.indicator}>
                         <dt className="text-xs text-text-dim">
-                          {INDICATOR_LABELS[response.indicator] ?? response.indicator}
+                          {INDICATOR_LABEL_KEYS[response.indicator]
+                            ? t(INDICATOR_LABEL_KEYS[response.indicator])
+                            : response.indicator}
                         </dt>
                         <dd className="text-sm font-medium text-text">
-                          {response.score} / 5
+                          {t('me.surveys.scoreOutOfFive', { score: response.score })}
                           <span className="ml-2 font-normal text-text-dim">
-                            {SCALE.find((entry) => entry.value === response.score)?.labelFr}
+                            {(() => {
+                              const scaleKey = SCALE.find((entry) => entry.value === response.score)?.labelKey;
+                              return scaleKey ? t(scaleKey) : null;
+                            })()}
                           </span>
                         </dd>
                       </div>
                     ))}
                     {round.responses.find((response) => response.commentFr) && (
                       <div className="sm:col-span-2 lg:col-span-3">
-                        <dt className="text-xs text-text-dim">Votre commentaire</dt>
+                        <dt className="text-xs text-text-dim">{t('me.surveys.yourComment')}</dt>
                         <dd className="whitespace-pre-wrap text-sm text-text-dim">
                           {round.responses.find((response) => response.commentFr).commentFr}
                         </dd>
@@ -250,10 +252,7 @@ export default function SurveysPage() {
                 )}
 
                 {!round.answeredAt && !round.open && (
-                  <p className="mt-3 text-sm text-text-dim">
-                    Cette enquête s’ouvrira à son échéance : elle mesure votre ressenti à ce moment précis du
-                    parcours.
-                  </p>
+                  <p className="mt-3 text-sm text-text-dim">{t('me.surveys.notYetOpen')}</p>
                 )}
 
                 <AnimatePresence initial={false}>
@@ -268,8 +267,8 @@ export default function SurveysPage() {
                       <div className="mt-4 space-y-5 border-t border-border pt-4">
                         {INDICATORS.map((indicator) => (
                           <fieldset key={indicator.id}>
-                            <legend className="text-sm font-medium text-text">{indicator.labelFr}</legend>
-                            <p className="mb-2 text-xs text-text-dim">{indicator.helpFr}</p>
+                            <legend className="text-sm font-medium text-text">{t(indicator.labelKey)}</legend>
+                            <p className="mb-2 text-xs text-text-dim">{t(indicator.helpKey)}</p>
                             <div className="flex flex-wrap gap-2">
                               {SCALE.map((entry) => (
                                 <button
@@ -286,7 +285,7 @@ export default function SurveysPage() {
                                       : 'border-border text-text-dim hover:border-red-brand hover:text-red-brand',
                                   )}
                                 >
-                                  {entry.value} · {entry.labelFr}
+                                  {entry.value} · {t(entry.labelKey)}
                                 </button>
                               ))}
                             </div>
@@ -294,13 +293,13 @@ export default function SurveysPage() {
                         ))}
 
                         <label className="block text-sm text-text-muted">
-                          Commentaire (facultatif)
+                          {t('me.surveys.commentLabel')}
                           <textarea
                             value={commentFr}
                             onChange={(event) => setCommentFr(event.target.value)}
                             rows={3}
                             maxLength={2000}
-                            placeholder="Ce qui s’est bien passé, ce qui pourrait être amélioré…"
+                            placeholder={t('me.surveys.commentPlaceholder')}
                             className="mt-1 w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand"
                           />
                         </label>
@@ -312,17 +311,17 @@ export default function SurveysPage() {
                             onClick={() => submit(round)}
                             className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
                           >
-                            {submitting ? 'Envoi…' : 'Envoyer ma réponse'}
+                            {submitting ? t('common.states.sending') : t('me.surveys.submitAction')}
                           </button>
                           <button
                             type="button"
                             onClick={() => setActiveRoundId(null)}
                             className="rounded-app border border-border px-4 py-2 text-sm font-medium text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
                           >
-                            Annuler
+                            {t('common.actions.cancel')}
                           </button>
                           <span className="self-center text-xs text-text-dim">
-                            {Object.keys(scores).length} / {INDICATORS.length} indicateurs renseignés
+                            {t('me.surveys.indicatorsFilled', { count: Object.keys(scores).length, total: INDICATORS.length })}
                           </span>
                         </div>
                       </div>
@@ -339,27 +338,33 @@ export default function SurveysPage() {
 }
 
 function StatusPill({ round }) {
+  const { t } = useTranslation();
+
   if (round.answeredAt) {
     return (
       <span className="rounded-full bg-status-green/10 px-2 py-0.5 text-xs font-medium text-status-green">
-        Répondu
+        {t('me.surveys.status.answered')}
       </span>
     );
   }
   if (round.overdue) {
     return (
       <span className="rounded-full bg-status-red/10 px-2 py-0.5 text-xs font-medium text-status-red">
-        En retard
+        {t('me.surveys.status.overdue')}
       </span>
     );
   }
   if (round.open) {
     return (
-      <span className="rounded-full bg-red-brand/10 px-2 py-0.5 text-xs font-medium text-red-brand">Ouvert</span>
+      <span className="rounded-full bg-red-brand/10 px-2 py-0.5 text-xs font-medium text-red-brand">
+        {t('me.surveys.status.open')}
+      </span>
     );
   }
   return (
-    <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">Pas encore ouvert</span>
+    <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">
+      {t('me.surveys.status.notYetOpen')}
+    </span>
   );
 }
 

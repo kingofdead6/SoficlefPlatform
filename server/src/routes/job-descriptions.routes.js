@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 import { requireAuth } from '../infrastructure/middleware/auth.js';
 import { mutate, sendActionResult } from '../application/shared/mutate.js';
-import { assertCan } from '../domain/auth/authorization.js';
 import { ACTION_PERMISSION, transition } from '../domain/workflow/job-description.js';
 import { loadDossier, listJobDescriptions, snapshotFrom } from '../application/job-description/versions.js';
 import { prisma } from '../infrastructure/db/client.js';
@@ -57,6 +56,21 @@ router.post('/versions/action', async (req, res) => {
   const result = await mutate(req, req.body, {
     schema: ApplyAction,
     requires: { resource: 'job_description', action: ACTION_PERMISSION[kind] },
+    /*
+     * Job descriptions carry no per-unit scoping of their own — HR/ADMIN act on the whole
+     * catalogue regardless of which unit their grant happens to be scoped to (mirroring
+     * listJobDescriptions/loadDossier, which use assertCanAnyScope for the same reason).
+     * mutate() always re-checks through assertCan()/scopeCovers(), which for an
+     * ORGANIZATION_UNIT-scoped caller only ever passes when the target names a unit that
+     * scope actually covers — so this hands back one of the caller's own covered units,
+     * satisfying that check without adding a scoping rule this resource doesn't have.
+     */
+    target: (_value, user) => {
+      const scopedAssignment = user.assignments.find((assignment) => assignment.scope.kind === 'ORGANIZATION_UNIT');
+      const organizationUnitId =
+        scopedAssignment?.scope.organizationUnitIds?.[0] ?? scopedAssignment?.scope.organizationUnitId ?? undefined;
+      return { organizationUnitId };
+    },
     run: async (value, context) => {
       const version = await context.tx.jobDescriptionVersion.findUnique({
         where: { id: value.versionId },
