@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { trainingApi } from '../../../api/training.js';
 import { ApiError } from '../../../api/client.js';
@@ -26,6 +27,7 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
  * the first pass only — this page reports certification rather than deciding it.
  */
 export default function TrainingModulePage() {
+  const { t } = useTranslation();
   const { code } = useParams();
   const [module, setModule] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -43,11 +45,15 @@ export default function TrainingModulePage() {
       const { data } = await trainingApi.module(code);
       setModule(data);
     } catch (err) {
-      setError(err instanceof ApiError && err.status === 404 ? 'Module introuvable.' : 'Impossible de charger ce module.');
+      setError(
+        err instanceof ApiError && err.status === 404
+          ? t('me.training.module.notFound')
+          : t('me.training.module.loadError'),
+      );
     } finally {
       setLoading(false);
     }
-  }, [code]);
+  }, [code, t]);
 
   useEffect(() => {
     setOutcome(null);
@@ -64,7 +70,7 @@ export default function TrainingModulePage() {
 
     const unanswered = module.questions.filter((question) => !answers[question.id]);
     if (unanswered.length > 0) {
-      setFormError(`Répondez à toutes les questions (${unanswered.length} restante(s)).`);
+      setFormError(t('me.training.module.answerAllQuestions', { count: unanswered.length }));
       return;
     }
 
@@ -76,7 +82,7 @@ export default function TrainingModulePage() {
       setStep('result');
     } catch (err) {
       setFormError(
-        err instanceof ApiError && err.body?.message ? err.body.message : "L'envoi du questionnaire a échoué.",
+        err instanceof ApiError && err.body?.message ? err.body.message : t('me.training.module.submitFailed'),
       );
     } finally {
       setSubmitting(false);
@@ -90,7 +96,7 @@ export default function TrainingModulePage() {
     setStep('quiz');
   }
 
-  if (loading) return <PageLoading label="Chargement du module…" />;
+  if (loading) return <PageLoading label={t('me.training.module.loading')} />;
   if (error) return <PageError message={error} />;
   if (!module) return null;
 
@@ -98,15 +104,15 @@ export default function TrainingModulePage() {
   const answered = module.questions.filter((question) => answers[question.id]).length;
 
   const STEPS = [
-    { id: 'lesson', labelFr: 'Contenu' },
-    { id: 'quiz', labelFr: 'Questionnaire' },
-    { id: 'result', labelFr: 'Résultat' },
+    { id: 'lesson', labelKey: 'me.training.module.steps.content' },
+    { id: 'quiz', labelKey: 'me.training.module.steps.quiz' },
+    { id: 'result', labelKey: 'me.training.module.steps.result' },
   ];
 
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Ma formation"
+        eyebrow={t('me.training.title')}
         title={module.titleFr}
         subtitle={module.summaryFr}
         actions={
@@ -115,13 +121,13 @@ export default function TrainingModulePage() {
               to="/app/me/training"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Tous les modules
+              {t('me.training.module.allModules')}
             </Link>
             <Link
               to="/app/me/training/certificates"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Mes attestations
+              {t('nav.items.meCertificates')}
             </Link>
           </>
         }
@@ -146,7 +152,7 @@ export default function TrainingModulePage() {
               >
                 {index + 1}
               </span>
-              <span className={active ? 'font-medium text-text' : 'text-text-dim'}>{entry.labelFr}</span>
+              <span className={active ? 'font-medium text-text' : 'text-text-dim'}>{t(entry.labelKey)}</span>
               {index < STEPS.length - 1 && <span className="mx-1 h-px w-6 bg-border" aria-hidden />}
             </li>
           );
@@ -156,8 +162,8 @@ export default function TrainingModulePage() {
       {module.isPlaceholder && (
         <div className="mb-6">
           <EmptyState
-            title="Contenu provisoire"
-            detail="Ce module est marqué comme provisoire dans le catalogue : son contenu n’a pas encore été rédigé par les RH."
+            title={t('me.training.module.placeholderTitle')}
+            detail={t('me.training.module.placeholderDetail')}
             muted
           />
         </div>
@@ -179,11 +185,11 @@ export default function TrainingModulePage() {
 
             {module.best && (
               <p className="mb-4 text-sm text-text-dim">
-                Votre meilleur résultat sur ce module :{' '}
+                {t('me.training.module.bestResultLede')}{' '}
                 <span className={module.best.passed ? 'font-medium text-status-green' : 'font-medium text-status-amber'}>
-                  {module.best.score} %
+                  {t('me.training.module.percent', { value: module.best.score })}
                 </span>{' '}
-                (seuil {module.passingScore} %).
+                {t('me.training.module.thresholdSuffix', { score: module.passingScore })}
               </p>
             )}
 
@@ -193,12 +199,12 @@ export default function TrainingModulePage() {
                 onClick={() => setStep('quiz')}
                 className="self-start rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
               >
-                {module.best ? 'Repasser le questionnaire' : 'Passer au questionnaire'}
+                {module.best ? t('me.training.module.retakeQuiz') : t('me.training.module.goToQuiz')}
               </button>
             ) : (
               <EmptyState
-                title="Pas de questionnaire"
-                detail="Ce module ne comporte pas encore de questions : il n’y a donc rien à valider et aucune attestation à délivrer."
+                title={t('me.training.module.noQuizTitle')}
+                detail={t('me.training.module.noQuizDetail')}
                 muted
               />
             )}
@@ -217,15 +223,16 @@ export default function TrainingModulePage() {
           >
             <div className="mb-4 flex items-baseline justify-between">
               <p className="text-sm text-text-dim">
-                {answered} / {module.questions.length} question(s) répondue(s) · seuil de réussite{' '}
-                {module.passingScore} %
+                {t('me.training.module.answeredCount', { answered, total: module.questions.length })}
+                {' · '}
+                {t('me.training.module.passingThreshold', { score: module.passingScore })}
               </p>
               <button
                 type="button"
                 onClick={() => setStep('lesson')}
                 className="text-sm font-medium text-red-brand hover:underline"
               >
-                Relire le contenu
+                {t('me.training.module.reviewContent')}
               </button>
             </div>
 
@@ -278,7 +285,7 @@ export default function TrainingModulePage() {
               disabled={submitting}
               className="self-start rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
             >
-              {submitting ? 'Correction en cours…' : 'Valider mes réponses'}
+              {submitting ? t('me.training.module.grading') : t('me.training.module.submitAnswers')}
             </button>
           </motion.form>
         )}
@@ -305,20 +312,20 @@ export default function TrainingModulePage() {
                     outcome.passed ? 'text-status-green' : 'text-status-red',
                   )}
                 >
-                  {outcome.passed ? 'Module validé' : 'Seuil non atteint'}
+                  {outcome.passed ? t('me.training.module.moduleValidated') : t('me.training.module.thresholdMissed')}
                 </h2>
                 <p className="mt-1 text-sm text-text-dim">
-                  {outcome.correct} bonne(s) réponse(s) sur {outcome.total} · seuil {module.passingScore} %
+                  {t('me.training.module.correctCount', { correct: outcome.correct, total: outcome.total })}
+                  {' · '}
+                  {t('me.training.module.passingThreshold', { score: module.passingScore })}
                 </p>
                 {outcome.certified && (
                   <p className="mt-2 text-sm font-medium text-status-green">
-                    Attestation enregistrée à votre nom.
+                    {t('me.training.module.certificateSaved')}
                   </p>
                 )}
                 {outcome.passed && !outcome.certified && (
-                  <p className="mt-2 text-sm text-text-dim">
-                    Ce module était déjà validé : l’attestation existante conserve sa date d’origine.
-                  </p>
+                  <p className="mt-2 text-sm text-text-dim">{t('me.training.module.alreadyValidated')}</p>
                 )}
               </div>
             </div>
@@ -330,7 +337,7 @@ export default function TrainingModulePage() {
                   onClick={retry}
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
                 >
-                  Réessayer
+                  {t('me.training.module.retryAction')}
                 </button>
               )}
               <button
@@ -338,21 +345,21 @@ export default function TrainingModulePage() {
                 onClick={() => setStep('lesson')}
                 className="rounded-app border border-border px-4 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
               >
-                Relire le contenu
+                {t('me.training.module.reviewContent')}
               </button>
               {outcome.passed && (
                 <Link
                   to="/app/me/training/certificates"
                   className="rounded-app border border-border px-4 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
                 >
-                  Voir mon attestation
+                  {t('me.training.module.seeCertificate')}
                 </Link>
               )}
               <Link
                 to="/app/me/training"
                 className="rounded-app border border-border px-4 py-2 text-sm font-medium text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
               >
-                Retour aux modules
+                {t('me.training.module.backToModules')}
               </Link>
             </div>
           </motion.section>

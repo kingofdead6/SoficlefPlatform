@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { trainingApi } from '../../../api/training.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -23,6 +24,7 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
  * attempt, which the server computes; this page never re-derives a pass from a raw score.
  */
 export default function TrainingCataloguePage() {
+  const { t } = useTranslation();
   const [catalogue, setCatalogue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,12 +37,12 @@ export default function TrainingCataloguePage() {
         const { data } = await trainingApi.catalogue();
         setCatalogue(data);
       } catch {
-        setError('Impossible de charger votre formation.');
+        setError(t('me.training.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   useGsapContext(
     scopeRef,
@@ -63,20 +65,20 @@ export default function TrainingCataloguePage() {
     return [
       {
         id: 'mandatory',
-        labelFr: 'Modules obligatoires',
-        detailFr: 'À valider pour terminer votre parcours d’intégration.',
+        labelKey: 'me.training.groups.mandatory.label',
+        detailKey: 'me.training.groups.mandatory.detail',
         entries: entries.filter((entry) => entry.isMandatory),
       },
       {
         id: 'optional',
-        labelFr: 'Micro-learning facultatif',
-        detailFr: 'Des modules courts, à suivre quand vous le souhaitez.',
+        labelKey: 'me.training.groups.optional.label',
+        detailKey: 'me.training.groups.optional.detail',
         entries: entries.filter((entry) => !entry.isMandatory),
       },
     ].filter((group) => group.entries.length > 0);
   }, [catalogue]);
 
-  if (loading) return <PageLoading label="Chargement de votre formation…" />;
+  if (loading) return <PageLoading label={t('me.training.loading')} />;
   if (error) return <PageError message={error} />;
 
   const percent =
@@ -87,15 +89,15 @@ export default function TrainingCataloguePage() {
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Mon espace"
-        title="Ma formation"
-        subtitle="Les modules à suivre pendant votre intégration. Chaque module se termine par un questionnaire ; le module est validé au-dessus du seuil qu’il fixe."
+        eyebrow={t('me.eyebrow')}
+        title={t('me.training.title')}
+        subtitle={t('me.training.subtitle')}
         actions={
           <Link
             to="/app/me/training/certificates"
             className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
           >
-            Mes attestations
+            {t('nav.items.meCertificates')}
           </Link>
         }
       />
@@ -103,34 +105,36 @@ export default function TrainingCataloguePage() {
       <div data-gsap="band" className={`mb-8 flex flex-wrap items-center gap-8 ${CARD} p-6`}>
         <ProgressRing percent={percent} tone={catalogue.allMandatoryComplete ? 'green' : 'brand'} />
         <div className="grid flex-1 grid-cols-2 gap-6 sm:grid-cols-3">
-          <Figure label="Obligatoires validés" value={catalogue.mandatoryPassed} suffix={`/${catalogue.mandatoryTotal}`} />
-          <Figure label="Modules proposés" value={catalogue.entries?.length ?? 0} />
+          <Figure
+            label={t('me.training.mandatoryPassed')}
+            value={catalogue.mandatoryPassed}
+            suffix={`/${catalogue.mandatoryTotal}`}
+          />
+          <Figure label={t('me.training.modulesOffered')} value={catalogue.entries?.length ?? 0} />
           <div>
-            <p className="mb-1 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">Parcours</p>
+            <p className="mb-1 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
+              {t('me.training.journey')}
+            </p>
             <p
               className={cn(
                 'font-display text-2xl',
                 catalogue.allMandatoryComplete ? 'text-status-green' : 'text-red-deep',
               )}
             >
-              {catalogue.allMandatoryComplete ? 'Complet' : 'En cours'}
+              {catalogue.allMandatoryComplete ? t('me.training.complete') : t('me.training.inProgress')}
             </p>
           </div>
         </div>
       </div>
 
       {groups.length === 0 ? (
-        <EmptyState
-          title="Aucun module publié"
-          detail="Le catalogue de formation est vide pour le moment."
-          muted
-        />
+        <EmptyState title={t('me.training.noModulesTitle')} detail={t('me.training.noModulesDetail')} muted />
       ) : (
         <div data-gsap="band" className="flex-1 space-y-10">
           {groups.map((group) => (
             <section key={group.id}>
-              <h2 className="font-display text-xl text-text">{group.labelFr}</h2>
-              <p className="mb-4 text-xs text-text-dim">{group.detailFr}</p>
+              <h2 className="font-display text-xl text-text">{t(group.labelKey)}</h2>
+              <p className="mb-4 text-xs text-text-dim">{t(group.detailKey)}</p>
 
               <motion.ul
                 variants={staggerContainer(0.06, 0.15)}
@@ -158,6 +162,7 @@ export default function TrainingCataloguePage() {
 }
 
 function ModuleCard({ entry }) {
+  const { t } = useTranslation();
   const passed = entry.best?.passed ?? false;
   const attempted = Boolean(entry.best);
 
@@ -173,7 +178,7 @@ function ModuleCard({ entry }) {
         <h3 className="font-medium text-text">{entry.titleFr}</h3>
         {entry.isMandatory && (
           <span className="shrink-0 rounded-full bg-red-brand/10 px-2 py-0.5 text-xs font-medium text-red-brand">
-            Obligatoire
+            {t('me.training.mandatoryBadge')}
           </span>
         )}
       </div>
@@ -188,9 +193,9 @@ function ModuleCard({ entry }) {
       <div className="mb-4">
         <div className="mb-1 flex items-baseline justify-between text-xs">
           <span className="text-text-dim">
-            {attempted ? `Meilleur résultat : ${entry.best.score} %` : 'Pas encore tenté'}
+            {attempted ? t('me.training.bestScore', { score: entry.best.score }) : t('me.training.notAttempted')}
           </span>
-          <span className="text-text-dim">Seuil {entry.passingScore} %</span>
+          <span className="text-text-dim">{t('me.training.threshold', { score: entry.passingScore })}</span>
         </div>
         <div className="relative h-1.5 overflow-hidden rounded-full bg-surface-2">
           <div
@@ -206,8 +211,8 @@ function ModuleCard({ entry }) {
       </div>
 
       <div className="mb-4 text-xs text-text-muted">
-        {entry.questionCount} question{entry.questionCount > 1 ? 's' : ''}
-        {passed && ' · module validé'}
+        {t('me.training.questionCount', { count: entry.questionCount })}
+        {passed && ` · ${t('me.training.moduleValidated')}`}
       </div>
 
       <Link
@@ -219,7 +224,7 @@ function ModuleCard({ entry }) {
             : 'bg-red-brand text-white hover:bg-red-light',
         )}
       >
-        {passed ? 'Revoir le module' : attempted ? 'Réessayer' : 'Commencer'}
+        {passed ? t('me.training.reviewModule') : attempted ? t('me.training.retry') : t('me.training.start')}
       </Link>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { trainingApi } from '../../../api/training.js';
 import { useAuth } from '../../../auth/AuthContext.jsx';
@@ -8,6 +9,7 @@ import PageHeader from '../../../components/manager/PageHeader.jsx';
 import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 import { cn } from '../../../lib/cn.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
@@ -28,6 +30,7 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
  * this plainly rather than in small print.
  */
 export default function CertificatesPage() {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,12 +43,12 @@ export default function CertificatesPage() {
         const { data } = await trainingApi.myCertificates();
         setCertificates(data);
       } catch {
-        setError('Impossible de charger vos attestations.');
+        setError(t('me.training.certificates.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const summary = useMemo(
     () => ({
@@ -56,50 +59,50 @@ export default function CertificatesPage() {
     [certificates],
   );
 
-  if (loading) return <PageLoading label="Chargement de vos attestations…" />;
+  if (loading) return <PageLoading label={t('me.training.certificates.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Ma formation"
-        title="Mes attestations"
-        subtitle="Les modules que vous avez validés, avec leur date de délivrance."
+        eyebrow={t('me.training.title')}
+        title={t('nav.items.meCertificates')}
+        subtitle={t('me.training.certificates.subtitle')}
         actions={
           <Link
             to="/app/me/training"
             className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
           >
-            Retour aux modules
+            {t('me.training.module.backToModules')}
           </Link>
         }
       />
 
       {certificates.length === 0 ? (
         <EmptyState
-          title="Aucune attestation pour l’instant"
-          detail="Une attestation est délivrée à la première réussite d’un module. Validez un module pour en obtenir une."
+          title={t('me.training.certificates.emptyTitle')}
+          detail={t('me.training.certificates.emptyDetail')}
           muted
         />
       ) : (
         <>
           <div className="mb-8 grid gap-4 sm:grid-cols-3">
-            <Figure label="Attestations" value={summary.total} />
-            <Figure label="Dont modules obligatoires" value={summary.mandatory} />
+            <Figure label={t('me.training.certificates.total')} value={summary.total} />
+            <Figure label={t('me.training.certificates.mandatoryCount')} value={summary.mandatory} />
             <div className={`${CARD} p-5`}>
-              <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">Dernière délivrance</p>
+              <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
+                {t('me.training.certificates.lastIssued')}
+              </p>
               <p className="font-display text-2xl text-red-deep">
-                {summary.lastAt ? new Date(summary.lastAt).toLocaleDateString('fr-FR') : '—'}
+                {summary.lastAt ? new Date(summary.lastAt).toLocaleDateString(localeOf(i18n)) : '—'}
               </p>
             </div>
           </div>
 
           <p className="mb-6 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs leading-relaxed text-text-dim">
-            Les attestations produites ici sont des documents imprimables générés par votre navigateur. Elles ne
-            sont <strong className="font-medium text-text-muted">ni signées électroniquement, ni vérifiables</strong> par
-            un tiers : la plateforme ne dispose d’aucune autorité de certification. La référence qui fait foi est
-            l’identifiant de tentative indiqué sur chaque attestation, que les RH peuvent retrouver dans la
-            plateforme.
+            {t('me.training.certificates.disclaimerLede')}{' '}
+            <strong className="font-medium text-text-muted">{t('me.training.certificates.disclaimerBold')}</strong>
+            {t('me.training.certificates.disclaimerTail')}
           </p>
 
           <motion.ul
@@ -121,12 +124,17 @@ export default function CertificatesPage() {
 }
 
 function CertificateRow({ certificate, holderName }) {
+  const { t, i18n } = useTranslation();
   const issuedAt = new Date(certificate.certifiedAt);
+  const isEnglish = i18n.language === 'en';
+  const locale = localeOf(i18n);
 
   /**
    * The printable view. Opened in a new window rather than rendered inline so the browser's
    * own print dialog (and its "save as PDF") does the file production — the platform makes
-   * no claim about the resulting file beyond what the page itself says.
+   * no claim about the resulting file beyond what the page itself says. Its own language
+   * follows the active UI language rather than always being French, since this is a document
+   * the recruit keeps and may need to present in either language.
    */
   function print() {
     const win = window.open('', '_blank', 'width=820,height=1000');
@@ -137,8 +145,12 @@ function CertificateRow({ certificate, holderName }) {
         ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char],
       );
 
-    win.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8">
-<title>Attestation — ${escape(certificate.moduleTitleFr)}</title>
+    const character = certificate.isMandatory
+      ? t('me.training.certificates.print.mandatory')
+      : t('me.training.certificates.print.optional');
+
+    win.document.write(`<!doctype html><html lang="${isEnglish ? 'en' : 'fr'}"><head><meta charset="utf-8">
+<title>${escape(t('me.training.certificates.print.docTitle', { module: certificate.moduleTitleFr }))}</title>
 <style>
   body { font-family: Georgia, serif; color: #171314; margin: 0; padding: 56px 64px; }
   .rule { border-top: 3px solid #c8102e; width: 72px; margin: 0 0 28px; }
@@ -151,21 +163,18 @@ function CertificateRow({ certificate, holderName }) {
   .ref { font-family: ui-monospace, monospace; font-size: 12px; }
 </style></head><body>
 <div class="rule"></div>
-<h1>Attestation de formation</h1>
-<p>Délivrée par la plateforme d’intégration Soficlef.</p>
+<h1>${escape(t('me.training.certificates.print.heading'))}</h1>
+<p>${escape(t('me.training.certificates.print.issuedBy'))}</p>
 <h2>${escape(holderName)}</h2>
-<p>a validé le module de formation suivant :</p>
+<p>${escape(t('me.training.certificates.print.hasValidated'))}</p>
 <dl>
-  <dt>Module</dt><dd>${escape(certificate.moduleTitleFr)} (${escape(certificate.moduleCode)})</dd>
-  <dt>Caractère</dt><dd>${certificate.isMandatory ? 'Obligatoire' : 'Facultatif'}</dd>
-  <dt>Score obtenu</dt><dd>${escape(certificate.score)} % — seuil de réussite ${escape(certificate.passingScore)} %</dd>
-  <dt>Date de délivrance</dt><dd>${escape(issuedAt.toLocaleDateString('fr-FR'))}</dd>
-  <dt>Référence de la tentative</dt><dd class="ref">${escape(certificate.id)}</dd>
+  <dt>${escape(t('me.training.certificates.print.module'))}</dt><dd>${escape(certificate.moduleTitleFr)} (${escape(certificate.moduleCode)})</dd>
+  <dt>${escape(t('me.training.certificates.print.character'))}</dt><dd>${escape(character)}</dd>
+  <dt>${escape(t('me.training.certificates.print.scoreLabel'))}</dt><dd>${escape(t('me.training.certificates.print.scoreValue', { score: certificate.score, threshold: certificate.passingScore }))}</dd>
+  <dt>${escape(t('me.training.certificates.print.issuedOn'))}</dt><dd>${escape(issuedAt.toLocaleDateString(locale))}</dd>
+  <dt>${escape(t('me.training.certificates.print.attemptRef'))}</dt><dd class="ref">${escape(certificate.id)}</dd>
 </dl>
-<p class="note">Ce document est une attestation imprimée depuis la plateforme. Il n’est ni signé
-électroniquement, ni vérifiable par un tiers : la plateforme ne dispose pas d’autorité de certification.
-La référence de tentative ci-dessus est l’élément que le service des ressources humaines peut retrouver
-dans les enregistrements de la plateforme.</p>
+<p class="note">${escape(t('me.training.certificates.print.footnote'))}</p>
 </body></html>`);
     win.document.close();
     win.focus();
@@ -174,26 +183,30 @@ dans les enregistrements de la plateforme.</p>
 
   /** A plain-text copy, for anyone who needs to paste the facts rather than print them. */
   function downloadText() {
+    const character = certificate.isMandatory
+      ? t('me.training.certificates.print.mandatory')
+      : t('me.training.certificates.print.optional');
+
     const lines = [
-      'ATTESTATION DE FORMATION',
-      'Plateforme d’intégration Soficlef',
+      t('me.training.certificates.text.title'),
+      t('me.training.certificates.text.platform'),
       '',
-      `Titulaire         : ${holderName}`,
-      `Module            : ${certificate.moduleTitleFr} (${certificate.moduleCode})`,
-      `Caractère         : ${certificate.isMandatory ? 'Obligatoire' : 'Facultatif'}`,
-      `Score obtenu      : ${certificate.score} % (seuil ${certificate.passingScore} %)`,
-      `Date de délivrance: ${issuedAt.toLocaleDateString('fr-FR')}`,
-      `Référence         : ${certificate.id}`,
+      `${t('me.training.certificates.text.holder')}: ${holderName}`,
+      `${t('me.training.certificates.text.module')}: ${certificate.moduleTitleFr} (${certificate.moduleCode})`,
+      `${t('me.training.certificates.text.character')}: ${character}`,
+      `${t('me.training.certificates.text.score')}: ${t('me.training.certificates.print.scoreValue', { score: certificate.score, threshold: certificate.passingScore })}`,
+      `${t('me.training.certificates.text.issuedOn')}: ${issuedAt.toLocaleDateString(locale)}`,
+      `${t('me.training.certificates.text.reference')}: ${certificate.id}`,
       '',
-      'Ce document n’est ni signé électroniquement, ni vérifiable par un tiers.',
-      'La référence ci-dessus est l’élément retrouvable par le service RH.',
+      t('me.training.certificates.text.disclaimer1'),
+      t('me.training.certificates.text.disclaimer2'),
     ];
 
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `attestation-${certificate.moduleCode}.txt`;
+    link.download = `${t('me.training.certificates.filenamePrefix')}-${certificate.moduleCode}.txt`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -204,18 +217,22 @@ dans les enregistrements de la plateforme.</p>
         <div className="mb-1 flex flex-wrap items-center gap-2">
           <h2 className="font-medium text-text">{certificate.moduleTitleFr}</h2>
           <span className="rounded-full bg-status-green/10 px-2 py-0.5 text-xs font-medium text-status-green">
-            Validé à {certificate.score} %
+            {t('me.training.certificates.validatedAt', { score: certificate.score })}
           </span>
           {certificate.isMandatory && (
             <span className="rounded-full bg-red-brand/10 px-2 py-0.5 text-xs font-medium text-red-brand">
-              Obligatoire
+              {t('me.training.mandatoryBadge')}
             </span>
           )}
         </div>
         <p className="text-sm text-text-dim">
-          Délivrée le {issuedAt.toLocaleDateString('fr-FR')} · seuil de réussite {certificate.passingScore} %
+          {t('me.training.certificates.issuedOn', { date: issuedAt.toLocaleDateString(locale) })}
+          {' · '}
+          {t('me.training.module.passingThreshold', { score: certificate.passingScore })}
         </p>
-        <p className="mt-1 break-all font-mono text-[11px] text-text-dim">Référence : {certificate.id}</p>
+        <p className="mt-1 break-all font-mono text-[11px] text-text-dim">
+          {t('me.training.certificates.reference', { id: certificate.id })}
+        </p>
       </div>
 
       <div className="flex shrink-0 flex-wrap gap-2">
@@ -224,20 +241,20 @@ dans les enregistrements de la plateforme.</p>
           onClick={print}
           className="rounded-app bg-red-brand px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-light"
         >
-          Imprimer / enregistrer
+          {t('me.training.certificates.printAction')}
         </button>
         <button
           type="button"
           onClick={downloadText}
           className="rounded-app border border-border px-3 py-1.5 text-xs font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
         >
-          Copie texte
+          {t('me.training.certificates.textCopyAction')}
         </button>
         <Link
           to={`/app/me/training/${certificate.moduleCode}`}
           className="rounded-app border border-border px-3 py-1.5 text-xs font-medium text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
         >
-          Revoir le module
+          {t('me.training.reviewModule')}
         </Link>
       </div>
     </div>

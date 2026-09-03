@@ -2943,7 +2943,7 @@
           "mandatory": "Dont modules obligatoires",
           "total": "Attestations"
         },
-        "issuedOn": "Délivrée le {{date}} · seuil de réussite {{threshold}} %",
+        "issuedOn": "Délivrée le {{date}}",
         "loadFailed": "Impossible de charger vos attestations.",
         "loading": "Chargement de vos attestations…",
         "mandatory": "Obligatoire",
@@ -2973,7 +2973,12 @@
           "txtPlatform": "Plateforme d’intégration Soficlef",
           "txtRef": "Référence",
           "txtScore": "Score obtenu",
-          "txtScoreValue": "{{score}} % (seuil {{threshold}} %)"
+          "txtScoreValue": "{{score}} % (seuil {{threshold}} %)",
+          "docTitle": "Attestation — {{module}}",
+          "hasValidated": "a validé le module de formation suivant :",
+          "character": "Caractère",
+          "scoreLabel": "Score obtenu",
+          "footnote": "Ce document est une attestation imprimée depuis la plateforme. Il n’est ni signé électroniquement, ni vérifiable par un tiers : la plateforme ne dispose pas d’autorité de certification. La référence de tentative ci-dessus est l’élément que le service des ressources humaines peut retrouver dans les enregistrements de la plateforme."
         },
         "printButton": "Imprimer / enregistrer",
         "reference": "Référence : {{id}}",
@@ -2981,18 +2986,41 @@
         "subtitle": "Les modules que vous avez validés, avec leur date de délivrance.",
         "textCopy": "Copie texte",
         "title": "Mes attestations",
-        "toModules": "Retour aux modules"
+        "toModules": "Retour aux modules",
+        "loadError": "Impossible de charger vos attestations.",
+        "total": "Attestations",
+        "mandatoryCount": "Dont modules obligatoires",
+        "lastIssued": "Dernière délivrance",
+        "disclaimerLede": "Les attestations produites ici sont des documents imprimables générés par votre navigateur. Elles ne sont",
+        "disclaimerBold": "ni signées électroniquement, ni vérifiables",
+        "disclaimerTail": " par un tiers : la plateforme ne dispose d’aucune autorité de certification. La référence qui fait foi est l’identifiant de tentative indiqué sur chaque attestation, que les RH peuvent retrouver dans la plateforme.",
+        "validatedAt": "Validé à {{score}} %",
+        "printAction": "Imprimer / enregistrer",
+        "textCopyAction": "Copie texte",
+        "filenamePrefix": "attestation",
+        "text": {
+          "title": "ATTESTATION DE FORMATION",
+          "platform": "Plateforme d’intégration Soficlef",
+          "holder": "Titulaire",
+          "module": "Module",
+          "character": "Caractère",
+          "score": "Score obtenu",
+          "issuedOn": "Date de délivrance",
+          "reference": "Référence",
+          "disclaimer1": "Ce document n’est ni signé électroniquement, ni vérifiable par un tiers.",
+          "disclaimer2": "La référence ci-dessus est l’élément retrouvable par le service RH."
+        }
       },
       "eyebrow": "Ma formation",
       "module": {
         "allModules": "Tous les modules",
-        "answeredCount": "{{answered}} / {{total}} question(s) répondue(s) · seuil de réussite {{threshold}} %",
+        "answeredCount": "{{answered}} / {{total}} question(s) répondue(s)",
         "answerAll": "Répondez à toutes les questions ({{count}} restante(s)).",
         "alreadyCertified": "Ce module était déjà validé : l’attestation existante conserve sa date d’origine.",
         "bestResult": "Votre meilleur résultat sur ce module :",
         "bestResultThreshold": "(seuil {{threshold}} %).",
         "certificateSaved": "Attestation enregistrée à votre nom.",
-        "correctCount": "{{correct}} bonne(s) réponse(s) sur {{total}} · seuil {{threshold}} %",
+        "correctCount": "{{correct}} bonne(s) réponse(s) sur {{total}}",
         "failed": "Seuil non atteint",
         "grading": "Correction en cours…",
         "loading": "Chargement du module…",
@@ -3011,12 +3039,30 @@
         "steps": {
           "lesson": "Contenu",
           "quiz": "Questionnaire",
-          "result": "Résultat"
+          "result": "Résultat",
+          "content": "Contenu"
         },
-        "submitFailed": "L’envoi du questionnaire a échoué.",
+        "submitFailed": "L'envoi du questionnaire a échoué.",
         "submitQuiz": "Valider mes réponses",
         "toModules": "Retour aux modules",
-        "viewCertificate": "Voir mon attestation"
+        "viewCertificate": "Voir mon attestation",
+        "loadError": "Impossible de charger ce module.",
+        "answerAllQuestions_one": "Répondez à toutes les questions ({{count}} restante).",
+        "answerAllQuestions_other": "Répondez à toutes les questions ({{count}} restantes).",
+        "bestResultLede": "Votre meilleur résultat sur ce module :",
+        "percent": "{{value}} %",
+        "thresholdSuffix": "(seuil {{score}} %).",
+        "retakeQuiz": "Repasser le questionnaire",
+        "goToQuiz": "Passer au questionnaire",
+        "passingThreshold": "seuil de réussite {{score}} %",
+        "reviewContent": "Relire le contenu",
+        "submitAnswers": "Valider mes réponses",
+        "moduleValidated": "Module validé",
+        "thresholdMissed": "Seuil non atteint",
+        "alreadyValidated": "Ce module était déjà validé : l’attestation existante conserve sa date d’origine.",
+        "retryAction": "Réessayer",
+        "seeCertificate": "Voir mon attestation",
+        "backToModules": "Retour aux modules"
       },
       "moduleCard": {
         "bestScore": "Meilleur résultat : {{score}} %",
@@ -3029,6 +3075,37 @@
         "review": "Revoir le module",
         "start": "Commencer",
         "threshold": "Seuil {{score}} %"
+      },
+      "loadError": "Impossible de charger votre formation.",
+      "loading": "Chargement de votre formation…",
+      "title": "Ma formation",
+      "subtitle": "Les modules à suivre pendant votre intégration. Chaque module se termine par un questionnaire ; le module est validé au-dessus du seuil qu’il fixe.",
+      "mandatoryPassed": "Obligatoires validés",
+      "modulesOffered": "Modules proposés",
+      "journey": "Parcours",
+      "complete": "Complet",
+      "inProgress": "En cours",
+      "noModulesTitle": "Aucun module publié",
+      "noModulesDetail": "Le catalogue de formation est vide pour le moment.",
+      "mandatoryBadge": "Obligatoire",
+      "bestScore": "Meilleur résultat : {{score}} %",
+      "notAttempted": "Pas encore tenté",
+      "threshold": "Seuil {{score}} %",
+      "questionCount_one": "{{count}} question",
+      "questionCount_other": "{{count}} questions",
+      "moduleValidated": "module validé",
+      "reviewModule": "Revoir le module",
+      "retry": "Réessayer",
+      "start": "Commencer",
+      "groups": {
+        "mandatory": {
+          "label": "Modules obligatoires",
+          "detail": "À valider pour terminer votre parcours d’intégration."
+        },
+        "optional": {
+          "label": "Micro-learning facultatif",
+          "detail": "Des modules courts, à suivre quand vous le souhaitez."
+        }
       }
     },
     "vocabulary": {
