@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { jobDescriptionsApi } from '../../../api/jobDescriptions.js';
 import { organizationUnitsApi, positionsApi } from '../../../api/organization.js';
@@ -43,6 +44,7 @@ const EMPTY_FORM = {
  * holds them, rather than being shown and then failing with a 403.
  */
 export default function HrPositionsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [positions, setPositions] = useState([]);
   const [units, setUnits] = useState([]);
@@ -72,11 +74,11 @@ export default function HrPositionsPage() {
       setUnits(unitsRes.data);
       setError(null);
     } catch {
-      setError('Impossible de charger les postes.');
+      setError(t('hr.positions.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -176,31 +178,31 @@ export default function HrPositionsPage() {
       setEditingId(null);
       await load();
     } catch (err) {
-      setFormError(err.body?.message ?? 'L’enregistrement du poste a échoué.');
+      setFormError(err.body?.message ?? t('hr.positions.saveError'));
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleArchive(position) {
-    if (!window.confirm(`Archiver le poste « ${position.titleFr} » ?`)) return;
+    if (!window.confirm(t('hr.positions.archiveConfirm', { title: position.titleFr }))) return;
     try {
       await positionsApi.archive(position.id);
       await load();
     } catch (err) {
-      setFormError(err.body?.message ?? 'L’archivage a échoué.');
+      setFormError(err.body?.message ?? t('hr.positions.archiveError'));
     }
   }
 
-  if (loading) return <PageLoading label="Chargement des postes…" />;
+  if (loading) return <PageLoading label={t('hr.positions.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Postes"
-        subtitle="Chaque poste est un nœud de l’organigramme : intitulé, mission et ligne hiérarchique."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.positions.title')}
+        subtitle={t('hr.positions.subtitle')}
         actions={
           canCreate ? (
             <button
@@ -208,7 +210,7 @@ export default function HrPositionsPage() {
               onClick={openCreate}
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              Nouveau poste
+              {t('hr.positions.newPosition')}
             </button>
           ) : null
         }
@@ -216,9 +218,8 @@ export default function HrPositionsPage() {
 
       {!canCreate && !canUpdate && (
         <div className="mb-6 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-          Votre rôle donne un accès en lecture aux postes. La création et la modification des postes
-          relèvent de l’administration (permissions <code>position:create</code> /{' '}
-          <code>position:update</code>).
+          {t('hr.positions.readOnlyNotice')}{' '}
+          (<code>position:create</code> / <code>position:update</code>).
         </div>
       )}
 
@@ -230,7 +231,7 @@ export default function HrPositionsPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Postes actifs
+            {t('hr.positions.stats.active')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.total} />
@@ -238,7 +239,7 @@ export default function HrPositionsPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Postes vacants
+            {t('hr.positions.stats.vacant')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.vacant} />
@@ -246,7 +247,7 @@ export default function HrPositionsPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Sans fiche de poste
+            {t('hr.positions.stats.withoutDescription')}
           </p>
           <p
             className={`font-display text-3xl ${stats.withoutJd > 0 ? 'text-status-amber' : 'text-red-deep'}`}
@@ -268,12 +269,12 @@ export default function HrPositionsPage() {
           >
             <div className={`${CARD} mb-6 space-y-4 p-6`}>
               <h2 className="font-display text-lg text-text">
-                {editingId ? 'Modifier le poste' : 'Nouveau poste'}
+                {editingId ? t('hr.positions.form.editTitle') : t('hr.positions.form.newTitle')}
               </h2>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-text">Code</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.positions.form.code')}</label>
                   <input
                     required
                     disabled={Boolean(editingId)}
@@ -283,12 +284,12 @@ export default function HrPositionsPage() {
                   />
                   {editingId && (
                     <p className="mt-1 text-xs text-text-dim">
-                      Le code identifie le poste et ne se modifie pas.
+                      {t('hr.positions.form.codeHint')}
                     </p>
                   )}
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-text">Intitulé</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.positions.form.title')}</label>
                   <input
                     required
                     value={form.titleFr}
@@ -299,7 +300,7 @@ export default function HrPositionsPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-text">Mission</label>
+                <label className="mb-1 block text-sm font-medium text-text">{t('hr.positions.form.mission')}</label>
                 <textarea
                   rows={3}
                   value={form.missionFr}
@@ -310,14 +311,14 @@ export default function HrPositionsPage() {
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-text">Structure</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.positions.form.structure')}</label>
                   <select
                     disabled={Boolean(editingId)}
                     value={form.organizationUnitId}
                     onChange={(e) => setForm((f) => ({ ...f, organizationUnitId: e.target.value }))}
                     className={`${fieldClass} disabled:opacity-60`}
                   >
-                    <option value="">Aucune structure</option>
+                    <option value="">{t('hr.positions.form.noStructure')}</option>
                     {units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
                         {unit.code} — {unit.nameFr}
@@ -327,14 +328,14 @@ export default function HrPositionsPage() {
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-text">
-                    Rattaché à (ligne hiérarchique)
+                    {t('hr.positions.form.parent')}
                   </label>
                   <select
                     value={form.parentPositionId}
                     onChange={(e) => setForm((f) => ({ ...f, parentPositionId: e.target.value }))}
                     className={fieldClass}
                   >
-                    <option value="">Aucun (racine)</option>
+                    <option value="">{t('hr.positions.form.noParent')}</option>
                     {positions
                       .filter((position) => position.id !== editingId)
                       .map((position) => (
@@ -354,14 +355,14 @@ export default function HrPositionsPage() {
                   onClick={() => setShowForm(false)}
                   className="rounded-app border border-border px-4 py-2 text-sm font-medium text-text-dim transition hover:bg-surface-2"
                 >
-                  Annuler
+                  {t('hr.positions.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
                 >
-                  {submitting ? 'Enregistrement…' : 'Enregistrer'}
+                  {submitting ? t('hr.positions.saving') : t('hr.positions.save')}
                 </button>
               </div>
             </div>
@@ -372,7 +373,7 @@ export default function HrPositionsPage() {
       <div className={`${CARD} mb-6 flex flex-wrap items-center gap-3 p-4`}>
         <input
           type="search"
-          placeholder="Rechercher un poste…"
+          placeholder={t('hr.positions.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className={`${fieldClass} min-w-[240px] flex-1`}
@@ -382,7 +383,7 @@ export default function HrPositionsPage() {
           onChange={(e) => setUnitFilter(e.target.value)}
           className={`${fieldClass} w-auto`}
         >
-          <option value="">Toutes les structures</option>
+          <option value="">{t('hr.positions.allStructures')}</option>
           {units.map((unit) => (
             <option key={unit.id} value={unit.id}>
               {unit.code} — {unit.nameFr}
@@ -390,23 +391,23 @@ export default function HrPositionsPage() {
           ))}
         </select>
         <span className="ml-auto text-sm text-text-dim">
-          {visible.length} / {positions.length}
+          {t('hr.positions.positionCount', { visible: visible.length, total: positions.length })}
         </span>
       </div>
 
       {visible.length === 0 ? (
-        <EmptyState detail="Aucun poste ne correspond à ces critères." muted />
+        <EmptyState detail={t('hr.positions.empty')} muted />
       ) : (
         <div className={`overflow-x-auto ${CARD}`}>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                <th className="px-4 py-3 font-medium">Code</th>
-                <th className="px-4 py-3 font-medium">Intitulé</th>
-                <th className="px-4 py-3 font-medium">Structure</th>
-                <th className="px-4 py-3 font-medium">Rattaché à</th>
-                <th className="px-4 py-3 font-medium">Occupation</th>
-                <th className="px-4 py-3 font-medium">Fiche de poste</th>
+                <th className="px-4 py-3 font-medium">{t('hr.positions.table.code')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.positions.table.title')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.positions.table.structure')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.positions.table.parent')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.positions.table.occupation')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.positions.table.description')}</th>
                 {(canUpdate || canDelete) && <th className="px-4 py-3" />}
               </tr>
             </thead>
@@ -444,7 +445,7 @@ export default function HrPositionsPage() {
                             : 'bg-status-green/10 text-status-green'
                         }`}
                       >
-                        {position.isVacant ? 'Vacant' : 'Occupé'}
+                        {position.isVacant ? t('hr.positions.vacant') : t('hr.positions.occupied')}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs">
@@ -453,10 +454,10 @@ export default function HrPositionsPage() {
                           href={`/job-description/${jd.id}`}
                           className="text-red-brand hover:underline"
                         >
-                          Consulter
+                          {t('hr.positions.viewDescription')}
                         </a>
                       ) : (
-                        <span className="text-status-amber">Absente</span>
+                        <span className="text-status-amber">{t('hr.positions.missingDescription')}</span>
                       )}
                     </td>
                     {(canUpdate || canDelete) && (
@@ -468,7 +469,7 @@ export default function HrPositionsPage() {
                               onClick={() => openEdit(position)}
                               className="text-xs text-red-brand hover:underline"
                             >
-                              Modifier
+                              {t('hr.positions.edit')}
                             </button>
                           )}
                           {canDelete && (
@@ -477,7 +478,7 @@ export default function HrPositionsPage() {
                               onClick={() => handleArchive(position)}
                               className="text-xs text-status-red hover:underline"
                             >
-                              Archiver
+                              {t('hr.positions.archive')}
                             </button>
                           )}
                         </div>

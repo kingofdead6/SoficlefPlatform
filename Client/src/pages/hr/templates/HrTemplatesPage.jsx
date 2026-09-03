@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { positionsApi } from '../../../api/organization.js';
 import { templatesApi } from '../../../api/templates.js';
@@ -27,6 +28,7 @@ const fieldClass =
  * ADMIN. The creation control is therefore rendered only for a caller who actually holds it.
  */
 export default function HrTemplatesPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [templates, setTemplates] = useState([]);
   const [positions, setPositions] = useState([]);
@@ -46,11 +48,11 @@ export default function HrTemplatesPage() {
       setTemplates(data);
       setError(null);
     } catch {
-      setError('Impossible de charger les modèles de parcours.');
+      setError(t('hr.templates.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -91,21 +93,21 @@ export default function HrTemplatesPage() {
       setShowForm(false);
       await load();
     } catch (err) {
-      setFormError(err.body?.message ?? 'La création du modèle a échoué.');
+      setFormError(err.body?.message ?? t('hr.templates.createError'));
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement des modèles…" />;
+  if (loading) return <PageLoading label={t('hr.templates.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Modèles d’intégration"
-        subtitle="La bibliothèque des parcours types, par profil de poste."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.templates.title')}
+        subtitle={t('hr.templates.subtitle')}
         actions={
           canCreate ? (
             <button
@@ -113,7 +115,7 @@ export default function HrTemplatesPage() {
               onClick={() => setShowForm((open) => !open)}
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              {showForm ? 'Annuler' : 'Nouveau modèle'}
+              {showForm ? t('hr.templates.cancel') : t('hr.templates.newTemplate')}
             </button>
           ) : null
         }
@@ -121,8 +123,7 @@ export default function HrTemplatesPage() {
 
       {!canCreate && (
         <div className="mb-6 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-          Votre rôle donne un accès en lecture à la bibliothèque de modèles. La création et la
-          modification d’un modèle relèvent de l’administration (permissions{' '}
+          {t('hr.templates.readOnlyNotice')}{' '}
           <code>onboarding_template:create</code> / <code>onboarding_template:update</code>).
         </div>
       )}
@@ -135,7 +136,7 @@ export default function HrTemplatesPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Modèles disponibles
+            {t('hr.templates.stats.templates')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.total} />
@@ -143,7 +144,7 @@ export default function HrTemplatesPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Étapes décrites
+            {t('hr.templates.stats.steps')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.steps} />
@@ -151,7 +152,7 @@ export default function HrTemplatesPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Parcours générés
+            {t('hr.templates.stats.generated')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.running} />
@@ -170,10 +171,10 @@ export default function HrTemplatesPage() {
             className="overflow-hidden"
           >
             <div className={`${CARD} mb-6 space-y-4 p-6`}>
-              <h2 className="font-display text-lg text-text">Nouveau modèle</h2>
+              <h2 className="font-display text-lg text-text">{t('hr.templates.form.title')}</h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-text">Code du modèle</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.templates.form.code')}</label>
                   <input
                     required
                     pattern="[a-z0-9-]+"
@@ -182,10 +183,10 @@ export default function HrTemplatesPage() {
                     onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
                     className={fieldClass}
                   />
-                  <p className="mt-1 text-xs text-text-dim">Minuscules, chiffres et tirets.</p>
+                  <p className="mt-1 text-xs text-text-dim">{t('hr.templates.form.codeHint')}</p>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-text">Intitulé</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.templates.form.titleLabel')}</label>
                   <input
                     required
                     value={form.titleFr}
@@ -195,13 +196,13 @@ export default function HrTemplatesPage() {
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-text">Profil de poste</label>
+                <label className="mb-1 block text-sm font-medium text-text">{t('hr.templates.form.position')}</label>
                 <select
                   value={form.positionId}
                   onChange={(e) => setForm((f) => ({ ...f, positionId: e.target.value }))}
                   className={fieldClass}
                 >
-                  <option value="">Modèle générique (tous profils)</option>
+                  <option value="">{t('hr.templates.form.generic')}</option>
                   {positions.map((position) => (
                     <option key={position.id} value={position.id}>
                       {position.titleFr} ({position.code})
@@ -218,7 +219,7 @@ export default function HrTemplatesPage() {
                   disabled={submitting}
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
                 >
-                  {submitting ? 'Création…' : 'Créer le modèle'}
+                  {submitting ? t('hr.templates.form.creating') : t('hr.templates.form.create')}
                 </button>
               </div>
             </div>
@@ -228,8 +229,8 @@ export default function HrTemplatesPage() {
 
       {templates.length === 0 ? (
         <EmptyState
-          title="Aucun modèle"
-          detail="La bibliothèque de parcours est vide. Un modèle décrit la séquence d’étapes qu’un profil suit à son arrivée."
+          title={t('hr.templates.emptyTitle')}
+          detail={t('hr.templates.emptyDetail')}
           muted
         />
       ) : (
@@ -250,15 +251,15 @@ export default function HrTemplatesPage() {
                   <p className="font-mono text-[10px] text-text-dim">{template.slug}</p>
                   <p className="mt-2 text-xs text-text-dim">
                     {template.position
-                      ? `Profil : ${template.position.titleFr}`
-                      : 'Modèle générique — tous profils'}
+                      ? `${t('hr.templates.profile')}: ${template.position.titleFr}`
+                      : t('hr.templates.genericProfile')}
                   </p>
                   <div className="mt-4 flex items-center gap-3 border-t border-border pt-3 text-xs text-text-dim">
                     <span className="rounded-full bg-red-brand/10 px-2 py-0.5 font-medium text-red-brand">
-                      {template.milestoneCount} étape{template.milestoneCount > 1 ? 's' : ''}
+                      {t('hr.templates.stepsCount', { count: template.milestoneCount })}
                     </span>
                     <span>
-                      {template.instanceCount} parcours généré{template.instanceCount > 1 ? 's' : ''}
+                      {t('hr.templates.generatedCount', { count: template.instanceCount })}
                     </span>
                   </div>
                 </Link>

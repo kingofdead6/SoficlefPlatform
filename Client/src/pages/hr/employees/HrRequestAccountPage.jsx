@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { accountRequestsApi } from '../../../api/account-requests.js';
 import { ApiError } from '../../../api/client.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, rowVariants, sectionVariants, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 
@@ -13,12 +15,10 @@ const fieldClass =
   'w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
 const STATUS_LABELS = {
-  OPEN: { labelFr: 'Ouverte', className: 'bg-red-brand/10 text-red-brand' },
-  CREATED: { labelFr: 'Compte créé', className: 'bg-status-green/10 text-status-green' },
-  REJECTED: { labelFr: 'Rejetée', className: 'bg-surface-2 text-text-dim' },
+  OPEN: { key: 'open', className: 'bg-red-brand/10 text-red-brand' },
+  CREATED: { key: 'created', className: 'bg-status-green/10 text-status-green' },
+  REJECTED: { key: 'rejected', className: 'bg-surface-2 text-text-dim' },
 };
-
-const URGENCY_LABELS = { NORMAL: 'Normale', URGENT: 'Urgente' };
 
 const EMPTY_FORM = {
   candidateNameFr: '',
@@ -38,6 +38,7 @@ const EMPTY_FORM = {
  * can see what is still open rather than re-sending a ticket that already exists.
  */
 export default function HrRequestAccountPage() {
+  const { t, i18n } = useTranslation();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,11 +54,11 @@ export default function HrRequestAccountPage() {
       setRequests(data ?? []);
       setError(null);
     } catch {
-      setError('Impossible de charger les demandes de compte.');
+      setError(t('hr.accountRequests.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -76,29 +77,29 @@ export default function HrRequestAccountPage() {
         urgency: form.urgency,
         noteFr: form.noteFr || undefined,
       });
-      setConfirmation(`Demande envoyée au SI pour ${form.candidateNameFr}.`);
+      setConfirmation(t('hr.accountRequests.confirmation', { name: form.candidateNameFr }));
       setForm(EMPTY_FORM);
       await load();
     } catch (err) {
       setFormError(
         err instanceof ApiError && err.body?.fieldErrors
-          ? 'Vérifiez les champs du formulaire.'
-          : 'La demande n’a pas pu être enregistrée.',
+          ? t('hr.accountRequests.validationError')
+          : t('hr.accountRequests.saveError'),
       );
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement des demandes…" />;
+  if (loading) return <PageLoading label={t('hr.accountRequests.loading')} />;
   if (error && requests.length === 0) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Demander un compte"
-        subtitle="Les RH ne créent pas de compte : cette demande ouvre un ticket que le SI traite, puis le compte revient ici pour affectation."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.accountRequests.title')}
+        subtitle={t('hr.accountRequests.subtitle')}
       />
 
       <div className="grid gap-8 lg:grid-cols-5">
@@ -109,10 +110,10 @@ export default function HrRequestAccountPage() {
           animate="visible"
           className={`${CARD} space-y-4 p-6 lg:col-span-2`}
         >
-          <h2 className="font-display text-lg text-text">Nouvelle demande</h2>
+          <h2 className="font-display text-lg text-text">{t('hr.accountRequests.form.title')}</h2>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-text">Nom du candidat</label>
+            <label className="mb-1 block text-sm font-medium text-text">{t('hr.accountRequests.form.candidate')}</label>
             <input
               required
               minLength={2}
@@ -124,7 +125,7 @@ export default function HrRequestAccountPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-text">Poste prévu</label>
+            <label className="mb-1 block text-sm font-medium text-text">{t('hr.accountRequests.form.position')}</label>
             <input
               required
               minLength={2}
@@ -137,7 +138,7 @@ export default function HrRequestAccountPage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-text">Embauche prévue</label>
+              <label className="mb-1 block text-sm font-medium text-text">{t('hr.accountRequests.form.hireDate')}</label>
               <input
                 type="date"
                 value={form.plannedHireDate}
@@ -146,20 +147,20 @@ export default function HrRequestAccountPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-text">Urgence</label>
+              <label className="mb-1 block text-sm font-medium text-text">{t('hr.accountRequests.form.urgency')}</label>
               <select
                 value={form.urgency}
                 onChange={(e) => setForm((f) => ({ ...f, urgency: e.target.value }))}
                 className={fieldClass}
               >
-                <option value="NORMAL">Normale</option>
-                <option value="URGENT">Urgente</option>
+                <option value="NORMAL">{t('hr.accountRequests.urgency.normal')}</option>
+                <option value="URGENT">{t('hr.accountRequests.urgency.urgent')}</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-text">Note (facultatif)</label>
+            <label className="mb-1 block text-sm font-medium text-text">{t('hr.accountRequests.form.note')}</label>
             <textarea
               maxLength={1000}
               rows={3}
@@ -199,28 +200,28 @@ export default function HrRequestAccountPage() {
             whileTap={reduce || submitting ? undefined : { scale: 0.98 }}
             className="w-full rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
           >
-            {submitting ? 'Envoi…' : 'Envoyer la demande au SI'}
+            {submitting ? t('hr.accountRequests.form.sending') : t('hr.accountRequests.form.submit')}
           </motion.button>
         </motion.form>
 
         <section className="lg:col-span-3">
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="font-display text-lg text-text">Demandes enregistrées</h2>
+            <h2 className="font-display text-lg text-text">{t('hr.accountRequests.list.title')}</h2>
             <span className="text-sm text-text-dim">{requests.length}</span>
           </div>
 
           {requests.length === 0 ? (
-            <EmptyState detail="Aucune demande de compte enregistrée." muted />
+            <EmptyState detail={t('hr.accountRequests.list.empty')} muted />
           ) : (
             <div className={`overflow-hidden ${CARD}`}>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                    <th className="px-4 py-3 font-medium">Candidat</th>
-                    <th className="px-4 py-3 font-medium">Poste prévu</th>
-                    <th className="px-4 py-3 font-medium">Urgence</th>
-                    <th className="px-4 py-3 font-medium">Statut</th>
-                    <th className="px-4 py-3 font-medium">Attente</th>
+                    <th className="px-4 py-3 font-medium">{t('hr.accountRequests.table.candidate')}</th>
+                    <th className="px-4 py-3 font-medium">{t('hr.accountRequests.table.position')}</th>
+                    <th className="px-4 py-3 font-medium">{t('hr.accountRequests.table.urgency')}</th>
+                    <th className="px-4 py-3 font-medium">{t('hr.accountRequests.table.status')}</th>
+                    <th className="px-4 py-3 font-medium">{t('hr.accountRequests.table.waiting')}</th>
                   </tr>
                 </thead>
                 <motion.tbody
@@ -237,7 +238,7 @@ export default function HrRequestAccountPage() {
                       <td className="px-4 py-3 font-medium text-text">{request.candidateNameFr}</td>
                       <td className="px-4 py-3 text-text-dim">{request.plannedPositionFr}</td>
                       <td className="px-4 py-3 text-text-dim">
-                        {URGENCY_LABELS[request.urgency] ?? request.urgency}
+                        {t(`hr.accountRequests.urgency.${request.urgency.toLowerCase()}`, request.urgency)}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -245,10 +246,12 @@ export default function HrRequestAccountPage() {
                             STATUS_LABELS[request.status]?.className ?? 'bg-surface-2 text-text-dim'
                           }`}
                         >
-                          {STATUS_LABELS[request.status]?.labelFr ?? request.status}
+                          {STATUS_LABELS[request.status]
+                            ? t(`hr.accountRequests.status.${STATUS_LABELS[request.status].key}`)
+                            : request.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-text-dim">{request.waitingDays} j</td>
+                      <td className="px-4 py-3 text-text-dim">{t('hr.accountRequests.days', { count: request.waitingDays })}</td>
                     </motion.tr>
                   ))}
                 </motion.tbody>

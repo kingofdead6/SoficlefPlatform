@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { organizationUnitsApi, positionsApi } from '../../../api/organization.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -32,6 +33,7 @@ const fieldClass =
  * Reveal is GSAP-orchestrated by depth, matching the manager organigram.
  */
 export default function HrOrganigramPage() {
+  const { t } = useTranslation();
   const [nodes, setNodes] = useState([]);
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,12 +51,12 @@ export default function HrOrganigramPage() {
         setNodes(treeRes.data);
         setUnits(unitsRes.data);
       } catch {
-        setError('Impossible de charger l’organigramme.');
+        setError(t('hr.organigram.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const unitById = useMemo(() => new Map(units.map((unit) => [unit.id, unit])), [units]);
 
@@ -153,7 +155,7 @@ export default function HrOrganigramPage() {
     [loading, view, visibleNodes],
   );
 
-  if (loading) return <PageLoading label="Chargement de l’organigramme…" />;
+  if (loading) return <PageLoading label={t('hr.organigram.loading')} />;
   if (error) return <PageError message={error} />;
 
   const anomalyTotal =
@@ -165,15 +167,15 @@ export default function HrOrganigramPage() {
   return (
     <div ref={scopeRef}>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Organigramme"
-        subtitle="La structure complète de l’entreprise, de la direction générale aux postes de terrain."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.organigram.title')}
+        subtitle={t('hr.organigram.subtitle')}
       />
 
       <div className="mb-6 flex gap-2 border-b border-border">
         {[
-          { id: 'tree', labelFr: 'Organigramme' },
-          { id: 'anomalies', labelFr: `Anomalies (${anomalyTotal})` },
+          { id: 'tree', label: t('hr.organigram.tabs.tree') },
+          { id: 'anomalies', label: t('hr.organigram.tabs.anomalies', { count: anomalyTotal }) },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -185,7 +187,7 @@ export default function HrOrganigramPage() {
                 : 'border-transparent text-text-dim hover:text-text'
             }`}
           >
-            {tab.labelFr}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -195,13 +197,13 @@ export default function HrOrganigramPage() {
           <div className={`${CARD} mb-6 flex flex-wrap items-center gap-3 p-4`}>
             <input
               type="search"
-              placeholder="Rechercher un poste, un code, une personne…"
+              placeholder={t('hr.organigram.search')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={`${fieldClass} min-w-[240px] flex-1`}
             />
             <select value={unitId} onChange={(e) => setUnitId(e.target.value)} className={fieldClass}>
-              <option value="">Toutes les structures</option>
+              <option value="">{t('hr.organigram.allStructures')}</option>
               {units.map((unit) => (
                 <option key={unit.id} value={unit.id}>
                   {unit.code} — {unit.nameFr}
@@ -215,17 +217,17 @@ export default function HrOrganigramPage() {
                 onChange={(e) => setShowVacantOnly(e.target.checked)}
                 className="accent-[var(--color-red-brand)]"
               />
-              Postes vacants uniquement
+              {t('hr.organigram.vacantOnly')}
             </label>
             <span className="ml-auto text-sm text-text-dim">
-              {visibleNodes.length} / {nodes.length} postes
+              {t('hr.organigram.positionCount', { visible: visibleNodes.length, total: nodes.length })}
             </span>
           </div>
 
           <div className={`overflow-x-auto ${CARD} p-6`}>
             <OrgChart
               nodes={visibleNodes}
-              emptyLabel="Aucun poste ne correspond à ces filtres."
+              emptyLabel={t('hr.organigram.emptyFiltered')}
               toneOf={(node) =>
                 highlightIds.has(node.id) ? 'flagged' : node.isVacant ? 'vacant' : undefined
               }
@@ -234,41 +236,37 @@ export default function HrOrganigramPage() {
           </div>
         </>
       ) : (
-        <AnomalyView anomalies={anomalies} unitById={unitById} />
+        <AnomalyView anomalies={anomalies} unitById={unitById} t={t} />
       )}
     </div>
   );
 }
 
-function AnomalyView({ anomalies, unitById }) {
+function AnomalyView({ anomalies, unitById, t }) {
   const reduce = useReducedMotion();
 
   const groups = [
     {
       id: 'vacant',
-      titleFr: 'Postes vacants',
-      ruleFr: 'Le poste existe dans l’organigramme mais personne ne l’occupe aujourd’hui.',
+      titleKey: 'vacant',
       nodes: anomalies.vacant,
       tone: 'brand',
     },
     {
       id: 'headless',
-      titleFr: 'Branches sans responsable',
-      ruleFr: 'Des postes sont rattachés à ce poste, mais celui-ci n’a pas de titulaire.',
+      titleKey: 'headless',
       nodes: anomalies.headless,
       tone: 'red',
     },
     {
       id: 'orphans',
-      titleFr: 'Nœuds orphelins',
-      ruleFr: 'Le poste déclare un poste parent qui n’existe pas (ou plus) dans l’organigramme.',
+      titleKey: 'orphans',
       nodes: anomalies.orphans,
       tone: 'red',
     },
     {
       id: 'unattached',
-      titleFr: 'Postes sans structure',
-      ruleFr: 'Le poste n’est rattaché à aucune direction ni service.',
+      titleKey: 'unattached',
       nodes: anomalies.unattached,
       tone: 'red',
     },
@@ -285,7 +283,7 @@ function AnomalyView({ anomalies, unitById }) {
         {groups.map((group) => (
           <motion.div key={group.id} variants={staggerItem} className={`${CARD} p-5`}>
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-              {group.titleFr}
+              {t(`hr.organigram.anomalies.${group.titleKey}.title`)}
             </p>
             <p
               className={`font-display text-3xl ${
@@ -300,19 +298,19 @@ function AnomalyView({ anomalies, unitById }) {
 
       {groups.map((group) => (
         <section key={group.id}>
-          <h2 className="font-display text-lg text-text">{group.titleFr}</h2>
-          <p className="mb-3 text-xs text-text-dim">{group.ruleFr}</p>
+          <h2 className="font-display text-lg text-text">{t(`hr.organigram.anomalies.${group.titleKey}.title`)}</h2>
+          <p className="mb-3 text-xs text-text-dim">{t(`hr.organigram.anomalies.${group.titleKey}.rule`)}</p>
           {group.nodes.length === 0 ? (
-            <EmptyState detail="Aucune anomalie de ce type." muted />
+            <EmptyState detail={t('hr.organigram.noAnomaly')} muted />
           ) : (
             <div className={`overflow-hidden ${CARD}`}>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                    <th className="px-4 py-3 font-medium">Poste</th>
-                    <th className="px-4 py-3 font-medium">Code</th>
-                    <th className="px-4 py-3 font-medium">Structure</th>
-                    <th className="px-4 py-3 font-medium">Titulaire</th>
+                    <th className="px-4 py-3 font-medium">{t('hr.organigram.table.position')}</th>
+                    <th className="px-4 py-3 font-medium">{t('hr.organigram.table.code')}</th>
+                    <th className="px-4 py-3 font-medium">{t('hr.organigram.table.structure')}</th>
+                    <th className="px-4 py-3 font-medium">{t('hr.organigram.table.holder')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -328,7 +326,7 @@ function AnomalyView({ anomalies, unitById }) {
                         {unitById.get(node.organizationUnitId)?.nameFr ?? '—'}
                       </td>
                       <td className="px-4 py-3 text-text-dim">
-                        {node.holder?.displayName ?? 'Vacant'}
+                        {node.holder?.displayName ?? t('hr.organigram.vacant')}
                       </td>
                     </tr>
                   ))}

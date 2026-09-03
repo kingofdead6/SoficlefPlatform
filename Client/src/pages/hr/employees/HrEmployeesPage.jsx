@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { localeOf } from '../../../lib/formatDate.js';
 
 import { usersApi } from '../../../api/users.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -15,11 +16,11 @@ const fieldClass =
   'w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
 const LIFECYCLE_LABELS = {
-  PENDING_ASSIGNMENT: 'En attente d’affectation',
-  ASSIGNED: 'Affecté',
-  ONBOARDING: 'En intégration',
-  ACTIVE: 'Actif',
-  ARCHIVED: 'Archivé',
+  PENDING_ASSIGNMENT: 'pending',
+  ASSIGNED: 'assigned',
+  ONBOARDING: 'onboarding',
+  ACTIVE: 'active',
+  ARCHIVED: 'archived',
 };
 
 const LIFECYCLE_TONE = {
@@ -43,7 +44,7 @@ const EMPTY_FILTERS = { search: '', unitCode: '', managerId: '', lifecycleState:
  * that already returns the right rows.
  */
 export default function HrEmployeesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [employees, setEmployees] = useState([]);
   const [facets, setFacets] = useState({ units: [], managers: [] });
   const [filters, setFilters] = useState(EMPTY_FILTERS);
@@ -73,7 +74,7 @@ export default function HrEmployeesPage() {
       setEmployees(data);
       setError(null);
     } catch {
-      setError('Impossible de charger le répertoire.');
+      setError(t('hr.employeeDirectory.loadError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -96,17 +97,12 @@ export default function HrEmployeesPage() {
 
   function handleExport() {
     const headers = [
-      'Nom',
-      'E-mail',
-      'Téléphone',
-      'Poste',
-      'Direction',
-      'Service',
-      'Structure',
-      'Manager',
-      'État',
-      'Date d’embauche',
-      'Intégration (%)',
+      t('hr.employeeDirectory.export.name'), t('hr.employeeDirectory.export.email'),
+      t('hr.employeeDirectory.export.phone'), t('hr.employeeDirectory.export.position'),
+      t('hr.employeeDirectory.export.direction'), t('hr.employeeDirectory.export.department'),
+      t('hr.employeeDirectory.export.structure'), t('hr.employeeDirectory.export.manager'),
+      t('hr.employeeDirectory.export.status'), t('hr.employeeDirectory.export.hireDate'),
+      t('hr.employeeDirectory.export.onboarding'),
     ];
 
     // RFC 4180 quoting: a value containing a quote, comma or newline must be quoted, and
@@ -126,8 +122,8 @@ export default function HrEmployeesPage() {
         row.serviceFr,
         row.unitCode,
         row.managerName,
-        LIFECYCLE_LABELS[row.lifecycleState] ?? row.lifecycleState,
-        row.hireDate ? new Date(row.hireDate).toLocaleDateString('fr-FR') : '',
+        t(`hr.employeeDirectory.status.${LIFECYCLE_LABELS[row.lifecycleState]}`, row.lifecycleState),
+        row.hireDate ? new Date(row.hireDate).toLocaleDateString(localeOf(i18n)) : '',
         row.onboardingPercent === null ? '' : row.onboardingPercent,
       ]
         .map(escape)
@@ -147,7 +143,7 @@ export default function HrEmployeesPage() {
     URL.revokeObjectURL(url);
   }
 
-  if (loading) return <PageLoading label={t('hr.pages.employees.loading')} />;
+  if (loading) return <PageLoading label={t('hr.employeeDirectory.loading')} />;
   if (error && employees.length === 0) return <PageError message={error} />;
 
   const filtersActive = Object.values(filters).some((value) => value !== '');
@@ -156,15 +152,15 @@ export default function HrEmployeesPage() {
     <div>
       <PageHeader
         eyebrow={t('hr.dashboard.eyebrow')}
-        title={t('hr.pages.employees.title')}
-        subtitle={t('hr.pages.employees.subtitle')}
+        title={t('hr.employeeDirectory.title')}
+        subtitle={t('hr.employeeDirectory.subtitle')}
         actions={
           <>
             <Link
               to="/app/hr/employees/unassigned"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Non affectés
+              {t('hr.employeeDirectory.unassigned')}
             </Link>
             <button
               type="button"
@@ -172,7 +168,7 @@ export default function HrEmployeesPage() {
               disabled={employees.length === 0}
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
             >
-              Exporter (CSV)
+              {t('hr.employeeDirectory.exportButton')}
             </button>
           </>
         }
@@ -186,7 +182,7 @@ export default function HrEmployeesPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Collaborateurs affichés
+            {t('hr.employeeDirectory.stats.displayed')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.total} />
@@ -194,7 +190,7 @@ export default function HrEmployeesPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            En intégration
+            {t('hr.employeeDirectory.stats.onboarding')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.onboarding} />
@@ -202,7 +198,7 @@ export default function HrEmployeesPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Sans affectation
+            {t('hr.employeeDirectory.stats.unassigned')}
           </p>
           <p
             className={`font-display text-3xl ${stats.unassigned > 0 ? 'text-status-amber' : 'text-red-deep'}`}
@@ -215,7 +211,7 @@ export default function HrEmployeesPage() {
       <div className={`${CARD} mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5`}>
         <input
           type="search"
-          placeholder="Rechercher un nom, un e-mail, un poste…"
+          placeholder={t('hr.employeeDirectory.search')}
           value={filters.search}
           onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
           className={`${fieldClass} lg:col-span-2`}
@@ -225,7 +221,7 @@ export default function HrEmployeesPage() {
           onChange={(e) => setFilters((f) => ({ ...f, unitCode: e.target.value }))}
           className={fieldClass}
         >
-          <option value="">Toutes les structures</option>
+          <option value="">{t('hr.employeeDirectory.allStructures')}</option>
           {facets.units.map((unit) => (
             <option key={unit.code} value={unit.code}>
               {unit.code} — {unit.nameFr}
@@ -237,7 +233,7 @@ export default function HrEmployeesPage() {
           onChange={(e) => setFilters((f) => ({ ...f, managerId: e.target.value }))}
           className={fieldClass}
         >
-          <option value="">Tous les managers</option>
+          <option value="">{t('hr.employeeDirectory.allManagers')}</option>
           {facets.managers.map((manager) => (
             <option key={manager.id} value={manager.id}>
               {manager.displayName}
@@ -249,10 +245,10 @@ export default function HrEmployeesPage() {
           onChange={(e) => setFilters((f) => ({ ...f, lifecycleState: e.target.value }))}
           className={fieldClass}
         >
-          <option value="">Tous les états</option>
+          <option value="">{t('hr.employeeDirectory.allStatuses')}</option>
           {Object.entries(LIFECYCLE_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
-              {label}
+              {t(`hr.employeeDirectory.status.${label}`, label)}
             </option>
           ))}
         </select>
@@ -262,18 +258,18 @@ export default function HrEmployeesPage() {
             onClick={() => setFilters(EMPTY_FILTERS)}
             className="justify-self-start text-sm text-red-brand hover:underline sm:col-span-2 lg:col-span-5"
           >
-            Réinitialiser les filtres
+            {t('hr.employeeDirectory.reset')}
           </button>
         )}
       </div>
 
       {employees.length === 0 ? (
         <EmptyState
-          title="Aucun collaborateur"
+          title={t('hr.employeeDirectory.emptyTitle')}
           detail={
             filtersActive
-              ? 'Aucun collaborateur ne correspond à ces filtres.'
-              : 'Aucun collaborateur visible dans votre périmètre.'
+              ? t('hr.employeeDirectory.emptyFiltered')
+              : t('hr.employeeDirectory.emptyScope')
           }
           muted
         />
@@ -282,12 +278,12 @@ export default function HrEmployeesPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                <th className="px-4 py-3 font-medium">Collaborateur</th>
-                <th className="px-4 py-3 font-medium">Poste</th>
-                <th className="px-4 py-3 font-medium">Structure</th>
-                <th className="px-4 py-3 font-medium">Manager</th>
-                <th className="px-4 py-3 font-medium">État</th>
-                <th className="px-4 py-3 font-medium">Intégration</th>
+                <th className="px-4 py-3 font-medium">{t('hr.employeeDirectory.table.employee')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.employeeDirectory.table.position')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.employeeDirectory.table.structure')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.employeeDirectory.table.manager')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.employeeDirectory.table.status')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.employeeDirectory.table.onboarding')}</th>
               </tr>
             </thead>
             <motion.tbody
@@ -323,7 +319,7 @@ export default function HrEmployeesPage() {
                         LIFECYCLE_TONE[employee.lifecycleState] ?? 'bg-red-brand/10 text-red-brand'
                       }`}
                     >
-                      {LIFECYCLE_LABELS[employee.lifecycleState] ?? employee.lifecycleState}
+                      {t(`hr.employeeDirectory.status.${LIFECYCLE_LABELS[employee.lifecycleState]}`, employee.lifecycleState)}
                     </span>
                   </td>
                   <td className="px-4 py-3">

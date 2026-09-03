@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { trainingApi } from '../../../api/training.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -38,6 +39,7 @@ const EMPTY_FORM = {
  * than offered and broken).
  */
 export default function HrTrainingPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [catalogue, setCatalogue] = useState(null);
   const [coverage, setCoverage] = useState(null);
@@ -62,11 +64,11 @@ export default function HrTrainingPage() {
       setCoverage(coverageRes.data);
       setError(null);
     } catch {
-      setError('Impossible de charger le catalogue de formation.');
+      setError(t('hr.training.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -101,21 +103,21 @@ export default function HrTrainingPage() {
       setShowForm(false);
       await load();
     } catch (err) {
-      setFormError(err.body?.message ?? 'La création du module a échoué.');
+      setFormError(err.body?.message ?? t('hr.training.createError'));
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement du catalogue…" />;
+  if (loading) return <PageLoading label={t('hr.training.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Catalogue de formation"
-        subtitle="Les modules d’intégration, leur caractère obligatoire et leur quiz de validation."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.training.title')}
+        subtitle={t('hr.training.subtitle')}
         actions={
           canCreate ? (
             <button
@@ -123,7 +125,7 @@ export default function HrTrainingPage() {
               onClick={() => setShowForm((open) => !open)}
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              {showForm ? 'Annuler' : 'Nouveau module'}
+              {showForm ? t('hr.training.cancel') : t('hr.training.newModule')}
             </button>
           ) : null
         }
@@ -131,8 +133,7 @@ export default function HrTrainingPage() {
 
       {!canCreate && (
         <div className="mb-6 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-          Votre rôle donne un accès en lecture au catalogue. La création d’un module relève de
-          l’administration (permission <code>training:create</code>).
+          {t('hr.training.readOnlyNotice')} (<code>training:create</code>).
         </div>
       )}
 
@@ -144,7 +145,7 @@ export default function HrTrainingPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Modules
+            {t('hr.training.stats.modules')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.modules} />
@@ -152,7 +153,7 @@ export default function HrTrainingPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Obligatoires
+            {t('hr.training.stats.mandatory')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.mandatory} />
@@ -160,7 +161,7 @@ export default function HrTrainingPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Sans quiz
+            {t('hr.training.stats.withoutQuiz')}
           </p>
           <p
             className={`font-display text-3xl ${stats.withoutQuiz > 0 ? 'text-status-amber' : 'text-red-deep'}`}
@@ -170,7 +171,7 @@ export default function HrTrainingPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Couverture
+            {t('hr.training.stats.coverage')}
           </p>
           {coverage?.rate === null || coverage?.rate === undefined ? (
             <p className="font-display text-3xl text-text-dim">—</p>
@@ -180,7 +181,7 @@ export default function HrTrainingPage() {
             </p>
           )}
           <p className="mt-1 text-xs text-text-dim">
-            {coverage ? `${coverage.fullyTrained}/${coverage.people} collaborateurs à jour` : '—'}
+            {coverage ? t('hr.training.coverage', { trained: coverage.fullyTrained, people: coverage.people }) : '—'}
           </p>
         </motion.div>
       </motion.div>
@@ -196,10 +197,10 @@ export default function HrTrainingPage() {
             className="overflow-hidden"
           >
             <div className={`${CARD} mb-6 space-y-4 p-6`}>
-              <h2 className="font-display text-lg text-text">Nouveau module</h2>
+              <h2 className="font-display text-lg text-text">{t('hr.training.form.title')}</h2>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-text">Code</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.training.form.code')}</label>
                   <input
                     required
                     value={form.code}
@@ -208,7 +209,7 @@ export default function HrTrainingPage() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-text">Titre</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.training.form.titleLabel')}</label>
                   <input
                     required
                     value={form.titleFr}
@@ -218,7 +219,7 @@ export default function HrTrainingPage() {
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-text">Résumé</label>
+                <label className="mb-1 block text-sm font-medium text-text">{t('hr.training.form.summary')}</label>
                 <textarea
                   required
                   rows={2}
@@ -228,7 +229,7 @@ export default function HrTrainingPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-text">Contenu du module</label>
+                <label className="mb-1 block text-sm font-medium text-text">{t('hr.training.form.content')}</label>
                 <textarea
                   required
                   rows={6}
@@ -245,10 +246,10 @@ export default function HrTrainingPage() {
                     onChange={(e) => setForm((f) => ({ ...f, isMandatory: e.target.checked }))}
                     className="accent-[var(--color-red-brand)]"
                   />
-                  Module obligatoire
+                  {t('hr.training.form.mandatory')}
                 </label>
                 <div className="w-32">
-                  <label className="mb-1 block text-sm font-medium text-text">Seuil (%)</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.training.form.threshold')}</label>
                   <input
                     type="number"
                     min={0}
@@ -259,7 +260,7 @@ export default function HrTrainingPage() {
                   />
                 </div>
                 <div className="w-24">
-                  <label className="mb-1 block text-sm font-medium text-text">Ordre</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.training.form.order')}</label>
                   <input
                     type="number"
                     value={form.order}
@@ -277,7 +278,7 @@ export default function HrTrainingPage() {
                   disabled={submitting}
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
                 >
-                  {submitting ? 'Création…' : 'Créer le module'}
+                  {submitting ? t('hr.training.form.creating') : t('hr.training.form.create')}
                 </button>
               </div>
             </div>
@@ -287,8 +288,8 @@ export default function HrTrainingPage() {
 
       {entries.length === 0 ? (
         <EmptyState
-          title="Catalogue vide"
-          detail="Aucun module de formation n’est publié."
+          title={t('hr.training.emptyTitle')}
+          detail={t('hr.training.emptyDetail')}
           muted
         />
       ) : (
@@ -305,7 +306,7 @@ export default function HrTrainingPage() {
                   <p className="font-display text-lg text-text">{entry.titleFr}</p>
                   {entry.isMandatory && (
                     <span className="shrink-0 rounded-full bg-red-brand/10 px-2 py-0.5 text-xs font-medium text-red-brand">
-                      Obligatoire
+                      {t('hr.training.mandatory')}
                     </span>
                   )}
                 </div>
@@ -315,15 +316,15 @@ export default function HrTrainingPage() {
                 <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-xs">
                   <span className={entry.questionCount === 0 ? 'text-status-amber' : 'text-text-dim'}>
                     {entry.questionCount === 0
-                      ? 'Aucun quiz'
-                      : `${entry.questionCount} question${entry.questionCount > 1 ? 's' : ''} — seuil ${entry.passingScore}%`}
+                      ? t('hr.training.noQuiz')
+                      : t('hr.training.quizSummary', { count: entry.questionCount, score: entry.passingScore })}
                   </span>
                   {canEditQuiz && (
                     <Link
                       to={`/app/hr/training/${entry.code}/quiz`}
                       className="font-medium text-red-brand hover:underline"
                     >
-                      Quiz →
+                      {t('hr.training.quiz')} →
                     </Link>
                   )}
                 </div>

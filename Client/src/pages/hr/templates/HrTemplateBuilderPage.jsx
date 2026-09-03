@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { templatesApi } from '../../../api/templates.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -14,18 +15,18 @@ const fieldClass =
   'w-full rounded-app border border-border bg-surface px-2 py-1.5 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
 const DEPARTMENTS = [
-  { value: 'HR', labelFr: 'RH' },
-  { value: 'IT', labelFr: 'SI' },
-  { value: 'HSE', labelFr: 'HSE' },
-  { value: 'QUALITY', labelFr: 'Qualité' },
-  { value: 'MANAGER', labelFr: 'Manager' },
-  { value: 'EMPLOYEE', labelFr: 'Collaborateur' },
+  { value: 'HR' },
+  { value: 'IT' },
+  { value: 'HSE' },
+  { value: 'QUALITY' },
+  { value: 'MANAGER' },
+  { value: 'EMPLOYEE' },
 ];
 
 const PHASES = [
-  { value: 'PRE_ONBOARDING', labelFr: 'Avant l’arrivée' },
-  { value: 'DAY_ONE', labelFr: 'Jour 1' },
-  { value: 'PROBATION', labelFr: 'Période d’essai' },
+  { value: 'PRE_ONBOARDING' },
+  { value: 'DAY_ONE' },
+  { value: 'PROBATION' },
 ];
 
 /** J-7 / J0 / J+15 from the numeric offset, so the label and the offset never disagree. */
@@ -66,6 +67,7 @@ const newRow = (order) => ({
  * reachable and screen-reader-announceable, which a bare pointer drag is not.
  */
 export default function HrTemplateBuilderPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const { user } = useAuth();
   const [template, setTemplate] = useState(null);
@@ -101,11 +103,11 @@ export default function HrTemplateBuilderPage() {
       setDirty(false);
       setError(null);
     } catch {
-      setError('Modèle introuvable.');
+      setError(t('hr.templateBuilder.notFound'));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     load();
@@ -170,29 +172,29 @@ export default function HrTemplateBuilderPage() {
       setSaved(true);
       await load();
     } catch (err) {
-      setSaveError(err.body?.message ?? 'L’enregistrement de la séquence a échoué.');
+      setSaveError(err.body?.message ?? t('hr.templateBuilder.saveError'));
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement du modèle…" />;
+  if (loading) return <PageLoading label={t('hr.templateBuilder.loading')} />;
   if (error) return <PageError message={error} />;
   if (!template) return null;
 
   return (
     <div>
       <Link to="/app/hr/templates" className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← Retour à la bibliothèque
+        {t('hr.templateBuilder.back')}
       </Link>
 
       <PageHeader
-        eyebrow="Ressources humaines"
+        eyebrow={t('hr.dashboard.eyebrow')}
         title={template.titleFr}
         subtitle={
           template.position
-            ? `Profil : ${template.position.titleFr} — ${rows.length} étape(s), ${template.instanceCount} parcours généré(s).`
-            : `Modèle générique — ${rows.length} étape(s), ${template.instanceCount} parcours généré(s).`
+            ? t('hr.templateBuilder.profileSubtitle', { profile: template.position.titleFr, steps: rows.length, journeys: template.instanceCount })
+            : t('hr.templateBuilder.genericSubtitle', { steps: rows.length, journeys: template.instanceCount })
         }
         actions={
           canEdit ? (
@@ -202,7 +204,7 @@ export default function HrTemplateBuilderPage() {
                 onClick={addRow}
                 className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
               >
-                Ajouter une étape
+                {t('hr.templateBuilder.addStep')}
               </button>
               <button
                 type="button"
@@ -210,7 +212,7 @@ export default function HrTemplateBuilderPage() {
                 disabled={saving || !dirty}
                 className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
               >
-                {saving ? 'Enregistrement…' : 'Enregistrer la séquence'}
+                {saving ? t('hr.templateBuilder.saving') : t('hr.templateBuilder.saveSequence')}
               </button>
             </>
           ) : null
@@ -219,8 +221,7 @@ export default function HrTemplateBuilderPage() {
 
       {!canEdit && (
         <div className="mb-6 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-          Votre rôle donne un accès en lecture aux modèles de parcours. La modification de la
-          séquence relève de l’administration (permission <code>onboarding_template:update</code>).
+          {t('hr.templateBuilder.readOnlyNotice')} (<code>onboarding_template:update</code>).
         </div>
       )}
 
@@ -242,7 +243,7 @@ export default function HrTemplateBuilderPage() {
             exit={{ opacity: 0, height: 0 }}
             className="mb-4 rounded-app border border-status-green/30 bg-status-green/5 p-3 text-sm text-status-green"
           >
-            Séquence enregistrée.
+            {t('hr.templateBuilder.saved')}
           </motion.p>
         )}
         {dirty && (
@@ -252,18 +253,18 @@ export default function HrTemplateBuilderPage() {
             exit={{ opacity: 0, height: 0 }}
             className="mb-4 rounded-app border border-status-amber/30 bg-status-amber/5 p-3 text-sm text-status-amber"
           >
-            Modifications non enregistrées.
+            {t('hr.templateBuilder.unsaved')}
           </motion.p>
         )}
       </AnimatePresence>
 
       {rows.length === 0 ? (
         <EmptyState
-          title="Séquence vide"
+          title={t('hr.templateBuilder.emptyTitle')}
           detail={
             canEdit
-              ? 'Ce modèle ne décrit encore aucune étape. Ajoutez la première ci-dessus.'
-              : 'Ce modèle ne décrit encore aucune étape.'
+              ? t('hr.templateBuilder.emptyEditable')
+              : t('hr.templateBuilder.emptyReadOnly')
           }
           muted
         />
@@ -289,7 +290,7 @@ export default function HrTemplateBuilderPage() {
                           type="button"
                           onClick={() => move(index, -1)}
                           disabled={index === 0}
-                          aria-label={`Déplacer l’étape ${index + 1} vers le haut`}
+                          aria-label={t('hr.templateBuilder.moveUp', { number: index + 1 })}
                           className="flex h-6 w-6 items-center justify-center rounded border border-border text-xs text-text-dim transition-colors hover:border-red-brand hover:text-red-brand disabled:opacity-30"
                         >
                           ↑
@@ -298,7 +299,7 @@ export default function HrTemplateBuilderPage() {
                           type="button"
                           onClick={() => move(index, 1)}
                           disabled={index === rows.length - 1}
-                          aria-label={`Déplacer l’étape ${index + 1} vers le bas`}
+                          aria-label={t('hr.templateBuilder.moveDown', { number: index + 1 })}
                           className="flex h-6 w-6 items-center justify-center rounded border border-border text-xs text-text-dim transition-colors hover:border-red-brand hover:text-red-brand disabled:opacity-30"
                         >
                           ↓
@@ -311,7 +312,7 @@ export default function HrTemplateBuilderPage() {
                     <div className="grid gap-3 sm:grid-cols-[2fr_1fr_1fr]">
                       <div>
                         <label className="mb-1 block text-xs font-medium text-text-dim">
-                          Intitulé de l’étape
+                          {t('hr.templateBuilder.fields.stepTitle')}
                         </label>
                         <input
                           value={row.titleFr}
@@ -322,7 +323,7 @@ export default function HrTemplateBuilderPage() {
                       </div>
                       <div>
                         <label className="mb-1 block text-xs font-medium text-text-dim">
-                          Décalage (jours)
+                          {t('hr.templateBuilder.fields.offset')}
                         </label>
                         <div className="flex items-center gap-2">
                           <input
@@ -341,7 +342,7 @@ export default function HrTemplateBuilderPage() {
                       </div>
                       <div>
                         <label className="mb-1 block text-xs font-medium text-text-dim">
-                          Service responsable
+                          {t('hr.templateBuilder.fields.department')}
                         </label>
                         <select
                           value={row.ownerDepartment}
@@ -351,7 +352,7 @@ export default function HrTemplateBuilderPage() {
                         >
                           {DEPARTMENTS.map((department) => (
                             <option key={department.value} value={department.value}>
-                              {department.labelFr}
+                              {t(`hr.templateBuilder.departments.${department.value}`)}
                             </option>
                           ))}
                         </select>
@@ -360,7 +361,7 @@ export default function HrTemplateBuilderPage() {
 
                     <div>
                       <label className="mb-1 block text-xs font-medium text-text-dim">
-                        Description
+                        {t('hr.templateBuilder.fields.description')}
                       </label>
                       <textarea
                         rows={2}
@@ -373,7 +374,7 @@ export default function HrTemplateBuilderPage() {
 
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center gap-2">
-                        <label className="text-xs font-medium text-text-dim">Phase</label>
+                          <label className="text-xs font-medium text-text-dim">{t('hr.templateBuilder.fields.phase')}</label>
                         <select
                           value={row.phase}
                           disabled={!canEdit}
@@ -382,7 +383,7 @@ export default function HrTemplateBuilderPage() {
                         >
                           {PHASES.map((phase) => (
                             <option key={phase.value} value={phase.value}>
-                              {phase.labelFr}
+                              {t(`hr.templateBuilder.phases.${phase.value}`)}
                             </option>
                           ))}
                         </select>
@@ -396,7 +397,7 @@ export default function HrTemplateBuilderPage() {
                           onChange={(e) => update(index, { isRecommended: !e.target.checked })}
                           className="accent-[var(--color-red-brand)]"
                         />
-                        Étape obligatoire
+                        {t('hr.templateBuilder.fields.mandatory')}
                       </label>
 
                       {canEdit && (
@@ -405,7 +406,7 @@ export default function HrTemplateBuilderPage() {
                           onClick={() => removeRow(index)}
                           className="ml-auto text-xs text-status-red hover:underline"
                         >
-                          Supprimer
+                          {t('hr.templateBuilder.remove')}
                         </button>
                       )}
                     </div>
@@ -419,9 +420,7 @@ export default function HrTemplateBuilderPage() {
 
       {rows.length > 0 && template.instanceCount > 0 && (
         <p className="mt-6 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-          {template.instanceCount} parcours ont été générés depuis ce modèle. Modifier la séquence
-          n’altère pas les parcours déjà en cours ; supprimer une étape déjà suivie par quelqu’un est
-          refusé par le serveur, pour ne pas effacer une validation existante.
+          {t('hr.templateBuilder.existingJourneys', { count: template.instanceCount })}
         </p>
       )}
     </div>

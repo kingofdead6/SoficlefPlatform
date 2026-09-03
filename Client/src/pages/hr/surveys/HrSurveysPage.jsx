@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { alertsApi } from '../../../api/alerts.js';
 import { surveysApi } from '../../../api/surveys.js';
@@ -13,18 +14,18 @@ import { staggerContainer, staggerItem, sectionVariants, initialOrNone } from '.
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 
 export const INDICATOR_LABELS = {
-  WELCOME_QUALITY: 'Qualité de l’accueil',
-  SUPPORT_LEVEL: 'Accompagnement reçu',
-  ROLE_CLARITY: 'Clarté du rôle',
-  MANAGER_RELATIONSHIP: 'Relation avec le manager',
-  WORKING_CONDITIONS: 'Conditions de travail',
+  WELCOME_QUALITY: 'welcomeQuality',
+  SUPPORT_LEVEL: 'supportLevel',
+  ROLE_CLARITY: 'roleClarity',
+  MANAGER_RELATIONSHIP: 'managerRelationship',
+  WORKING_CONDITIONS: 'workingConditions',
 };
 
 const MILESTONE_DESCRIPTIONS = {
-  7: 'Première semaine — accueil, matériel, premiers repères.',
-  30: 'Premier mois — clarté du rôle et accompagnement.',
-  60: 'Deux mois — autonomie et intégration dans l’équipe.',
-  90: 'Fin de période d’essai — bilan global.',
+  7: 'firstWeek',
+  30: 'firstMonth',
+  60: 'secondMonth',
+  90: 'trialEnd',
 };
 
 /**
@@ -46,6 +47,7 @@ const MILESTONE_DESCRIPTIONS = {
  * "when is somebody chased about an unanswered survey?" without a detour.
  */
 export default function HrSurveysPage() {
+  const { t } = useTranslation();
   const [satisfaction, setSatisfaction] = useState(null);
   const [results, setResults] = useState(null);
   const [rules, setRules] = useState([]);
@@ -65,19 +67,19 @@ export default function HrSurveysPage() {
         setResults(resultsRes.data);
         setRules(rulesRes.data ?? []);
       } catch {
-        setError('Impossible de charger la configuration des enquêtes.');
+        setError(t('hr.surveys.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const surveyRules = useMemo(
     () => rules.filter((rule) => rule.trigger === 'SURVEY_UNANSWERED'),
     [rules],
   );
 
-  if (loading) return <PageLoading label="Chargement des enquêtes…" />;
+  if (loading) return <PageLoading label={t('hr.surveys.loading')} />;
   if (error) return <PageError message={error} />;
 
   const milestones = results?.byMilestone ?? satisfaction?.byMilestone ?? [];
@@ -86,22 +88,22 @@ export default function HrSurveysPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Enquêtes de satisfaction"
-        subtitle="Les jalons, le questionnaire et les règles de relance qui encadrent le suivi d’intégration."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.surveys.title')}
+        subtitle={t('hr.surveys.subtitle')}
         actions={
           <>
             <Link
               to="/app/hr/alerts"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Règles de relance
+              {t('hr.surveys.reminderRules')}
             </Link>
             <Link
               to="/app/hr/surveys/results"
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              Voir les résultats
+              {t('hr.surveys.viewResults')}
             </Link>
           </>
         }
@@ -115,7 +117,7 @@ export default function HrSurveysPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Enquêtes émises
+            {t('hr.surveys.stats.issued')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={satisfaction?.roundsIssued ?? 0} />
@@ -123,7 +125,7 @@ export default function HrSurveysPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Renseignées
+            {t('hr.surveys.stats.answered')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={satisfaction?.roundsAnswered ?? 0} />
@@ -131,7 +133,7 @@ export default function HrSurveysPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            En retard
+            {t('hr.surveys.stats.overdue')}
           </p>
           <p
             className={`font-display text-3xl ${
@@ -143,7 +145,7 @@ export default function HrSurveysPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Taux de réponse
+            {t('hr.surveys.stats.responseRate')}
           </p>
           {satisfaction?.responseRate === null || satisfaction?.responseRate === undefined ? (
             <p className="font-display text-3xl text-text-dim">—</p>
@@ -161,11 +163,9 @@ export default function HrSurveysPage() {
         animate="visible"
         className="mb-10"
       >
-        <h2 className="font-display text-xl text-text">Jalons d’enquête</h2>
+        <h2 className="font-display text-xl text-text">{t('hr.surveys.milestones.title')}</h2>
         <p className="mb-4 text-sm text-text-dim">
-          Les quatre jalons sont générés automatiquement à l’affectation, à partir de la date
-          d’embauche. Ils sont définis dans le domaine (J+7, J+30, J+60, J+90) et s’appliquent à tout
-          parcours ; les modifier relèverait d’un changement de modèle, pas d’un réglage.
+          {t('hr.surveys.milestones.detail')}
         </p>
         <motion.div
           variants={staggerContainer(0.06)}
@@ -180,16 +180,17 @@ export default function HrSurveysPage() {
                   J+{milestone.dayOffset}
                 </span>
                 <span className="text-xs text-text-dim">
-                  {milestone.answered}
-                  {milestone.issued !== undefined ? `/${milestone.issued}` : ''} réponses
+                  {t('hr.surveys.responses', { answered: milestone.answered, issued: milestone.issued })}
                 </span>
               </div>
               <p className="mb-3 text-xs text-text-dim">
-                {MILESTONE_DESCRIPTIONS[milestone.dayOffset] ?? ''}
+                {MILESTONE_DESCRIPTIONS[milestone.dayOffset]
+                  ? t(`hr.surveys.milestones.${MILESTONE_DESCRIPTIONS[milestone.dayOffset]}`)
+                  : ''}
               </p>
               <div className="flex items-center gap-3">
                 <ProgressRing percent={milestone.score ?? 0} label={milestone.score === null ? '—' : undefined} />
-                <span className="text-xs text-text-dim">Score de satisfaction</span>
+                <span className="text-xs text-text-dim">{t('hr.surveys.score')}</span>
               </div>
             </motion.div>
           ))}
@@ -203,27 +204,27 @@ export default function HrSurveysPage() {
         transition={{ delay: reduce ? 0 : 0.06 }}
         className="mb-10"
       >
-        <h2 className="font-display text-xl text-text">Questionnaire</h2>
+        <h2 className="font-display text-xl text-text">{t('hr.surveys.questionnaire.title')}</h2>
         <p className="mb-4 text-sm text-text-dim">
-          Les cinq indicateurs notés de 1 à 5 qui composent chaque enquête. Ce sont des valeurs
-          d’énumération en base : ajouter un indicateur suppose une migration, la liste n’est donc pas
-          modifiable depuis l’interface.
+          {t('hr.surveys.questionnaire.detail')}
         </p>
         <div className={`overflow-hidden ${CARD}`}>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                <th className="px-4 py-3 font-medium">Indicateur</th>
-                <th className="px-4 py-3 font-medium">Moyenne (/5)</th>
-                <th className="px-4 py-3 font-medium">Score</th>
-                <th className="px-4 py-3 font-medium">Réponses</th>
+                <th className="px-4 py-3 font-medium">{t('hr.surveys.table.indicator')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.surveys.table.average')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.surveys.table.score')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.surveys.table.responses')}</th>
               </tr>
             </thead>
             <tbody>
               {indicators.map((indicator) => (
                 <tr key={indicator.indicator} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 text-text">
-                    {INDICATOR_LABELS[indicator.indicator] ?? indicator.indicator}
+                    {INDICATOR_LABELS[indicator.indicator]
+                      ? t(`hr.surveys.indicators.${INDICATOR_LABELS[indicator.indicator]}`)
+                      : indicator.indicator}
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-text-dim">
                     {indicator.average === null ? '—' : indicator.average}
@@ -259,15 +260,14 @@ export default function HrSurveysPage() {
         animate="visible"
         transition={{ delay: reduce ? 0 : 0.12 }}
       >
-        <h2 className="font-display text-xl text-text">Règles de relance</h2>
+        <h2 className="font-display text-xl text-text">{t('hr.surveys.rules.title')}</h2>
         <p className="mb-4 text-sm text-text-dim">
-          Les règles qui déclenchent une relance sur une enquête restée sans réponse. Elles se
-          configurent sur la page des alertes.
+          {t('hr.surveys.rules.detail')}
         </p>
         {surveyRules.length === 0 ? (
           <EmptyState
-            title="Aucune règle de relance sur les enquêtes"
-            detail="Rien ne relance automatiquement une enquête sans réponse aujourd’hui. Créez une règle « enquête sans réponse » depuis la page Alertes."
+            title={t('hr.surveys.rules.emptyTitle')}
+            detail={t('hr.surveys.rules.emptyDetail')}
             muted
           />
         ) : (
@@ -288,14 +288,14 @@ export default function HrSurveysPage() {
                         : 'bg-surface-2 text-text-dim'
                     }`}
                   >
-                    {rule.isActive ? 'Active' : 'Inactive'}
+                    {rule.isActive ? t('hr.surveys.active') : t('hr.surveys.inactive')}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-text-dim">
-                  Relance après {rule.thresholdDays} jour(s), notification à {rule.notifyDepartment}
+                  {t('hr.surveys.ruleSummary', { threshold: rule.thresholdDays, department: rule.notifyDepartment })}
                   {rule.escalateAfterDays
-                    ? `, escalade après ${rule.escalateAfterDays} jour(s).`
-                    : ', sans escalade.'}
+                    ? ` ${t('hr.surveys.escalation', { days: rule.escalateAfterDays })}`
+                    : ` ${t('hr.surveys.noEscalation')}`}
                 </p>
               </motion.div>
             ))}

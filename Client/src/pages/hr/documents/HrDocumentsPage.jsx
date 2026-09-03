@@ -16,8 +16,8 @@ const fieldClass =
   'w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
 const AVAILABILITY_LABELS = {
-  AVAILABLE: { labelFr: 'Publié', className: 'bg-status-green/10 text-status-green' },
-  PENDING: { labelFr: 'En préparation', className: 'bg-status-amber/10 text-status-amber' },
+  AVAILABLE: { key: 'published', className: 'bg-status-green/10 text-status-green' },
+  PENDING: { key: 'pending', className: 'bg-status-amber/10 text-status-amber' },
 };
 
 /**
@@ -77,11 +77,11 @@ export default function HrDocumentsPage() {
       setStorageConfigured(response.storageConfigured !== false);
       setError(null);
     } catch {
-      setError('Impossible de charger la bibliothèque documentaire.');
+      setError(t('hr.documentLibrary.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -131,7 +131,7 @@ export default function HrDocumentsPage() {
       setShowForm(false);
       await load();
     } catch (err) {
-      setFormError(err.body?.message ?? 'La création du document a échoué.');
+      setFormError(err.body?.message ?? t('hr.documentLibrary.createError'));
     } finally {
       setSubmitting(false);
     }
@@ -152,10 +152,10 @@ export default function HrDocumentsPage() {
     setNotice(null);
     try {
       await documentsApi.upload(documentId, file);
-      setNotice(`« ${file.name} » a été téléversé et le document est publié.`);
+      setNotice(t('hr.documentLibrary.uploaded', { name: file.name }));
       await load();
     } catch (err) {
-      setNotice(err.body?.message ?? 'Le téléversement a échoué.');
+      setNotice(err.body?.message ?? t('hr.documentLibrary.uploadError'));
     } finally {
       setUploadingId(null);
       pendingUploadId.current = null;
@@ -181,7 +181,7 @@ export default function HrDocumentsPage() {
       await documentsApi.update(doc.id, { availability: 'PENDING' });
       await load();
     } catch (err) {
-      setNotice(err.body?.message ?? 'La mise à jour a échoué.');
+      setNotice(err.body?.message ?? t('hr.documentLibrary.updateError'));
     }
   }
 
@@ -194,7 +194,7 @@ export default function HrDocumentsPage() {
       setPublishing(null);
       await load();
     } catch (err) {
-      setNotice(err.body?.message ?? 'La publication a échoué.');
+      setNotice(err.body?.message ?? t('hr.documentLibrary.publishError'));
     }
   }
 
@@ -223,7 +223,7 @@ export default function HrDocumentsPage() {
               onClick={() => setShowForm((open) => !open)}
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              {showForm ? 'Annuler' : 'Nouveau document'}
+              {showForm ? t('hr.documentLibrary.cancel') : t('hr.documentLibrary.newDocument')}
             </button>
           ) : null
         }
@@ -239,9 +239,7 @@ export default function HrDocumentsPage() {
 
       {!storageConfigured && (
         <div className="mb-6 rounded-app border border-dashed border-status-amber/40 bg-status-amber/5 p-4 text-xs text-status-amber">
-          Aucun espace de stockage n’est configuré sur ce serveur : les fiches documentaires peuvent
-          être créées et décrites, mais le téléversement de fichiers est indisponible jusqu’à la
-          configuration des identifiants Cloudinary.
+          {t('hr.documentLibrary.storageUnavailable')}
         </div>
       )}
 
@@ -253,7 +251,7 @@ export default function HrDocumentsPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Documents
+            {t('hr.documentLibrary.stats.documents')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.total} />
@@ -261,7 +259,7 @@ export default function HrDocumentsPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Publiés
+            {t('hr.documentLibrary.stats.published')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.published} />
@@ -269,7 +267,7 @@ export default function HrDocumentsPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Accusés de lecture
+            {t('hr.documentLibrary.stats.acknowledgements')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.acknowledgements} />
@@ -288,10 +286,10 @@ export default function HrDocumentsPage() {
             className="overflow-hidden"
           >
             <div className={`${CARD} mb-6 space-y-4 p-6`}>
-              <h2 className="font-display text-lg text-text">Nouveau document</h2>
+              <h2 className="font-display text-lg text-text">{t('hr.documentLibrary.form.title')}</h2>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-text">Référence</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.documentLibrary.form.reference')}</label>
                   <input
                     required
                     placeholder="reglement-interieur"
@@ -301,7 +299,7 @@ export default function HrDocumentsPage() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-text">Titre</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.documentLibrary.form.documentTitle')}</label>
                   <input
                     required
                     value={form.titleFr}
@@ -311,7 +309,7 @@ export default function HrDocumentsPage() {
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-text">Description</label>
+                <label className="mb-1 block text-sm font-medium text-text">{t('hr.documentLibrary.form.description')}</label>
                 <textarea
                   rows={2}
                   value={form.detailFr}
@@ -320,7 +318,7 @@ export default function HrDocumentsPage() {
                 />
               </div>
               <div className="w-32">
-                <label className="mb-1 block text-sm font-medium text-text">Ordre</label>
+                <label className="mb-1 block text-sm font-medium text-text">{t('hr.documentLibrary.form.order')}</label>
                 <input
                   type="number"
                   value={form.order}
@@ -337,12 +335,11 @@ export default function HrDocumentsPage() {
                   disabled={submitting}
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
                 >
-                  {submitting ? 'Création…' : 'Créer la fiche'}
+                  {submitting ? t('hr.documentLibrary.form.creating') : t('hr.documentLibrary.form.create')}
                 </button>
               </div>
               <p className="text-xs text-text-dim">
-                La fiche est créée « en préparation » ; téléversez ensuite le fichier depuis la liste
-                pour la publier.
+                {t('hr.documentLibrary.form.hint')}
               </p>
             </div>
           </motion.form>
@@ -365,7 +362,7 @@ export default function HrDocumentsPage() {
       <div className={`${CARD} mb-6 p-4`}>
         <input
           type="search"
-          placeholder="Rechercher un document…"
+          placeholder={t('hr.documentLibrary.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className={fieldClass}
@@ -373,16 +370,16 @@ export default function HrDocumentsPage() {
       </div>
 
       {visible.length === 0 ? (
-        <EmptyState detail="Aucun document ne correspond à cette recherche." muted />
+        <EmptyState detail={t('hr.documentLibrary.emptySearch')} muted />
       ) : (
         <div className={`overflow-x-auto ${CARD}`}>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                <th className="px-4 py-3 font-medium">Document</th>
-                <th className="px-4 py-3 font-medium">Fichier</th>
-                <th className="px-4 py-3 font-medium">État</th>
-                <th className="px-4 py-3 font-medium">Accusés</th>
+                <th className="px-4 py-3 font-medium">{t('hr.documentLibrary.table.document')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.documentLibrary.table.file')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.documentLibrary.table.status')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.documentLibrary.table.acknowledgements')}</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -412,10 +409,10 @@ export default function HrDocumentsPage() {
                         rel="noreferrer"
                         className="text-red-brand hover:underline"
                       >
-                        {doc.fileName ?? 'Ouvrir'}
+                        {doc.fileName ?? t('hr.documentLibrary.open')}
                       </a>
                     ) : (
-                      <span className="text-text-dim">Aucun fichier</span>
+                      <span className="text-text-dim">{t('hr.documentLibrary.noFile')}</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -424,7 +421,9 @@ export default function HrDocumentsPage() {
                         AVAILABILITY_LABELS[doc.availability]?.className ?? 'bg-surface-2 text-text-dim'
                       }`}
                     >
-                      {AVAILABILITY_LABELS[doc.availability]?.labelFr ?? doc.availability}
+                      {AVAILABILITY_LABELS[doc.availability]
+                        ? t(`hr.documentLibrary.status.${AVAILABILITY_LABELS[doc.availability].key}`)
+                        : doc.availability}
                     </span>
                     {/*
                       Audience, named rather than merely flagged: "restricted" tells a
@@ -435,8 +434,8 @@ export default function HrDocumentsPage() {
                         {doc.visibility === 'DEPARTMENTS'
                           ? (Array.isArray(doc.departmentsFr) && doc.departmentsFr.length > 0
                               ? doc.departmentsFr.join(', ')
-                              : 'aucun département ciblé')
-                          : 'tout le personnel'}
+                                : t('hr.documentLibrary.noDepartments'))
+                              : t('hr.documentLibrary.allPersonnel')}
                       </span>
                     )}
                   </td>
@@ -453,10 +452,10 @@ export default function HrDocumentsPage() {
                           className="text-xs text-red-brand hover:underline disabled:opacity-50"
                         >
                           {uploadingId === doc.id
-                            ? 'Téléversement…'
+                            ? t('hr.documentLibrary.uploading')
                             : doc.storageKey
-                              ? 'Remplacer le fichier'
-                              : 'Téléverser'}
+                              ? t('hr.documentLibrary.replaceFile')
+                              : t('hr.documentLibrary.upload')}
                         </button>
                       )}
                       {(canUpdate || canPublish) && (
@@ -465,7 +464,7 @@ export default function HrDocumentsPage() {
                           onClick={() => toggleAvailability(doc)}
                           className="text-xs text-text-dim hover:text-red-brand hover:underline"
                         >
-                          {doc.availability === 'AVAILABLE' ? 'Dépublier' : 'Publier…'}
+                          {doc.availability === 'AVAILABLE' ? t('hr.documentLibrary.unpublish') : t('hr.documentLibrary.publish')}
                         </button>
                       )}
                     </div>
@@ -478,9 +477,7 @@ export default function HrDocumentsPage() {
       )}
 
       <p className="mt-6 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-        Le modèle de données ne conserve pas d’historique de versions : téléverser un nouveau fichier
-        remplace le précédent. Chaque remplacement est en revanche consigné au journal d’audit
-        (<code>document.uploaded</code>), avec le nom du fichier remplacé.
+        {t('hr.documentLibrary.versionNote')} (<code>document.uploaded</code>).
       </p>
 
       {/*
@@ -501,7 +498,7 @@ export default function HrDocumentsPage() {
             <motion.div
               role="dialog"
               aria-modal="true"
-              aria-label="Publier le document"
+              aria-label={t('hr.documentLibrary.dialog.ariaLabel')}
               initial={reduce ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
@@ -509,13 +506,13 @@ export default function HrDocumentsPage() {
               onClick={(event) => event.stopPropagation()}
               className={`${CARD} w-full max-w-lg p-6`}
             >
-              <h2 className="font-display text-xl text-red-deep">Publier « {publishing.titleFr} »</h2>
+              <h2 className="font-display text-xl text-red-deep">{t('hr.documentLibrary.dialog.title', { title: publishing.titleFr })}</h2>
               <p className="mt-1 text-sm text-text-dim">
-                Le document deviendra visible dans l’espace des personnes concernées.
+                {t('hr.documentLibrary.dialog.subtitle')}
               </p>
 
               <fieldset className="mt-5 space-y-2">
-                <legend className="mb-2 text-sm font-medium text-text">Destinataires</legend>
+                <legend className="mb-2 text-sm font-medium text-text">{t('hr.documentLibrary.dialog.audience')}</legend>
 
                 <label className="flex cursor-pointer items-start gap-2 text-sm">
                   <input
@@ -526,9 +523,9 @@ export default function HrDocumentsPage() {
                     className="mt-1 accent-[var(--color-red-brand)]"
                   />
                   <span>
-                    <span className="block text-text">Tout le personnel</span>
+                    <span className="block text-text">{t('hr.documentLibrary.allPersonnel')}</span>
                     <span className="block text-xs text-text-dim">
-                      Toute personne pouvant consulter la bibliothèque.
+                      {t('hr.documentLibrary.dialog.allHint')}
                     </span>
                   </span>
                 </label>
@@ -542,9 +539,9 @@ export default function HrDocumentsPage() {
                     className="mt-1 accent-[var(--color-red-brand)]"
                   />
                   <span>
-                    <span className="block text-text">Départements ciblés</span>
+                    <span className="block text-text">{t('hr.documentLibrary.dialog.departments')}</span>
                     <span className="block text-xs text-text-dim">
-                      Seules les personnes rattachées aux départements choisis verront le document.
+                      {t('hr.documentLibrary.dialog.departmentsHint')}
                     </span>
                   </span>
                 </label>
@@ -554,8 +551,7 @@ export default function HrDocumentsPage() {
                 <div className="mt-4 max-h-52 overflow-y-auto rounded-app border border-border p-3">
                   {departments.length === 0 ? (
                     <p className="text-xs text-text-dim">
-                      Aucun département n’est renseigné dans l’annuaire : les fiches collaborateurs
-                      n’ont ni direction ni service. Renseignez-les avant de cibler une publication.
+                      {t('hr.documentLibrary.dialog.noDepartments')}
                     </p>
                   ) : (
                     <ul className="space-y-1.5">
@@ -580,9 +576,9 @@ export default function HrDocumentsPage() {
               <p className="mt-4 text-xs text-text-dim">
                 {audience.visibility === 'DEPARTMENTS'
                   ? audience.departmentsFr.length > 0
-                    ? `Sera visible par les comptes rattachés à : ${audience.departmentsFr.join(', ')}.`
-                    : 'Choisissez au moins un département.'
-                  : 'Sera visible par l’ensemble du personnel.'}
+                    ? t('hr.documentLibrary.dialog.selectedDepartments', { departments: audience.departmentsFr.join(', ') })
+                    : t('hr.documentLibrary.dialog.chooseDepartment')
+                  : t('hr.documentLibrary.dialog.allSummary')}
               </p>
 
               <div className="mt-6 flex justify-end gap-2">
@@ -591,7 +587,7 @@ export default function HrDocumentsPage() {
                   onClick={() => setPublishing(null)}
                   className="rounded-app border border-border px-3 py-2 text-sm text-text-dim hover:bg-surface-2"
                 >
-                  Annuler
+                  {t('hr.documentLibrary.cancel')}
                 </button>
                 <button
                   type="button"
@@ -601,7 +597,7 @@ export default function HrDocumentsPage() {
                   }
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
                 >
-                  Publier
+                  {t('hr.documentLibrary.publishAction')}
                 </button>
               </div>
             </motion.div>
