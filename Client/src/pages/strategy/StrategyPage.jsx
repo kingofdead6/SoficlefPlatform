@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { strategyApi } from '../../api/strategy.js';
 import { ApiError } from '../../api/client.js';
 
 export default function StrategyPage() {
+  const { t } = useTranslation();
   const [strategy, setStrategy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,23 +14,23 @@ export default function StrategyPage() {
     strategyApi
       .get()
       .then((res) => setStrategy(res.data))
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Erreur de chargement.'))
+      .catch((err) => setError(err instanceof ApiError ? err.message : t('common.states.loadFailed')))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
-  if (loading) return <div className="text-text-dim">Chargement…</div>;
+  if (loading) return <div className="text-text-dim">{t('common.states.loading')}</div>;
   if (error) return <div className="text-status-red">{error}</div>;
   if (!strategy) {
     return (
       <div className="rounded-app border border-border bg-surface p-6 text-text-dim shadow-app">
-        Le plan stratégique n'est pas encore disponible.
+        {t('strategy.unavailable')}
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-2xl text-red-deep">Plan stratégique</h1>
+      <h1 className="font-display text-2xl text-red-deep">{t('strategy.title')}</h1>
 
       <div className="rounded-app border border-red-brand/30 bg-surface p-5 shadow-app">
         <h2 className="font-display text-lg text-text">{strategy.planFr}</h2>
@@ -38,16 +40,16 @@ export default function StrategyPage() {
       {strategy.markets.length > 0 && (
         <section>
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">
-            Objectifs de marché 2024–2026
+            {t('strategy.marketTargets')}
           </h3>
           <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
             <table className="w-full text-left text-[13px]">
               <thead className="bg-surface-2 text-text-dim">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Marché</th>
-                  <th className="px-4 py-2 font-medium">Stratégie</th>
-                  <th className="px-4 py-2 text-right font-medium">PDM cible</th>
-                  <th className="px-4 py-2 text-right font-medium">CA cible</th>
+                  <th className="px-4 py-2 font-medium">{t('strategy.columns.market')}</th>
+                  <th className="px-4 py-2 font-medium">{t('strategy.columns.strategy')}</th>
+                  <th className="px-4 py-2 text-right font-medium">{t('strategy.columns.marketShareTarget')}</th>
+                  <th className="px-4 py-2 text-right font-medium">{t('strategy.columns.revenueTarget')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -67,7 +69,7 @@ export default function StrategyPage() {
 
       {strategy.projects.length > 0 && (
         <section>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">Projets stratégiques</h3>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">{t('strategy.projects')}</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {strategy.projects.map((project) => (
               <div key={project.id} className="rounded-app border border-border bg-surface p-4 shadow-app">
@@ -83,7 +85,7 @@ export default function StrategyPage() {
       {strategy.contributions.length > 0 && (
         <section>
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">
-            Contribution DPR aux objectifs
+            {t('strategy.contributions')}
           </h3>
           <div className="space-y-3">
             {strategy.contributions.map((contribution) => (
@@ -91,7 +93,9 @@ export default function StrategyPage() {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-[13.5px] font-medium text-text">{contribution.labelFr}</p>
-                    <p className="text-[12px] text-text-muted">Cible : {contribution.targetFr}</p>
+                    <p className="text-[12px] text-text-muted">
+                      {t('strategy.target', { value: contribution.targetFr })}
+                    </p>
                   </div>
                   <span className="font-mono text-lg text-red-brand">{contribution.progressPercent}%</span>
                 </div>

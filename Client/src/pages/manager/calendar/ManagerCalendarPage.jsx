@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../../api/onboarding.js';
+import { localeOf } from '../../../lib/formatDate.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
@@ -12,7 +14,11 @@ const KIND_TONE = {
   blocked: 'border-status-red/30 bg-status-red/5 text-status-red',
   overdue: 'border-status-red/30 bg-status-red/5 text-status-red',
 };
-const KIND_LABEL = { evaluation: 'Évaluation', blocked: 'Blocage', overdue: 'Retard' };
+const KIND_LABEL_KEYS = {
+  evaluation: 'manager.calendar.kind.evaluation',
+  blocked: 'manager.calendar.kind.blocked',
+  overdue: 'manager.calendar.kind.overdue',
+};
 
 function startOfDay(date) {
   const d = new Date(date);
@@ -40,6 +46,7 @@ function groupByDay(events) {
  * listed separately below the dated timeline.
  */
 export default function ManagerCalendarPage() {
+  const { t, i18n } = useTranslation();
   const [recruits, setRecruits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -51,12 +58,12 @@ export default function ManagerCalendarPage() {
         const { data } = await onboardingApi.managerRecruits(false);
         setRecruits(data);
       } catch {
-        setError('Impossible de charger le calendrier.');
+        setError(t('manager.calendar.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const events = useMemo(() => {
     const now = new Date();
@@ -87,15 +94,15 @@ export default function ManagerCalendarPage() {
 
   const grouped = useMemo(() => groupByDay(events), [events]);
 
-  if (loading) return <PageLoading label="Chargement du calendrier…" />;
+  if (loading) return <PageLoading label={t('manager.calendar.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Manager"
-        title="Calendrier"
-        subtitle="Échéances d'évaluation à venir, et recrues actuellement bloquées ou en retard."
+        eyebrow={t('manager.eyebrow')}
+        title={t('manager.calendar.title')}
+        subtitle={t('manager.calendar.subtitle')}
       />
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -108,7 +115,7 @@ export default function ManagerCalendarPage() {
           {grouped.map(([key, dayEvents]) => (
             <motion.div key={key} variants={staggerItem}>
               <p className="mb-2 font-display text-sm uppercase tracking-wide text-text-dim">
-                {new Date(key).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                {new Date(key).toLocaleDateString(localeOf(i18n), { weekday: 'long', day: 'numeric', month: 'long' })}
               </p>
               <div className="space-y-2">
                 {dayEvents.map((event) => (
@@ -122,7 +129,7 @@ export default function ManagerCalendarPage() {
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{event.titleFr}</span>
                       <span className="shrink-0 rounded-full bg-surface px-2 py-0.5 text-xs">
-                        {event.overdue ? 'En retard' : KIND_LABEL.evaluation}
+                        {event.overdue ? t(KIND_LABEL_KEYS.overdue) : t(KIND_LABEL_KEYS.evaluation)}
                       </span>
                     </div>
                   </Link>
@@ -130,11 +137,11 @@ export default function ManagerCalendarPage() {
               </div>
             </motion.div>
           ))}
-          {grouped.length === 0 && <EmptyState detail="Aucune évaluation à venir." />}
+          {grouped.length === 0 && <EmptyState detail={t('manager.calendar.noUpcoming')} />}
         </motion.div>
 
         <motion.div variants={staggerContainer(0.07)} initial={initialOrNone(reduce)} animate="visible">
-          <h2 className="mb-3 font-display text-lg text-text">Bloquées ou en retard</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('manager.calendar.blockedOrOverdue')}</h2>
           <div className="space-y-2">
             {blockedOrOverdue.map((recruit) => (
               <motion.div key={recruit.userId} variants={staggerItem}>
@@ -144,14 +151,14 @@ export default function ManagerCalendarPage() {
                 >
                   <p className="font-medium">{recruit.displayName}</p>
                   <p className="mt-1 text-xs opacity-80">
-                    {recruit.blocked > 0 ? `${recruit.blocked} bloquée(s)` : ''}
+                    {recruit.blocked > 0 ? t('manager.blockedCount', { count: recruit.blocked }) : ''}
                     {recruit.blocked > 0 && recruit.overdue > 0 ? ' · ' : ''}
-                    {recruit.overdue > 0 ? `${recruit.overdue} en retard` : ''}
+                    {recruit.overdue > 0 ? t('manager.overdueCount', { count: recruit.overdue }) : ''}
                   </p>
                 </Link>
               </motion.div>
             ))}
-            {blockedOrOverdue.length === 0 && <EmptyState detail="Rien de bloqué." muted />}
+            {blockedOrOverdue.length === 0 && <EmptyState detail={t('manager.calendar.nothingBlocked')} muted />}
           </div>
         </motion.div>
       </div>

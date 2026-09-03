@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { ApiError } from '../../api/client.js';
@@ -9,14 +10,18 @@ import { LockKeyMark, MeshBackdrop, ParticleField } from '../../components/publi
 const FIELD =
   'w-full rounded-app border border-border bg-surface px-3 py-2.5 text-sm text-text outline-none transition-colors placeholder:text-text-dim/70 focus:border-red-brand';
 
-/** What the platform gives someone once they are through — shown on the brand panel. */
-const HIGHLIGHTS = [
-  'Votre parcours d’intégration, étape par étape',
-  'Vos documents, formations et justificatifs',
-  'Votre position dans l’organigramme',
+/**
+ * What the platform gives someone once they are through — shown on the brand panel.
+ * Keys rather than literals, so the React key stays stable when the language changes.
+ */
+const HIGHLIGHT_KEYS = [
+  'auth.login.highlight1',
+  'auth.login.highlight2',
+  'auth.login.highlight3',
 ];
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,15 +46,15 @@ export default function LoginPage() {
       navigate(location.state?.from?.pathname ?? '/app/me', { replace: true });
     } catch (err) {
       /*
-       * "Identifiants invalides" deliberately does not say which half was wrong: telling a
+       * `invalidCredentials` deliberately does not say which half was wrong: telling a
        * stranger that an address exists but the password does not is how an account list
        * gets enumerated. The rate-limit case is distinguished because a person locked out
        * needs to know waiting will help.
        */
       if (err instanceof ApiError && err.status === 429) {
-        setError('Trop de tentatives. Patientez quelques minutes avant de réessayer.');
+        setError(t('auth.login.tooManyAttempts'));
       } else {
-        setError('Identifiants invalides.');
+        setError(t('auth.login.invalidCredentials'));
       }
     } finally {
       setSubmitting(false);
@@ -96,13 +101,13 @@ export default function LoginPage() {
             className="font-display text-2xl leading-snug text-text"
             style={{ textWrap: 'balance' }}
           >
-            Votre espace collaborateur
+            {t('auth.login.panelTitle')}
           </motion.h2>
 
           <ul className="mt-4 space-y-2">
-            {HIGHLIGHTS.map((item, index) => (
+            {HIGHLIGHT_KEYS.map((itemKey, index) => (
               <motion.li
-                key={item}
+                key={itemKey}
                 initial={reduce ? false : { opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{
@@ -113,7 +118,7 @@ export default function LoginPage() {
                 className="flex items-start gap-2.5 text-sm text-text-muted"
               >
                 <span aria-hidden className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-brand" />
-                {item}
+                {t(itemKey)}
               </motion.li>
             ))}
           </ul>
@@ -127,7 +132,7 @@ export default function LoginPage() {
           to="/"
           className="absolute left-5 top-6 inline-flex items-center gap-2 text-sm text-text-dim transition-colors hover:text-red-brand lg:hidden"
         >
-          <span aria-hidden>←</span> Retour au site
+          <span aria-hidden>←</span> {t('auth.login.backToSite')}
         </Link>
 
         <motion.div
@@ -136,10 +141,8 @@ export default function LoginPage() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="w-full max-w-sm"
         >
-          <h1 className="font-display text-3xl text-red-deep">Connexion</h1>
-          <p className="mt-1.5 text-sm text-text-dim">
-            Accédez à votre parcours et à vos documents.
-          </p>
+          <h1 className="font-display text-3xl text-red-deep">{t('auth.login.title')}</h1>
+          <p className="mt-1.5 text-sm text-text-dim">{t('auth.login.lede')}</p>
 
           <form onSubmit={handleSubmit} className="mt-8">
             <AnimatePresence initial={false}>
@@ -158,13 +161,15 @@ export default function LoginPage() {
             </AnimatePresence>
 
             <label className="mb-4 block">
-              <span className="mb-1.5 block text-sm font-medium text-text">E-mail professionnel</span>
+              <span className="mb-1.5 block text-sm font-medium text-text">
+                {t('auth.login.emailLabel')}
+              </span>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="prenom.nom@soficlef.local"
+                placeholder={t('auth.login.emailPlaceholder')}
                 className={FIELD}
                 autoComplete="email"
                 autoFocus
@@ -172,7 +177,9 @@ export default function LoginPage() {
             </label>
 
             <label className="mb-6 block">
-              <span className="mb-1.5 block text-sm font-medium text-text">Mot de passe</span>
+              <span className="mb-1.5 block text-sm font-medium text-text">
+                {t('auth.login.passwordLabel')}
+              </span>
               <span className="relative block">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -188,7 +195,7 @@ export default function LoginPage() {
                   aria-pressed={showPassword}
                   className="absolute end-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-text-dim transition-colors hover:text-red-brand"
                 >
-                  {showPassword ? 'Masquer' : 'Afficher'}
+                  {showPassword ? t('auth.login.hidePassword') : t('auth.login.showPassword')}
                 </button>
               </span>
             </label>
@@ -201,20 +208,17 @@ export default function LoginPage() {
               transition={{ duration: 0.15 }}
               className="w-full rounded-app bg-red-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? 'Connexion…' : 'Se connecter'}
+              {submitting ? t('auth.login.submitting') : t('auth.login.submit')}
             </motion.button>
           </form>
 
           <div className="mt-8 border-t border-border pt-5 text-sm text-text-dim">
-            <p>
-              Vous n’avez pas encore d’accès ? Votre compte est créé par le service
-              informatique, puis affecté par les ressources humaines.
-            </p>
+            <p>{t('auth.login.noAccessNote')}</p>
             <Link
               to="/"
               className="mt-3 hidden items-center gap-1.5 font-medium text-red-brand hover:underline lg:inline-flex"
             >
-              <span aria-hidden>←</span> Retour au site
+              <span aria-hidden>←</span> {t('auth.login.backToSite')}
             </Link>
           </div>
         </motion.div>

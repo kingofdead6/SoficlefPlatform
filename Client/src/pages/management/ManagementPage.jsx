@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { managementApi } from '../../api/management.js';
 import { ApiError } from '../../api/client.js';
 
 export default function ManagementPage() {
+  const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,16 +14,16 @@ export default function ManagementPage() {
     managementApi
       .get()
       .then((res) => setData(res.data))
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Erreur de chargement.'))
+      .catch((err) => setError(err instanceof ApiError ? err.message : t('common.states.loadFailed')))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
-  if (loading) return <div className="text-text-dim">Chargement…</div>;
+  if (loading) return <div className="text-text-dim">{t('common.states.loading')}</div>;
   if (error) return <div className="text-status-red">{error}</div>;
   if (!data || (data.members.length === 0 && data.actions.length === 0 && data.orgChart.length === 0)) {
     return (
       <div className="rounded-app border border-border bg-surface p-6 text-text-dim shadow-app">
-        L'équipe d'encadrement n'est pas encore disponible.
+        {t('management.unavailable')}
       </div>
     );
   }
@@ -32,12 +34,12 @@ export default function ManagementPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-2xl text-red-deep">Équipe encadrement</h1>
+      <h1 className="font-display text-2xl text-red-deep">{t('management.title')}</h1>
 
       {members.length > 0 && (
         <section>
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">
-            Responsables de structure
+            {t('management.unitManagers')}
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {members.map((member) => (
@@ -50,7 +52,9 @@ export default function ManagementPage() {
                   <p className="text-[12.5px] text-text-muted">{member.scopeFr}</p>
                   <p className="text-[12px] text-text-muted">{member.tagFr}</p>
                   <p className="mt-2">{member.perimeterFr}</p>
-                  <p className="mt-1 text-[12.5px] text-red-brand">Priorité 30 jours : {member.priorityJ30Fr}</p>
+                  <p className="mt-1 text-[12.5px] text-red-brand">
+                    {t('management.priority30Days', { value: member.priorityJ30Fr })}
+                  </p>
                 </div>
               </div>
             ))}
@@ -60,7 +64,7 @@ export default function ManagementPage() {
 
       {rootNodes.length > 0 && (
         <section>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">Organigramme</h3>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">{t('management.orgChart')}</h3>
           <div className="space-y-3">
             {rootNodes.map((node) => (
               <div key={node.id} className="rounded-app border border-border bg-surface p-4 shadow-app">
@@ -84,7 +88,7 @@ export default function ManagementPage() {
 
       {actions.length > 0 && (
         <section>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">Actions recommandées</h3>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">{t('management.recommendedActions')}</h3>
           <ol className="space-y-2">
             {actions.map((action) => (
               <li key={action.id} className="rounded-app border border-border bg-surface p-3 text-[13px] shadow-app">

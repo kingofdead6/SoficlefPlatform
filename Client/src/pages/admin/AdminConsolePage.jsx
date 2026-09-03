@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { auditApi } from '../../api/audit.js';
 import { adminApi } from '../../api/admin.js';
@@ -10,15 +11,10 @@ import ProgressRing from '../../components/manager/ProgressRing.jsx';
 import { PageLoading, PageError, EmptyState } from '../../components/manager/PageStates.jsx';
 import { useGsapContext } from '../../lib/motion/useGsapContext.js';
 import { staggerContainer, staggerItem, initialOrNone } from '../../lib/motion/variants.js';
+import { localeOf } from '../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const SECTION_TITLE = 'font-display text-xl text-text';
-
-const MODE_LABELS = {
-  production: { label: 'Production', tone: 'green' },
-  mock: { label: 'Simulé', tone: 'brand' },
-  unconfigured: { label: 'Non configuré', tone: 'red' },
-};
 
 const TONE_PILL = {
   green: 'bg-status-green/10 text-status-green',
@@ -27,9 +23,11 @@ const TONE_PILL = {
   dim: 'bg-surface-2 text-text-dim',
 };
 
+const MODE_TONE = { production: 'green', mock: 'brand', unconfigured: 'red' };
+
 /** Byte counts are only meaningful once they carry their unit. */
-function shortAgent(userAgent) {
-  if (!userAgent) return 'Client inconnu';
+function shortAgent(userAgent, t) {
+  if (!userAgent) return t('admin.console.unknownClient');
   const browser =
     /Firefox\/\d+/.exec(userAgent)?.[0] ??
     /Edg\/\d+/.exec(userAgent)?.[0] ??
@@ -53,6 +51,7 @@ function shortAgent(userAgent) {
  * dashboard, so the two portals read as one product.
  */
 export default function AdminConsolePage() {
+  const { t, i18n } = useTranslation();
   const [console_, setConsole] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [connectors, setConnectors] = useState([]);
@@ -80,12 +79,12 @@ export default function AdminConsolePage() {
           setConnectors([]);
         }
       } catch {
-        setError('Impossible de charger la console d’administration.');
+        setError(t('admin.console.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   useGsapContext(
     scopeRef,
@@ -120,7 +119,7 @@ export default function AdminConsolePage() {
     };
   }, [console_]);
 
-  if (loading) return <PageLoading label="Chargement de la console…" />;
+  if (loading) return <PageLoading label={t('admin.console.loading')} />;
   if (error) return <PageError message={error} />;
 
   const unconfigured = console_.connectors.filter((row) => row.mode === 'unconfigured');
@@ -129,22 +128,22 @@ export default function AdminConsolePage() {
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Administration"
-        title="Console"
-        subtitle="État réel du système : sessions ouvertes, refus d’accès, connecteurs raccordés et volumes stockés."
+        eyebrow={t('admin.console.eyebrow')}
+        title={t('admin.console.title')}
+        subtitle={t('admin.console.subtitle')}
         actions={
           <>
             <Link
               to="/admin/audit"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Journal d’audit
+              {t('admin.console.auditLink')}
             </Link>
             <Link
               to="/admin/users/provisioning"
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              File de provisionnement
+              {t('admin.console.provisioningLink')}
             </Link>
           </>
         }
@@ -152,15 +151,15 @@ export default function AdminConsolePage() {
 
       {/* Band 1 — the headline figures */}
       <div data-gsap="band" className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Tile label="Sessions actives" value={console_.activeSessions} />
-        <Tile label="Personnes connectées" value={console_.distinctUsersOnline} />
+        <Tile label={t('admin.console.tiles.activeSessions')} value={console_.activeSessions} />
+        <Tile label={t('admin.console.tiles.distinctUsersOnline')} value={console_.distinctUsersOnline} />
         <Tile
-          label="Connexions refusées (24 h)"
+          label={t('admin.console.tiles.failedLogins24h')}
           value={console_.failedLogins24h}
           tone={console_.failedLogins24h > 0 ? 'red' : undefined}
         />
         <Tile
-          label="Accès refusés (24 h)"
+          label={t('admin.console.tiles.accessDenied24h')}
           value={console_.accessDenied24h}
           tone={console_.accessDenied24h > 0 ? 'red' : undefined}
         />
@@ -175,42 +174,39 @@ export default function AdminConsolePage() {
             label={`${health.percent}%`}
           />
           <div className="min-w-0">
-            <h2 className="font-display text-lg text-text">Santé applicative</h2>
+            <h2 className="font-display text-lg text-text">{t('admin.console.health.title')}</h2>
             <p className="mt-1 text-sm text-text-dim">
               {health.observed === 0
-                ? 'Aucune tentative d’accès depuis 24 heures : rien à signaler, faute de trafic à mesurer.'
-                : `${console_.sessionsLast24h} session(s) ouverte(s) contre ${health.errors} refus sur les 24 dernières heures.`}
+                ? t('admin.console.health.noTraffic')
+                : t('admin.console.health.summary', { count: console_.sessionsLast24h, sessions: console_.sessionsLast24h, errors: health.errors })}
             </p>
           </div>
         </section>
 
         <section className={`${CARD} p-6`}>
-          <h2 className="mb-4 font-display text-lg text-text">Comptes</h2>
+          <h2 className="mb-4 font-display text-lg text-text">{t('admin.console.accounts.title')}</h2>
           <dl className="space-y-2 text-sm">
-            <Row label="Actifs" value={console_.accountsActive} />
-            <Row label="Créés, non affectés" value={console_.accountsPending} accent={console_.accountsPending > 0} />
-            <Row label="Suspendus ou désactivés" value={console_.accountsSuspended} />
-            <Row label="Demandes RH ouvertes" value={console_.openAccountRequests} accent={console_.openAccountRequests > 0} />
+            <Row label={t('admin.console.accounts.active')} value={console_.accountsActive} />
+            <Row label={t('admin.console.accounts.pending')} value={console_.accountsPending} accent={console_.accountsPending > 0} />
+            <Row label={t('admin.console.accounts.suspended')} value={console_.accountsSuspended} />
+            <Row label={t('admin.console.accounts.openRequests')} value={console_.openAccountRequests} accent={console_.openAccountRequests > 0} />
           </dl>
           <Link
             to="/admin/users"
             className="mt-4 inline-block text-xs font-medium text-red-brand hover:underline"
           >
-            Gérer les comptes →
+            {t('admin.console.accounts.manageLink')}
           </Link>
         </section>
 
         <section className={`${CARD} p-6`}>
-          <h2 className="mb-4 font-display text-lg text-text">Stockage</h2>
+          <h2 className="mb-4 font-display text-lg text-text">{t('admin.console.storage.title')}</h2>
           <dl className="space-y-2 text-sm">
-            <Row label="Documents référencés" value={console_.storedDocuments} />
-            <Row label="Pièces administratives" value={console_.storedFiles} />
-            <Row label="Entrées d’audit" value={console_.auditRows} />
+            <Row label={t('admin.console.storage.documents')} value={console_.storedDocuments} />
+            <Row label={t('admin.console.storage.files')} value={console_.storedFiles} />
+            <Row label={t('admin.console.storage.auditRows')} value={console_.auditRows} />
           </dl>
-          <p className="mt-4 text-xs text-text-dim">
-            Ces nombres comptent des lignes, pas des octets : aucun connecteur de stockage
-            n’est raccordé, les fichiers sont donc suivis sans être hébergés ici.
-          </p>
+          <p className="mt-4 text-xs text-text-dim">{t('admin.console.storage.note')}</p>
         </section>
       </div>
 
@@ -218,9 +214,9 @@ export default function AdminConsolePage() {
       <div data-gsap="band" className="grid gap-8 lg:grid-cols-2">
         <section>
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className={SECTION_TITLE}>Connecteurs</h2>
+            <h2 className={SECTION_TITLE}>{t('admin.console.connectors.title')}</h2>
             <Link to="/admin/integrations" className="text-xs font-medium text-red-brand hover:underline">
-              Configurer →
+              {t('admin.console.connectors.configureLink')}
             </Link>
           </div>
 
@@ -231,7 +227,8 @@ export default function AdminConsolePage() {
             className="space-y-2"
           >
             {console_.connectors.map((row) => {
-              const mode = MODE_LABELS[row.mode] ?? MODE_LABELS.unconfigured;
+              const tone = MODE_TONE[row.mode] ?? MODE_TONE.unconfigured;
+              const modeLabel = t(`admin.console.connectors.mode.${row.mode}`, t('admin.console.connectors.mode.unconfigured'));
               const declared = connectors.find((entry) => entry.key === row.definition.id);
               return (
                 <motion.div
@@ -244,12 +241,12 @@ export default function AdminConsolePage() {
                     <p className="mt-0.5 font-mono text-[10px] text-text-dim">{row.definition.envVar}</p>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TONE_PILL[mode.tone]}`}>
-                      {mode.label}
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TONE_PILL[tone]}`}>
+                      {modeLabel}
                     </span>
                     {declared?.envMismatch && (
                       <span className="text-[10px] font-medium text-status-red">
-                        Déclaré en production
+                        {t('admin.console.connectors.declaredInProduction')}
                       </span>
                     )}
                   </div>
@@ -263,15 +260,13 @@ export default function AdminConsolePage() {
               {unconfigured.length > 0 && (
                 <EmptyState
                   muted
-                  title={`${unconfigured.length} connecteur(s) non configuré(s)`}
-                  detail="Un connecteur non configuré n’est pas une panne : rien ne l’a jamais été raccordé. Chaque écran concerné indique ce que cela empêche concrètement."
+                  title={t('admin.console.connectors.unconfigured', { count: unconfigured.length })}
+                  detail={t('admin.console.connectors.unconfiguredDetail')}
                 />
               )}
               {mismatched.length > 0 && (
                 <div className="rounded-app border border-status-red/30 bg-status-red/5 p-4 text-sm text-status-red">
-                  {mismatched.length} connecteur(s) sont déclarés en production dans la
-                  configuration mais n’ont aucune adresse dans l’environnement du serveur.
-                  Le mode déclaré ne suffit pas à raccorder un système.
+                  {t('admin.console.connectors.mismatched', { count: mismatched.length })}
                 </div>
               )}
             </div>
@@ -280,24 +275,24 @@ export default function AdminConsolePage() {
 
         <section>
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className={SECTION_TITLE}>Sessions ouvertes</h2>
+            <h2 className={SECTION_TITLE}>{t('admin.console.sessions.title')}</h2>
             <span className="text-sm text-text-dim">{sessions.length}</span>
           </div>
 
           {sessions.length === 0 ? (
             <EmptyState
               muted
-              title="Aucune session ouverte"
-              detail="Personne n’est connecté à la plateforme en ce moment, votre propre session mise à part si elle vient d’expirer côté serveur."
+              title={t('admin.console.sessions.empty')}
+              detail={t('admin.console.sessions.emptyDetail')}
             />
           ) : (
             <div className={`overflow-hidden ${CARD}`}>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                    <th className="px-4 py-3 font-medium">Compte</th>
-                    <th className="px-4 py-3 font-medium">Client</th>
-                    <th className="px-4 py-3 font-medium">Vue le</th>
+                    <th className="px-4 py-3 font-medium">{t('admin.console.sessions.account')}</th>
+                    <th className="px-4 py-3 font-medium">{t('admin.console.sessions.client')}</th>
+                    <th className="px-4 py-3 font-medium">{t('admin.console.sessions.seenAt')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -305,11 +300,11 @@ export default function AdminConsolePage() {
                     <tr key={session.id} className="border-b border-border last:border-0 hover:bg-surface-2/60">
                       <td className="px-4 py-3">
                         <p className="text-text">{session.user.displayName}</p>
-                        <p className="text-xs text-text-dim">{session.ip ?? 'IP inconnue'}</p>
+                        <p className="text-xs text-text-dim">{session.ip ?? t('admin.console.sessions.unknownIp')}</p>
                       </td>
-                      <td className="px-4 py-3 text-xs text-text-dim">{shortAgent(session.userAgent)}</td>
+                      <td className="px-4 py-3 text-xs text-text-dim">{shortAgent(session.userAgent, t)}</td>
                       <td className="px-4 py-3 text-xs text-text-dim">
-                        {new Date(session.lastSeenAt).toLocaleString('fr-FR')}
+                        {new Date(session.lastSeenAt).toLocaleString(localeOf(i18n))}
                       </td>
                     </tr>
                   ))}
@@ -319,10 +314,10 @@ export default function AdminConsolePage() {
           )}
 
           <p className="mt-3 text-xs text-text-dim">
-            Dernière activité enregistrée dans le journal :{' '}
+            {t('admin.console.sessions.lastActivity')}{' '}
             {console_.lastActivityAt
-              ? new Date(console_.lastActivityAt).toLocaleString('fr-FR')
-              : 'aucune'}
+              ? new Date(console_.lastActivityAt).toLocaleString(localeOf(i18n))
+              : t('admin.console.sessions.lastActivityNone')}
             .
           </p>
         </section>

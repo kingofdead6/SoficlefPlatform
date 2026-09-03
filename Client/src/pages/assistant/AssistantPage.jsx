@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { assistantApi } from '../../api/assistant.js';
 import AssistantChat, { ProviderNote } from '../../components/assistant/AssistantChat.jsx';
@@ -19,6 +20,8 @@ export default function AssistantPage() {
   const [modelName, setModelName] = useState(null);
   const [activeId, setActiveId] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Hooks run before the loading guard below, or the hook order changes between renders.
+  const { t } = useTranslation();
 
   useEffect(() => {
     assistantApi
@@ -35,27 +38,20 @@ export default function AssistantPage() {
   const usable = useMemo(() => agents.filter((agent) => agent.available !== false), [agents]);
   const active = usable.find((agent) => agent.id === activeId) ?? usable[0] ?? null;
 
-  if (loading) return <PageLoading label="Chargement de l’assistant…" />;
+  if (loading) return <PageLoading label={t('assistant.loading')} />;
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-2xl text-red-deep">Assistant</h1>
-        <p className="mt-1 text-sm text-text-dim">
-          Cinq agents, chacun limité aux ressources qu’il déclare lire. Chaque réponse est
-          construite à partir des données que vous pouvez déjà consulter, et cite ses sources.
-        </p>
+        <h1 className="font-display text-2xl text-red-deep">{t('assistant.generic.title')}</h1>
+        <p className="mt-1 text-sm text-text-dim">{t('assistant.generic.intro')}</p>
         <p className="mt-2">
           <ProviderNote provider={provider} modelName={modelName} />
         </p>
       </div>
 
       {usable.length === 0 ? (
-        <EmptyState
-          title="Aucun agent disponible"
-          detail="Votre compte ne dispose des droits de lecture d’aucune des ressources que ces agents interrogent."
-          muted
-        />
+        <EmptyState title={t('assistant.empty.title')} detail={t('assistant.empty.detail')} muted />
       ) : (
         <section className="space-y-4">
           <div className="flex flex-wrap gap-2">
@@ -90,7 +86,7 @@ export default function AssistantPage() {
       )}
 
       <section>
-        <h2 className="mb-2 text-sm font-medium text-text">Les cinq agents</h2>
+        <h2 className="mb-2 text-sm font-medium text-text">{t('assistant.generic.agentsTitle')}</h2>
         <ul className="space-y-3">
           {agents.map((agent) => (
             <li key={agent.id} className="rounded-app border border-border bg-surface p-4">
@@ -117,7 +113,9 @@ export default function AssistantPage() {
                       : 'bg-text-dim/10 text-text-dim',
                   )}
                 >
-                  {agent.available !== false ? 'Disponible' : 'Hors de vos droits'}
+                  {agent.available !== false
+                    ? t('assistant.agents.available')
+                    : t('assistant.agents.unavailable')}
                 </span>
               </div>
             </li>
@@ -126,13 +124,7 @@ export default function AssistantPage() {
       </section>
 
       <section className="rounded-app border border-border bg-surface p-4">
-        <p className="text-sm text-text-dim">
-          Règle intangible, quel que soit l'agent : une réponse cite toujours sa source, ou
-          reconnaît qu'elle n'a rien trouvé. Un agent lit avec les droits de la personne qui
-          l'interroge — il ne peut jamais faire remonter une donnée que cette personne ne
-          pourrait pas ouvrir elle-même. Les sources affichées proviennent toujours de la
-          recherche, jamais du texte rédigé par le modèle.
-        </p>
+        <p className="text-sm text-text-dim">{t('assistant.generic.rule')}</p>
       </section>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 /**
  * The public site's artwork, generated rather than photographed.
@@ -157,13 +158,14 @@ export function AuroraBackdrop({ className = '', opacity = 0.5 }) {
  * which is the literal action the company's products perform.
  */
 export function LockKeyMark({ className = '' }) {
+  const { t } = useTranslation();
   const reduce = useReducedMotion();
 
   return (
     <svg
       viewBox="0 0 240 240"
       role="img"
-      aria-label="Serrure et clé, marque graphique de SOFICLEF"
+      aria-label={t('public.marks.lockKey')}
       className={className}
     >
       <defs>

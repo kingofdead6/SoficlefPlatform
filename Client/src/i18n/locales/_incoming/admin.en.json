@@ -1,0 +1,267 @@
+{
+  "accountRequests": {
+    "columns": {
+      "candidate": "Candidate",
+      "waiting": "Waiting"
+    },
+    "empty": "No requests.",
+    "fields": {
+      "candidateName": "Candidate name",
+      "note": "Note (optional)",
+      "plannedHireDate": "Planned start date",
+      "plannedPosition": "Planned position",
+      "urgency": "Urgency"
+    },
+    "formFieldError": "Check the form fields.",
+    "intro": "Ask IT to create an account for an incoming employee. HR does not create accounts itself: this records a request that IT handles.",
+    "loadFailed": "Unable to load the requests.",
+    "newRequest": "New request",
+    "openRequests": "Open requests",
+    "saveFailed": "The request could not be saved.",
+    "status": {
+      "created": "Account created",
+      "open": "Open",
+      "rejected": "Rejected"
+    },
+    "submit": "Send the request",
+    "title": "Account requests",
+    "urgency": {
+      "normal": "Normal",
+      "urgent": "Urgent"
+    },
+    "waitingDays_one": "{{count}} day",
+    "waitingDays_other": "{{count}} days"
+  },
+  "company": {
+    "activities": "Activities",
+    "certification": "Certification: {{value}}",
+    "founded": "Founded in {{year}} in {{city}}",
+    "generalManager": "General management: {{value}}",
+    "headquarters": "Head office: {{value}}",
+    "mission": "Mission",
+    "status": "Status: {{value}}",
+    "title": "Company",
+    "unavailable": "Company information is not available yet.",
+    "values": "Our values",
+    "vision": "Vision"
+  },
+  "competencies": {
+    "columns": {
+      "actual": "Actual",
+      "competency": "Competency",
+      "family": "Family",
+      "required": "Required"
+    },
+    "competencyCount_one": "{{count}} competency",
+    "competencyCount_other": "{{count}} competencies",
+    "gap": {
+      "aDevelopper": "To develop",
+      "conforme": "Meets requirement",
+      "critique": "Critical",
+      "nonEvalue": "Not assessed"
+    },
+    "loadPositionsFailed": "Unable to load the positions.",
+    "subtitle": "Competency matrix by position and gap analysis.",
+    "summary": {
+      "conforming": "Meeting requirement",
+      "conformityRate": "Conformity rate",
+      "critical": "Critical",
+      "toDevelop": "To develop"
+    },
+    "title": "Competencies"
+  },
+  "contacts": {
+    "columns": {
+      "extension": "Extension",
+      "initials": "Initials",
+      "priority": "Priority",
+      "role": "Role"
+    },
+    "title": "Key contacts",
+    "unavailable": "The contact directory is not available yet."
+  },
+  "documents": {
+    "acknowledgeAction": "I have read and accept",
+    "acknowledgeFailed": "Acknowledgement failed.",
+    "acknowledgedOn": "Accepted on {{date}}",
+    "badges": {
+      "available": "Available",
+      "pending": "Pending"
+    },
+    "openFile": "Open the file",
+    "sections": {
+      "available": "Available documents",
+      "pending": "Pending documents"
+    },
+    "title": "Documents",
+    "unavailable": "The document library is not available yet."
+  },
+  "hse": {
+    "circulationPlan": "Traffic plan",
+    "contact": "HSE contact: {{value}}",
+    "ppeRules": "Mandatory protective equipment",
+    "riskArea": "Risk area",
+    "trafficRules": "Traffic rules",
+    "unavailable": "HSE instructions are not available yet.",
+    "zones": "Zones"
+  },
+  "jobDescription": {
+    "actionFailed": "The action failed.",
+    "actionLog": "Action log",
+    "actions": {
+      "approve": "Approve",
+      "archive": "Archive",
+      "reopen": "Reopen as draft",
+      "requestChanges": "Request changes",
+      "submit": "Submit for review"
+    },
+    "backToList": "← Back to job descriptions",
+    "codeLabel": "Code {{code}}",
+    "columns": {
+      "code": "Code",
+      "jobTitle": "Job title",
+      "version": "Version"
+    },
+    "commentPlaceholder": "Comment (optional)",
+    "createDraft": "Create a draft",
+    "createDraftFailed": "Creating the new version failed.",
+    "createVersionNote": "Create a new version (the validated version stays unchanged):",
+    "currentVersion": "Current version — v{{number}}",
+    "empty": "No job descriptions.",
+    "initialVersion": "Initial version",
+    "listSubtitle": "The register of positions and their validation status.",
+    "listTitle": "Job descriptions",
+    "loadFailed": "Unable to load the job descriptions.",
+    "noActions": "No actions recorded.",
+    "notFound": "Job description not found.",
+    "reasonPlaceholder": "Reason for the new version",
+    "status": {
+      "archived": "Archived",
+      "changesRequested": "Changes requested",
+      "draft": "Draft",
+      "inReview": "In review",
+      "validated": "Validated"
+    },
+    "systemActor": "System",
+    "versionHistory": "Version history"
+  },
+  "kaizen": {
+    "actionPlan": "Action plan",
+    "columns": {
+      "action": "Action",
+      "domain": "Area",
+      "observed": "Observation",
+      "target": "Target"
+    },
+    "gaps": "Gaps identified",
+    "internalLead": "Internal lead: {{value}}",
+    "missionJournal": "Mission log",
+    "missionNumber": "Mission {{number}}",
+    "missions": "Missions",
+    "priorityActions": "Priority actions — first 30 days",
+    "results": "Results",
+    "statusUpdateFailed": "The update failed.",
+    "title": "Kaizen project",
+    "unavailable": "The Kaizen programme is not available yet."
+  },
+  "management": {
+    "orgChart": "Org chart",
+    "priority30Days": "30-day priority: {{value}}",
+    "recommendedActions": "Recommended actions",
+    "title": "Management team",
+    "unavailable": "The management team is not available yet.",
+    "unitManagers": "Org unit managers"
+  },
+  "organization": {
+    "columns": {
+      "code": "Code"
+    },
+    "loadFailed": "Unable to load the organisation.",
+    "noPositions": "No visible positions.",
+    "noUnits": "No visible org units.",
+    "orgChart": "Org chart",
+    "subtitle": "Org units and org chart visible within your scope.",
+    "title": "Organisation",
+    "units": "Org units"
+  },
+  "qms": {
+    "certificationBody": "Certification body: {{value}}",
+    "certificationScope": "Scope: {{value}}",
+    "certifiedSince": "Certified since {{value}}",
+    "ownedByYou": "Owned by you",
+    "ownedProcess": "Owned process — {{code}}",
+    "processMap": "Process map: {{value}}",
+    "processMapHeading": "Process map",
+    "responsibilities": "Responsibilities",
+    "title": "QMS · ISO 9001",
+    "unavailable": "QMS information is not available yet."
+  },
+  "recruitment": {
+    "internalMobility": "Internal mobility",
+    "openPositions": "Open positions",
+    "recommendedAction": "Recommended action",
+    "title": "Current recruitment",
+    "unavailable": "No recruitment is available at the moment."
+  },
+  "remarks": {
+    "confirmDelete": "Delete this remark?",
+    "deleteFailed": "Deletion failed.",
+    "empty": "No remarks recorded.",
+    "exportTxt": "Export (.txt)",
+    "formLabel": "Send an observation to HR / management",
+    "placeholder": "Your remark…",
+    "sendFailed": "Sending failed.",
+    "title": "Remarks"
+  },
+  "strategy": {
+    "columns": {
+      "market": "Market",
+      "marketShareTarget": "Target market share",
+      "revenueTarget": "Target revenue",
+      "strategy": "Strategy"
+    },
+    "contributions": "DPR contribution to the objectives",
+    "marketTargets": "Market objectives 2024–2026",
+    "projects": "Strategic projects",
+    "target": "Target: {{value}}",
+    "title": "Strategic plan",
+    "unavailable": "The strategic plan is not available yet."
+  },
+  "surveys": {
+    "columns": {
+      "average": "Average",
+      "indicator": "Indicator",
+      "milestone": "Milestone",
+      "responses": "Responses"
+    },
+    "dayOffset": "D+{{days}}",
+    "indicators": {
+      "managerRelationship": "Relationship with the manager",
+      "roleClarity": "Role clarity",
+      "supportLevel": "Support",
+      "welcomeQuality": "Quality of the welcome",
+      "workingConditions": "Working conditions"
+    },
+    "loadFailed": "Unable to load the satisfaction surveys.",
+    "stats": {
+      "responseRate": "Response rate",
+      "roundsIssued": "Surveys issued",
+      "roundsOverdue": "Overdue",
+      "score": "Score"
+    },
+    "subtitle": "Aggregated results — no individual answers are shown here.",
+    "title": "Satisfaction surveys"
+  },
+  "training": {
+    "coverage": {
+      "fullyTrained": "Fully trained",
+      "people": "People",
+      "rate": "Rate"
+    },
+    "loadFailed": "Unable to load training.",
+    "mandatory": "Mandatory",
+    "openModule": "Open the module →",
+    "subtitle": "Module catalogue and mandatory training coverage.",
+    "title": "Training"
+  }
+}

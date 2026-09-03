@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { recruitmentApi } from '../../api/recruitment.js';
 import { ApiError } from '../../api/client.js';
 
 export default function RecruitmentPage() {
+  const { t } = useTranslation();
   const [recruitment, setRecruitment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,27 +14,29 @@ export default function RecruitmentPage() {
     recruitmentApi
       .get()
       .then((res) => setRecruitment(res.data))
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Erreur de chargement.'))
+      .catch((err) => setError(err instanceof ApiError ? err.message : t('common.states.loadFailed')))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
-  if (loading) return <div className="text-text-dim">Chargement…</div>;
+  if (loading) return <div className="text-text-dim">{t('common.states.loading')}</div>;
   if (error) return <div className="text-status-red">{error}</div>;
   if (!recruitment) {
     return (
       <div className="rounded-app border border-border bg-surface p-6 text-text-dim shadow-app">
-        Aucun recrutement n'est disponible pour le moment.
+        {t('recruitment.unavailable')}
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-2xl text-red-deep">Recrutements en cours</h1>
+      <h1 className="font-display text-2xl text-red-deep">{t('recruitment.title')}</h1>
 
       {recruitment.positions.length > 0 && (
         <section>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">Postes ouverts</h3>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">
+            {t('recruitment.openPositions')}
+          </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {recruitment.positions.map((position) => (
               <div key={position.id} className="rounded-app border border-border bg-surface p-4 shadow-app">
@@ -50,12 +54,12 @@ export default function RecruitmentPage() {
       )}
 
       <div className="rounded-app border border-border bg-surface p-5 shadow-app">
-        <h3 className="font-display text-text">Mobilité interne</h3>
+        <h3 className="font-display text-text">{t('recruitment.internalMobility')}</h3>
         <p className="mt-2 text-[13.5px] text-text">{recruitment.internalMobilityNoteFr}</p>
       </div>
 
       <div className="rounded-app border border-red-brand/30 bg-surface p-5 shadow-app">
-        <h3 className="font-display text-text">Action recommandée</h3>
+        <h3 className="font-display text-text">{t('recruitment.recommendedAction')}</h3>
         <p className="mt-2 text-[13.5px] text-text">{recruitment.recommendedActionFr}</p>
       </div>
     </div>

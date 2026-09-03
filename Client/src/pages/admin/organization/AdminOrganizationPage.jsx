@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { organizationUnitsApi, positionsApi } from '../../../api/organization.js';
 import OrgChart from '../../../components/org/OrgChart.jsx';
@@ -15,17 +16,10 @@ const FIELD =
 
 /**
  * The unit types §2.4 names: divisions, departments, sites. Kept as a closed list so the
- * tree stays classifiable — a free-text type would make "combien de directions" a question
- * about spelling.
+ * tree stays classifiable — a free-text type would make "how many divisions" a question
+ * about spelling. Labels live under admin.organization.unitTypes.* in the catalogues.
  */
-const UNIT_TYPES = [
-  { value: 'DIVISION', labelFr: 'Direction' },
-  { value: 'DEPARTMENT', labelFr: 'Département' },
-  { value: 'SERVICE', labelFr: 'Service' },
-  { value: 'SITE', labelFr: 'Site' },
-];
-
-const TYPE_LABEL = Object.fromEntries(UNIT_TYPES.map((type) => [type.value, type.labelFr]));
+const UNIT_TYPES = ['DIVISION', 'DEPARTMENT', 'SERVICE', 'SITE'];
 
 const EMPTY_UNIT = { code: '', nameFr: '', type: 'DEPARTMENT', parentId: '', descriptionFr: '' };
 const EMPTY_POSITION = { code: '', titleFr: '', organizationUnitId: '', parentPositionId: '' };
@@ -73,6 +67,7 @@ function buildUnitTree(units) {
  * action two implementations.
  */
 export default function AdminOrganizationPage() {
+  const { t } = useTranslation();
   const [units, setUnits] = useState([]);
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -105,11 +100,11 @@ export default function AdminOrganizationPage() {
       setPositions(positionsRes.data ?? []);
       setError(null);
     } catch {
-      setError('Impossible de charger les structures.');
+      setError(t('admin.organization.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -164,7 +159,7 @@ export default function AdminOrganizationPage() {
       announce('ok', successText);
       return true;
     } catch (err) {
-      announce('warn', err.body?.message ?? 'L’opération a échoué.');
+      announce('warn', err.body?.message ?? t('admin.organization.opFailed'));
       return false;
     } finally {
       setBusy(false);
@@ -186,9 +181,9 @@ export default function AdminOrganizationPage() {
       setUnitForm(EMPTY_UNIT);
       setPanel(null);
       await load();
-      announce('ok', 'Unité créée.');
+      announce('ok', t('admin.organization.unitCreated'));
     } catch (err) {
-      setUnitError(err.body?.message ?? 'La création de l’unité a échoué.');
+      setUnitError(err.body?.message ?? t('admin.organization.unitCreateFailed'));
     } finally {
       setBusy(false);
     }
@@ -208,23 +203,19 @@ export default function AdminOrganizationPage() {
       setPositionForm(EMPTY_POSITION);
       setPanel(null);
       await load();
-      announce('ok', 'Poste créé.');
+      announce('ok', t('admin.organization.positionCreated'));
     } catch (err) {
-      setPositionError(err.body?.message ?? 'La création du poste a échoué.');
+      setPositionError(err.body?.message ?? t('admin.organization.positionCreateFailed'));
     } finally {
       setBusy(false);
     }
   }
 
   async function handleArchiveUnit(unit) {
-    if (
-      !window.confirm(
-        `Archiver l’unité « ${unit.nameFr} » ? L’opération est refusée si elle contient encore des unités ou des postes.`,
-      )
-    ) {
+    if (!window.confirm(t('admin.organization.confirmArchiveUnit', { name: unit.nameFr }))) {
       return;
     }
-    const done = await run(() => organizationUnitsApi.archive(unit.id), 'Unité archivée.');
+    const done = await run(() => organizationUnitsApi.archive(unit.id), t('admin.organization.unitArchived'));
     if (done) setSelectedUnitId(null);
   }
 
@@ -234,7 +225,7 @@ export default function AdminOrganizationPage() {
     const target = unitById.get(mergeTargetId);
     if (
       !window.confirm(
-        `Fusionner « ${selectedUnit.nameFr} » dans « ${target?.nameFr}» ? Toutes les unités rattachées, tous les postes et toutes les portées de droits seront déplacés, puis l’unité source sera archivée.`,
+        t('admin.organization.confirmMerge', { source: selectedUnit.nameFr, target: target?.nameFr }),
       )
     ) {
       return;
@@ -243,9 +234,13 @@ export default function AdminOrganizationPage() {
       const result = await organizationUnitsApi.merge(selectedUnit.id, mergeTargetId);
       announce(
         'ok',
-        `Fusion effectuée : ${result.movedChildren} unité(s), ${result.movedPositions} poste(s) et ${result.movedScopes} portée(s) déplacée(s).`,
+        t('admin.organization.mergeDone', {
+          units: result.movedChildren,
+          positions: result.movedPositions,
+          scopes: result.movedScopes,
+        }),
       );
-    }, 'Fusion effectuée.');
+    }, t('admin.organization.mergeSuccess'));
     if (done) {
       setMergeTargetId('');
       setSelectedUnitId(null);
@@ -257,25 +252,25 @@ export default function AdminOrganizationPage() {
     if (!selectedPosition) return;
     await run(
       () => positionsApi.reparent(selectedPosition.id, reparentId || null),
-      reparentId ? 'Poste rattaché.' : 'Poste détaché : il devient une racine de l’organigramme.',
+      reparentId ? t('admin.organization.positionAttached') : t('admin.organization.positionDetached'),
     );
   }
 
   async function handleArchivePosition(position) {
-    if (!window.confirm(`Archiver le poste « ${position.titleFr} » ?`)) return;
-    const done = await run(() => positionsApi.archive(position.id), 'Poste archivé.');
+    if (!window.confirm(t('admin.organization.confirmArchivePosition', { title: position.titleFr }))) return;
+    const done = await run(() => positionsApi.archive(position.id), t('admin.organization.positionArchived'));
     if (done) setSelectedPositionId(null);
   }
 
-  if (loading) return <PageLoading label="Chargement des structures…" />;
+  if (loading) return <PageLoading label={t('admin.organization.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Administration"
-        title="Structures"
-        subtitle="Le squelette de l’organisation : directions, départements, sites et lignes hiérarchiques que les RH viendront remplir."
+        eyebrow={t('admin.organization.eyebrow')}
+        title={t('admin.organization.title')}
+        subtitle={t('admin.organization.subtitle')}
         actions={
           <>
             <button
@@ -283,14 +278,14 @@ export default function AdminOrganizationPage() {
               onClick={() => setPanel((current) => (current === 'position' ? null : 'position'))}
               className={SECONDARY_BUTTON}
             >
-              Nouveau poste
+              {t('admin.organization.newPosition')}
             </button>
             <button
               type="button"
               onClick={() => setPanel((current) => (current === 'unit' ? null : 'unit'))}
               className={PRIMARY_BUTTON}
             >
-              Nouvelle unité
+              {t('admin.organization.newUnit')}
             </button>
           </>
         }
@@ -302,11 +297,11 @@ export default function AdminOrganizationPage() {
         animate="visible"
         className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        <Tile label="Unités" value={stats.units} />
-        <Tile label="Postes" value={stats.positions} />
-        <Tile label="Racines de l’arbre" value={stats.roots} />
+        <Tile label={t('admin.organization.tiles.units')} value={stats.units} />
+        <Tile label={t('admin.organization.tiles.positions')} value={stats.positions} />
+        <Tile label={t('admin.organization.tiles.roots')} value={stats.roots} />
         <Tile
-          label="Postes sans unité"
+          label={t('admin.organization.tiles.orphanPositions')}
           value={stats.orphanPositions}
           tone={stats.orphanPositions > 0 ? 'red' : undefined}
         />
@@ -335,9 +330,9 @@ export default function AdminOrganizationPage() {
         {panel === 'unit' && (
           <Collapse reduce={reduce}>
             <form onSubmit={handleCreateUnit} className={`${CARD} mb-6 space-y-4 p-6`}>
-              <h2 className="font-display text-lg text-text">Nouvelle unité</h2>
+              <h2 className="font-display text-lg text-text">{t('admin.organization.unitForm.title')}</h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <Labelled label="Code">
+                <Labelled label={t('admin.organization.unitForm.code')}>
                   <input
                     required
                     minLength={2}
@@ -347,7 +342,7 @@ export default function AdminOrganizationPage() {
                     className={`${FIELD} font-mono`}
                   />
                 </Labelled>
-                <Labelled label="Nom">
+                <Labelled label={t('admin.organization.unitForm.name')}>
                   <input
                     required
                     minLength={2}
@@ -356,26 +351,26 @@ export default function AdminOrganizationPage() {
                     className={FIELD}
                   />
                 </Labelled>
-                <Labelled label="Type">
+                <Labelled label={t('admin.organization.unitForm.type')}>
                   <select
                     value={unitForm.type}
                     onChange={(e) => setUnitForm((f) => ({ ...f, type: e.target.value }))}
                     className={FIELD}
                   >
                     {UNIT_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.labelFr}
+                      <option key={type} value={type}>
+                        {t(`admin.organization.unitTypes.${type}`)}
                       </option>
                     ))}
                   </select>
                 </Labelled>
-                <Labelled label="Rattachée à">
+                <Labelled label={t('admin.organization.unitForm.parent')}>
                   <select
                     value={unitForm.parentId}
                     onChange={(e) => setUnitForm((f) => ({ ...f, parentId: e.target.value }))}
                     className={FIELD}
                   >
-                    <option value="">Racine de l’organisation</option>
+                    <option value="">{t('admin.organization.unitForm.parentRoot')}</option>
                     {units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
                         {unit.code} — {unit.nameFr}
@@ -384,7 +379,7 @@ export default function AdminOrganizationPage() {
                   </select>
                 </Labelled>
               </div>
-              <Labelled label="Description" hint="Facultative.">
+              <Labelled label={t('admin.organization.unitForm.description')} hint={t('admin.organization.unitForm.descriptionHint')}>
                 <textarea
                   rows={2}
                   value={unitForm.descriptionFr}
@@ -395,10 +390,10 @@ export default function AdminOrganizationPage() {
               {unitError && <p className="text-sm text-status-red">{unitError}</p>}
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setPanel(null)} className={SECONDARY_BUTTON}>
-                  Annuler
+                  {t('common.actions.cancel')}
                 </button>
                 <button type="submit" disabled={busy} className={PRIMARY_BUTTON}>
-                  {busy ? 'Création…' : 'Créer l’unité'}
+                  {busy ? t('admin.organization.unitForm.creating') : t('admin.organization.unitForm.create')}
                 </button>
               </div>
             </form>
@@ -408,9 +403,9 @@ export default function AdminOrganizationPage() {
         {panel === 'position' && (
           <Collapse reduce={reduce}>
             <form onSubmit={handleCreatePosition} className={`${CARD} mb-6 space-y-4 p-6`}>
-              <h2 className="font-display text-lg text-text">Nouveau poste</h2>
+              <h2 className="font-display text-lg text-text">{t('admin.organization.positionForm.title')}</h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <Labelled label="Code">
+                <Labelled label={t('admin.organization.positionForm.code')}>
                   <input
                     required
                     minLength={2}
@@ -420,7 +415,7 @@ export default function AdminOrganizationPage() {
                     className={`${FIELD} font-mono`}
                   />
                 </Labelled>
-                <Labelled label="Intitulé">
+                <Labelled label={t('admin.organization.positionForm.titleLabel')}>
                   <input
                     required
                     minLength={2}
@@ -429,13 +424,13 @@ export default function AdminOrganizationPage() {
                     className={FIELD}
                   />
                 </Labelled>
-                <Labelled label="Unité">
+                <Labelled label={t('admin.organization.positionForm.unit')}>
                   <select
                     value={positionForm.organizationUnitId}
                     onChange={(e) => setPositionForm((f) => ({ ...f, organizationUnitId: e.target.value }))}
                     className={FIELD}
                   >
-                    <option value="">Sans unité</option>
+                    <option value="">{t('admin.organization.positionForm.unitNone')}</option>
                     {units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
                         {unit.code} — {unit.nameFr}
@@ -443,13 +438,13 @@ export default function AdminOrganizationPage() {
                     ))}
                   </select>
                 </Labelled>
-                <Labelled label="Rattaché au poste">
+                <Labelled label={t('admin.organization.positionForm.parentPosition')}>
                   <select
                     value={positionForm.parentPositionId}
                     onChange={(e) => setPositionForm((f) => ({ ...f, parentPositionId: e.target.value }))}
                     className={FIELD}
                   >
-                    <option value="">Racine de l’organigramme</option>
+                    <option value="">{t('admin.organization.positionForm.parentPositionRoot')}</option>
                     {positions.map((position) => (
                       <option key={position.id} value={position.id}>
                         {position.titleFr}
@@ -461,10 +456,10 @@ export default function AdminOrganizationPage() {
               {positionError && <p className="text-sm text-status-red">{positionError}</p>}
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setPanel(null)} className={SECONDARY_BUTTON}>
-                  Annuler
+                  {t('common.actions.cancel')}
                 </button>
                 <button type="submit" disabled={busy} className={PRIMARY_BUTTON}>
-                  {busy ? 'Création…' : 'Créer le poste'}
+                  {busy ? t('admin.organization.positionForm.creating') : t('admin.organization.positionForm.create')}
                 </button>
               </div>
             </form>
@@ -475,9 +470,9 @@ export default function AdminOrganizationPage() {
       {/* Unit outline + detail */}
       <div data-gsap="reveal" className="mb-10 grid gap-8 lg:grid-cols-3">
         <section className="lg:col-span-1">
-          <h2 className="mb-3 font-display text-xl text-text">Arbre des unités</h2>
+          <h2 className="mb-3 font-display text-xl text-text">{t('admin.organization.unitTree.title')}</h2>
           {unitTree.length === 0 ? (
-            <EmptyState muted title="Aucune unité" detail="Créez une première unité pour amorcer la structure." />
+            <EmptyState muted title={t('admin.organization.unitTree.empty')} detail={t('admin.organization.unitTree.emptyDetail')} />
           ) : (
             <div className={`${CARD} max-h-[26rem] overflow-y-auto p-3`}>
               <UnitBranch
@@ -495,36 +490,36 @@ export default function AdminOrganizationPage() {
 
         <section className="lg:col-span-2">
           <h2 className="mb-3 font-display text-xl text-text">
-            {selectedUnit ? selectedUnit.nameFr : 'Détail de l’unité'}
+            {selectedUnit ? selectedUnit.nameFr : t('admin.organization.unitDetail.title')}
           </h2>
 
           {!selectedUnit ? (
             <EmptyState
               muted
-              title="Aucune unité sélectionnée"
-              detail="Choisissez une unité dans l’arbre pour la modifier, l’archiver ou la fusionner dans une autre."
+              title={t('admin.organization.unitDetail.empty')}
+              detail={t('admin.organization.unitDetail.emptyDetail')}
             />
           ) : (
             <div className={`${CARD} space-y-5 p-5`}>
               <dl className="grid gap-2 text-sm sm:grid-cols-3">
-                <Detail label="Code" value={selectedUnit.code} mono />
-                <Detail label="Type" value={TYPE_LABEL[selectedUnit.type] ?? selectedUnit.type} />
+                <Detail label={t('admin.organization.unitDetail.code')} value={selectedUnit.code} mono />
+                <Detail label={t('admin.organization.unitDetail.type')} value={t(`admin.organization.unitTypes.${selectedUnit.type}`, selectedUnit.type)} />
                 <Detail
-                  label="Rattachée à"
+                  label={t('admin.organization.unitDetail.parent')}
                   value={
                     selectedUnit.parentId
-                      ? unitById.get(selectedUnit.parentId)?.nameFr ?? 'Unité hors périmètre'
-                      : 'Racine'
+                      ? unitById.get(selectedUnit.parentId)?.nameFr ?? t('admin.organization.unitDetail.parentOutOfScope')
+                      : t('admin.organization.unitDetail.parentRoot')
                   }
                 />
               </dl>
 
               <div>
                 <p className="mb-2 text-sm font-medium text-text">
-                  Postes rattachés ({unitPositions.length})
+                  {t('admin.organization.unitDetail.attachedPositions', { count: unitPositions.length })}
                 </p>
                 {unitPositions.length === 0 ? (
-                  <p className="text-sm text-text-dim">Aucun poste dans cette unité.</p>
+                  <p className="text-sm text-text-dim">{t('admin.organization.unitDetail.noPositions')}</p>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
                     {unitPositions.map((position) => (
@@ -546,12 +541,9 @@ export default function AdminOrganizationPage() {
 
               {/* Merge */}
               <form onSubmit={handleMerge} className="border-t border-border pt-4">
-                <p className="mb-1 text-sm font-medium text-text">Fusionner dans une autre unité</p>
+                <p className="mb-1 text-sm font-medium text-text">{t('admin.organization.unitDetail.mergeTitle')}</p>
                 <p className="mb-3 text-xs text-text-dim">
-                  Toutes les unités rattachées, tous les postes et toutes les portées de
-                  droits sont déplacés vers l’unité cible en une seule opération, puis
-                  « {selectedUnit.nameFr} » est archivée. Une fusion vers une unité qui lui
-                  est rattachée est refusée : la branche se détacherait de l’organigramme.
+                  {t('admin.organization.unitDetail.mergeDetail', { name: selectedUnit.nameFr })}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <select
@@ -560,7 +552,7 @@ export default function AdminOrganizationPage() {
                     onChange={(e) => setMergeTargetId(e.target.value)}
                     className={`${FIELD} max-w-sm flex-1`}
                   >
-                    <option value="">Unité cible…</option>
+                    <option value="">{t('admin.organization.unitDetail.mergeTargetPlaceholder')}</option>
                     {units
                       .filter((unit) => unit.id !== selectedUnit.id)
                       .map((unit) => (
@@ -570,7 +562,7 @@ export default function AdminOrganizationPage() {
                       ))}
                   </select>
                   <button type="submit" disabled={busy || !mergeTargetId} className={PRIMARY_BUTTON}>
-                    Fusionner
+                    {t('admin.organization.unitDetail.merge')}
                   </button>
                 </div>
               </form>
@@ -582,7 +574,7 @@ export default function AdminOrganizationPage() {
                   disabled={busy}
                   className="text-xs text-status-red hover:underline disabled:opacity-60"
                 >
-                  Archiver cette unité
+                  {t('admin.organization.unitDetail.archiveUnit')}
                 </button>
               </div>
             </div>
@@ -594,13 +586,10 @@ export default function AdminOrganizationPage() {
       <div data-gsap="reveal" className="grid gap-8 lg:grid-cols-3">
         <section className="lg:col-span-2">
           <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="font-display text-xl text-text">Organigramme des postes</h2>
-            <span className="text-sm text-text-dim">{positions.length} poste(s)</span>
+            <h2 className="font-display text-xl text-text">{t('admin.organization.positionChart.title')}</h2>
+            <span className="text-sm text-text-dim">{t('admin.organization.positionChart.count', { count: positions.length })}</span>
           </div>
-          <p className="mb-3 text-sm text-text-dim">
-            Cliquez sur un poste pour le rattacher ailleurs. Un poste sans supérieur apparaît
-            comme racine.
-          </p>
+          <p className="mb-3 text-sm text-text-dim">{t('admin.organization.positionChart.hint')}</p>
           <div className={`overflow-x-auto ${CARD} p-4`}>
             <OrgChart
               nodes={positions}
@@ -614,57 +603,57 @@ export default function AdminOrganizationPage() {
               subtitleOf={(node) =>
                 node.organizationUnitId
                   ? unitById.get(node.organizationUnitId)?.code ?? null
-                  : 'Sans unité'
+                  : t('admin.organization.positionChart.noUnit')
               }
               onSelect={(node) => {
                 setSelectedPositionId(node.id);
                 setReparentId(node.parentPositionId ?? '');
               }}
-              emptyLabel="Aucun poste dans l’organigramme. Créez-en un pour amorcer la ligne hiérarchique."
+              emptyLabel={t('admin.organization.positionChart.empty')}
             />
           </div>
         </section>
 
         <section>
           <h2 className="mb-3 font-display text-xl text-text">
-            {selectedPosition ? selectedPosition.titleFr : 'Rattachement d’un poste'}
+            {selectedPosition ? selectedPosition.titleFr : t('admin.organization.positionDetail.title')}
           </h2>
 
           {!selectedPosition ? (
             <EmptyState
               muted
-              title="Aucun poste sélectionné"
-              detail="Choisissez une carte dans l’organigramme pour changer son rattachement hiérarchique."
+              title={t('admin.organization.positionDetail.empty')}
+              detail={t('admin.organization.positionDetail.emptyDetail')}
             />
           ) : (
             <div className={`${CARD} space-y-4 p-5`}>
               <dl className="grid gap-2 text-sm">
-                <Detail label="Code" value={selectedPosition.code} mono />
+                <Detail label={t('admin.organization.positionDetail.code')} value={selectedPosition.code} mono />
                 <Detail
-                  label="Unité"
+                  label={t('admin.organization.positionDetail.unit')}
                   value={
                     selectedPosition.organizationUnitId
                       ? unitById.get(selectedPosition.organizationUnitId)?.nameFr ?? '—'
-                      : 'Sans unité'
+                      : t('admin.organization.positionDetail.unitNone')
                   }
                 />
                 <Detail
-                  label="Titulaire"
-                  value={selectedPosition.holder?.displayName ?? 'Poste vacant'}
+                  label={t('admin.organization.positionDetail.holder')}
+                  value={selectedPosition.holder?.displayName ?? t('admin.organization.positionDetail.vacant')}
                 />
               </dl>
 
               <form onSubmit={handleReparent} className="space-y-2 border-t border-border pt-4">
                 <Labelled
-                  label="Rattaché au poste"
-                  hint="Un rattachement à l’un de ses propres subordonnés est refusé par le serveur."
+                  label={t('admin.organization.positionDetail.reparentLabel')}
+                  hint={t('admin.organization.positionDetail.reparentHint')}
                 >
                   <select
                     value={reparentId}
                     onChange={(e) => setReparentId(e.target.value)}
                     className={FIELD}
                   >
-                    <option value="">Aucun — racine de l’organigramme</option>
+                    <option value="">{t('admin.organization.positionDetail.reparentNone')}</option>
                     {positions
                       .filter((position) => position.id !== selectedPosition.id)
                       .map((position) => (
@@ -681,10 +670,10 @@ export default function AdminOrganizationPage() {
                     disabled={busy}
                     className="rounded-app border border-border px-3 py-2 text-xs font-medium text-status-red transition-colors hover:bg-surface-2 disabled:opacity-60"
                   >
-                    Archiver
+                    {t('admin.organization.positionDetail.archive')}
                   </button>
                   <button type="submit" disabled={busy} className={PRIMARY_BUTTON}>
-                    {busy ? 'Déplacement…' : 'Déplacer'}
+                    {busy ? t('admin.organization.positionDetail.moving') : t('admin.organization.positionDetail.move')}
                   </button>
                 </div>
               </form>
@@ -694,11 +683,7 @@ export default function AdminOrganizationPage() {
       </div>
 
       <p className="mt-8 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-        Cet écran définit le squelette : les unités, les postes et les lignes hiérarchiques.
-        Il ne place personne — l’affectation d’un collaborateur à un poste relève des RH, et
-        la dupliquer ici donnerait deux implémentations à la même action. L’archivage d’une
-        unité est refusé tant qu’elle contient des unités ou des postes actifs : le message
-        d’erreur indique ce qui reste à déplacer.
+        {t('admin.organization.footnote')}
       </p>
     </div>
   );

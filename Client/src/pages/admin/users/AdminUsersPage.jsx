@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { rolesApi, usersApi } from '../../../api/users.js';
 import { useAuth } from '../../../auth/AuthContext.jsx';
@@ -8,19 +9,14 @@ import PageHeader from '../../../components/manager/PageHeader.jsx';
 import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const FIELD =
   'w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
-const ROLE_LABELS = {
-  ADMIN: 'Administrateur',
-  HR: 'DRH / RH',
-  MANAGER: 'Manager',
-  EMPLOYEE: 'Collaborateur',
-};
-
-const STATUS_LABELS = { ACTIVE: 'Actif', SUSPENDED: 'Suspendu', DISABLED: 'Désactivé' };
+const ROLE_CODES = ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'];
+const STATUS_CODES = ['ACTIVE', 'SUSPENDED', 'DISABLED'];
 const STATUS_PILL = {
   ACTIVE: 'bg-status-green/10 text-status-green',
   SUSPENDED: 'bg-status-amber/10 text-status-amber',
@@ -32,14 +28,14 @@ const EMPTY_CREATE = { email: '', displayName: '', phone: '', password: '', role
 /**
  * Parses the bulk-import textarea. One account per line, semicolon-separated:
  *
- *     email ; nom affiché ; téléphone ; rôle
+ *     e-mail ; display name ; phone ; role
  *
  * Parsing happens here rather than on the server because the administrator needs to see
  * what the file was understood to mean *before* committing it — the server's own validation
  * then runs again on the parsed rows, since a client-side parse is a convenience, never a
  * trust boundary.
  */
-function parseImport(text) {
+function parseImport(text, t) {
   const rows = [];
   const problems = [];
 
@@ -52,15 +48,15 @@ function parseImport(text) {
       const [email, displayName, phone, roleCode] = parts;
 
       if (!email || !email.includes('@')) {
-        problems.push(`Ligne ${index + 1} : e-mail manquant ou invalide.`);
+        problems.push(t('admin.users.importForm.lineErrors.invalidEmail', { line: index + 1 }));
         return;
       }
       if (!displayName || displayName.length < 2) {
-        problems.push(`Ligne ${index + 1} : nom affiché manquant.`);
+        problems.push(t('admin.users.importForm.lineErrors.missingName', { line: index + 1 }));
         return;
       }
-      if (roleCode && !ROLE_LABELS[roleCode.toUpperCase()]) {
-        problems.push(`Ligne ${index + 1} : rôle « ${roleCode} » inconnu.`);
+      if (roleCode && !ROLE_CODES.includes(roleCode.toUpperCase())) {
+        problems.push(t('admin.users.importForm.lineErrors.unknownRole', { line: index + 1, role: roleCode }));
         return;
       }
 
@@ -89,6 +85,7 @@ function parseImport(text) {
  *     button would either do nothing or invent people.
  */
 export default function AdminUsersPage() {
+  const { t, i18n } = useTranslation();
   const { user: me } = useAuth();
   const [users, setUsers] = useState([]);
   const [units, setUnits] = useState([]);
@@ -121,11 +118,11 @@ export default function AdminUsersPage() {
       setUnits(scopesRes.data);
       setError(null);
     } catch {
-      setError('Impossible de charger les comptes.');
+      setError(t('admin.users.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -152,7 +149,7 @@ export default function AdminUsersPage() {
     });
   }, [users, search, statusFilter]);
 
-  const parsedImport = useMemo(() => parseImport(importText), [importText]);
+  const parsedImport = useMemo(() => parseImport(importText, t), [importText, t]);
 
   function togglePanel(name) {
     setNotice(null);
@@ -180,7 +177,7 @@ export default function AdminUsersPage() {
         } catch {
           setNotice({
             tone: 'warn',
-            text: 'Le compte a été créé, mais le rôle n’a pas pu être attribué. Utilisez « Attribuer un rôle » ci-dessous.',
+            text: t('admin.users.roleAssignFailedFallback'),
           });
         }
       }
@@ -188,9 +185,9 @@ export default function AdminUsersPage() {
       setCreateForm(EMPTY_CREATE);
       setPanel(null);
       await load();
-      setNotice((current) => current ?? { tone: 'ok', text: 'Compte créé.' });
+      setNotice((current) => current ?? { tone: 'ok', text: t('admin.users.accountCreated') });
     } catch (err) {
-      setCreateError(err.body?.message ?? 'La création du compte a échoué.');
+      setCreateError(err.body?.message ?? t('admin.users.createFailed'));
     } finally {
       setCreating(false);
     }
@@ -208,7 +205,7 @@ export default function AdminUsersPage() {
       setImportPassword('');
       await load();
     } catch (err) {
-      setImportError(err.body?.message ?? 'L’import a échoué : aucun compte n’a été créé.');
+      setImportError(err.body?.message ?? t('admin.users.importFailed'));
     } finally {
       setImporting(false);
     }
@@ -226,12 +223,12 @@ export default function AdminUsersPage() {
       setGrant({ userId: '', roleCode: 'EMPLOYEE', organizationUnitId: '' });
       setPanel(null);
       await load();
-      setNotice({ tone: 'ok', text: 'Rôle attribué.' });
+      setNotice({ tone: 'ok', text: t('admin.users.roleGranted') });
     } catch (err) {
       setGrantError(
         err.body?.error === 'self_assignment_refused'
-          ? 'Vous ne pouvez pas vous attribuer un rôle à vous-même.'
-          : err.body?.message ?? 'L’attribution du rôle a échoué.',
+          ? t('admin.users.selfAssignmentRefused')
+          : err.body?.message ?? t('admin.users.grantFailed'),
       );
     } finally {
       setGranting(false);
@@ -242,9 +239,7 @@ export default function AdminUsersPage() {
     const next = user.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
     if (
       next === 'SUSPENDED' &&
-      !window.confirm(
-        `Suspendre le compte de ${user.displayName} ? Ses sessions ouvertes seront fermées immédiatement.`,
-      )
+      !window.confirm(t('admin.users.confirmSuspend', { name: user.displayName }))
     ) {
       return;
     }
@@ -253,18 +248,16 @@ export default function AdminUsersPage() {
       await load();
       setNotice({
         tone: 'ok',
-        text: next === 'ACTIVE' ? 'Compte réactivé.' : 'Compte suspendu et sessions fermées.',
+        text: next === 'ACTIVE' ? t('admin.users.accountReactivated') : t('admin.users.accountSuspended'),
       });
     } catch (err) {
-      setNotice({ tone: 'warn', text: err.body?.message ?? 'Le changement de statut a échoué.' });
+      setNotice({ tone: 'warn', text: err.body?.message ?? t('admin.users.statusChangeFailed') });
     }
   }
 
   async function handleResetAccess(user) {
     if (
-      !window.confirm(
-        `Réinitialiser les accès de ${user.displayName} ? Toutes ses sessions seront révoquées ; son mot de passe reste inchangé.`,
-      )
+      !window.confirm(t('admin.users.confirmResetAccess', { name: user.displayName }))
     ) {
       return;
     }
@@ -272,43 +265,43 @@ export default function AdminUsersPage() {
       const { revokedSessions } = await usersApi.resetAccess(user.id);
       setNotice({
         tone: 'ok',
-        text: `${revokedSessions} session(s) révoquée(s). ${user.displayName} devra se reconnecter.`,
+        text: t('admin.users.resetAccessResult', { count: revokedSessions, name: user.displayName }),
       });
     } catch (err) {
-      setNotice({ tone: 'warn', text: err.body?.message ?? 'La réinitialisation a échoué.' });
+      setNotice({ tone: 'warn', text: err.body?.message ?? t('admin.users.resetAccessFailed') });
     }
   }
 
-  if (loading) return <PageLoading label="Chargement des comptes…" />;
+  if (loading) return <PageLoading label={t('admin.users.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Administration"
-        title="Comptes"
-        subtitle="Créer, attribuer, suspendre et réinitialiser les accès des comptes de la plateforme."
+        eyebrow={t('admin.users.eyebrow')}
+        title={t('admin.users.title')}
+        subtitle={t('admin.users.subtitle')}
         actions={
           <>
             <Link
               to="/admin/users/provisioning"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              File de provisionnement
+              {t('admin.users.provisioningLink')}
             </Link>
             <button
               type="button"
               onClick={() => togglePanel('import')}
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Import en masse
+              {t('admin.users.bulkImport')}
             </button>
             <button
               type="button"
               onClick={() => togglePanel('create')}
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              Nouveau compte
+              {t('admin.users.newAccount')}
             </button>
           </>
         }
@@ -320,10 +313,10 @@ export default function AdminUsersPage() {
         animate="visible"
         className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        <Tile label="Comptes" value={stats.total} />
-        <Tile label="Actifs" value={stats.active} />
-        <Tile label="Suspendus" value={stats.suspended} tone={stats.suspended > 0 ? 'red' : undefined} />
-        <Tile label="Sans rôle" value={stats.withoutRole} tone={stats.withoutRole > 0 ? 'red' : undefined} />
+        <Tile label={t('admin.users.tiles.total')} value={stats.total} />
+        <Tile label={t('admin.users.tiles.active')} value={stats.active} />
+        <Tile label={t('admin.users.tiles.suspended')} value={stats.suspended} tone={stats.suspended > 0 ? 'red' : undefined} />
+        <Tile label={t('admin.users.tiles.withoutRole')} value={stats.withoutRole} tone={stats.withoutRole > 0 ? 'red' : undefined} />
       </motion.div>
 
       <AnimatePresence initial={false}>
@@ -349,10 +342,10 @@ export default function AdminUsersPage() {
         {panel === 'create' && (
           <Panel reduce={reduce}>
             <form onSubmit={handleCreate} className={`${CARD} mb-6 space-y-4 p-6`}>
-              <h2 className="font-display text-lg text-text">Créer un compte</h2>
+              <h2 className="font-display text-lg text-text">{t('admin.users.createForm.title')}</h2>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <Labelled label="E-mail professionnel">
+                <Labelled label={t('admin.users.createForm.email')}>
                   <input
                     required
                     type="email"
@@ -362,7 +355,7 @@ export default function AdminUsersPage() {
                     className={FIELD}
                   />
                 </Labelled>
-                <Labelled label="Nom affiché">
+                <Labelled label={t('admin.users.createForm.displayName')}>
                   <input
                     required
                     minLength={2}
@@ -371,7 +364,7 @@ export default function AdminUsersPage() {
                     className={FIELD}
                   />
                 </Labelled>
-                <Labelled label="Téléphone" hint="Facultatif.">
+                <Labelled label={t('admin.users.createForm.phone')} hint={t('admin.users.createForm.phoneHint')}>
                   <input
                     value={createForm.phone}
                     onChange={(e) => setCreateForm((f) => ({ ...f, phone: e.target.value }))}
@@ -379,8 +372,8 @@ export default function AdminUsersPage() {
                   />
                 </Labelled>
                 <Labelled
-                  label="Mot de passe provisoire"
-                  hint="Transmis de la main à la main : sans relais SMTP, la plateforme ne peut pas l’envoyer."
+                  label={t('admin.users.createForm.password')}
+                  hint={t('admin.users.createForm.passwordHint')}
                 >
                   <input
                     required
@@ -393,16 +386,16 @@ export default function AdminUsersPage() {
                 </Labelled>
               </div>
 
-              <Labelled label="Rôle plateforme" hint="Attribué en portée globale ; affinez la portée ci-dessous si besoin.">
+              <Labelled label={t('admin.users.createForm.role')} hint={t('admin.users.createForm.roleHint')}>
                 <select
                   value={createForm.roleCode}
                   onChange={(e) => setCreateForm((f) => ({ ...f, roleCode: e.target.value }))}
                   className={FIELD}
                 >
-                  <option value="">Aucun rôle pour l’instant</option>
-                  {Object.entries(ROLE_LABELS).map(([code, label]) => (
+                  <option value="">{t('admin.users.createForm.roleNone')}</option>
+                  {ROLE_CODES.map((code) => (
                     <option key={code} value={code}>
-                      {label}
+                      {t(`admin.users.roles.${code}`)}
                     </option>
                   ))}
                 </select>
@@ -412,10 +405,10 @@ export default function AdminUsersPage() {
 
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setPanel(null)} className={SECONDARY_BUTTON}>
-                  Annuler
+                  {t('admin.users.createForm.cancel')}
                 </button>
                 <button type="submit" disabled={creating} className={PRIMARY_BUTTON}>
-                  {creating ? 'Création…' : 'Créer le compte'}
+                  {creating ? t('admin.users.createForm.creating') : t('admin.users.createForm.create')}
                 </button>
               </div>
             </form>
@@ -428,27 +421,20 @@ export default function AdminUsersPage() {
         {panel === 'import' && (
           <Panel reduce={reduce}>
             <form onSubmit={handleImport} className={`${CARD} mb-6 space-y-4 p-6`}>
-              <h2 className="font-display text-lg text-text">Import en masse</h2>
-              <p className="text-sm text-text-dim">
-                Une ligne par compte, séparée par des points-virgules :{' '}
-                <code className="rounded bg-surface-2 px-1 font-mono text-xs">
-                  e-mail ; nom affiché ; téléphone ; rôle
-                </code>
-                . Le téléphone et le rôle sont facultatifs. L’import est atomique : si une
-                seule ligne est refusée, aucun compte n’est créé.
-              </p>
+              <h2 className="font-display text-lg text-text">{t('admin.users.importForm.title')}</h2>
+              <p className="text-sm text-text-dim">{t('admin.users.importForm.description')}</p>
 
               <textarea
                 rows={7}
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
-                placeholder={'amina.belkacem@soficlef.dz ; Amina Belkacem ; 0550 00 00 00 ; MANAGER\nkarim.saidi@soficlef.dz ; Karim Saïdi ; ; EMPLOYEE'}
+                placeholder={t('admin.users.importForm.placeholder')}
                 className={`${FIELD} font-mono text-xs`}
               />
 
               <Labelled
-                label="Mot de passe provisoire commun"
-                hint="Le même pour tout le lot ; chaque personne devra le changer. Aucune notification n’est envoyée."
+                label={t('admin.users.importForm.sharedPassword')}
+                hint={t('admin.users.importForm.sharedPasswordHint')}
               >
                 <input
                   required
@@ -462,9 +448,9 @@ export default function AdminUsersPage() {
 
               <div className="rounded-app border border-border bg-surface-2/60 p-3 text-sm">
                 <p className="font-medium text-text">
-                  {parsedImport.rows.length} ligne(s) reconnue(s)
+                  {t('admin.users.importForm.recognisedLines', { count: parsedImport.rows.length })}
                   {parsedImport.problems.length > 0
-                    ? ` · ${parsedImport.problems.length} à corriger`
+                    ? t('admin.users.importForm.toFix', { count: parsedImport.problems.length })
                     : ''}
                 </p>
                 {parsedImport.problems.length > 0 && (
@@ -480,15 +466,17 @@ export default function AdminUsersPage() {
 
               {importResult && (
                 <div className="rounded-app border border-status-green/30 bg-status-green/5 p-3 text-sm text-status-green">
-                  <p className="font-medium">{importResult.createdCount} compte(s) créé(s).</p>
+                  <p className="font-medium">
+                    {t('admin.users.importForm.createdAccounts', { count: importResult.createdCount })}
+                  </p>
                   <ul className="mt-1 space-y-0.5 text-xs">
                     {importResult.created.map((row) => (
                       <li key={row.id}>
                         {row.displayName} — {row.email}
                         {row.roleRequested && !row.roleGranted
-                          ? ` (rôle ${row.roleRequested} non attribué : référentiel des rôles indisponible)`
+                          ? t('admin.users.importForm.roleNotGranted', { role: row.roleRequested })
                           : row.roleGranted
-                            ? ` (${ROLE_LABELS[row.roleGranted] ?? row.roleGranted})`
+                            ? ` (${t(`admin.users.roles.${row.roleGranted}`, row.roleGranted)})`
                             : ''}
                       </li>
                     ))}
@@ -498,14 +486,14 @@ export default function AdminUsersPage() {
 
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setPanel(null)} className={SECONDARY_BUTTON}>
-                  Fermer
+                  {t('admin.users.importForm.close')}
                 </button>
                 <button
                   type="submit"
                   disabled={importing || parsedImport.rows.length === 0 || parsedImport.problems.length > 0}
                   className={PRIMARY_BUTTON}
                 >
-                  {importing ? 'Import…' : `Importer ${parsedImport.rows.length} compte(s)`}
+                  {importing ? t('admin.users.importForm.importing') : t('admin.users.importForm.importButton', { count: parsedImport.rows.length })}
                 </button>
               </div>
             </form>
@@ -518,16 +506,16 @@ export default function AdminUsersPage() {
         {panel === 'grant' && (
           <Panel reduce={reduce}>
             <form onSubmit={handleGrant} className={`${CARD} mb-6 space-y-4 p-6`}>
-              <h2 className="font-display text-lg text-text">Attribuer un rôle</h2>
+              <h2 className="font-display text-lg text-text">{t('admin.users.grantForm.title')}</h2>
               <div className="grid gap-3 sm:grid-cols-3">
-                <Labelled label="Compte">
+                <Labelled label={t('admin.users.grantForm.account')}>
                   <select
                     required
                     value={grant.userId}
                     onChange={(e) => setGrant((g) => ({ ...g, userId: e.target.value }))}
                     className={FIELD}
                   >
-                    <option value="">Choisir…</option>
+                    <option value="">{t('admin.users.grantForm.accountPlaceholder')}</option>
                     {users.map((user) => (
                       <option key={user.id} value={user.id}>
                         {user.displayName}
@@ -535,26 +523,26 @@ export default function AdminUsersPage() {
                     ))}
                   </select>
                 </Labelled>
-                <Labelled label="Rôle">
+                <Labelled label={t('admin.users.grantForm.role')}>
                   <select
                     value={grant.roleCode}
                     onChange={(e) => setGrant((g) => ({ ...g, roleCode: e.target.value }))}
                     className={FIELD}
                   >
-                    {Object.entries(ROLE_LABELS).map(([code, label]) => (
+                    {ROLE_CODES.map((code) => (
                       <option key={code} value={code}>
-                        {label}
+                        {t(`admin.users.roles.${code}`)}
                       </option>
                     ))}
                   </select>
                 </Labelled>
-                <Labelled label="Portée">
+                <Labelled label={t('admin.users.grantForm.scope')}>
                   <select
                     value={grant.organizationUnitId}
                     onChange={(e) => setGrant((g) => ({ ...g, organizationUnitId: e.target.value }))}
                     className={FIELD}
                   >
-                    <option value="">Portée globale</option>
+                    <option value="">{t('admin.users.grantForm.scopeGlobal')}</option>
                     {units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
                         {unit.nameFr}
@@ -568,10 +556,10 @@ export default function AdminUsersPage() {
 
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setPanel(null)} className={SECONDARY_BUTTON}>
-                  Annuler
+                  {t('admin.users.grantForm.cancel')}
                 </button>
                 <button type="submit" disabled={granting} className={PRIMARY_BUTTON}>
-                  {granting ? 'Attribution…' : 'Attribuer'}
+                  {granting ? t('admin.users.grantForm.granting') : t('admin.users.grantForm.grant')}
                 </button>
               </div>
             </form>
@@ -584,7 +572,7 @@ export default function AdminUsersPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher un nom ou un e-mail…"
+          placeholder={t('admin.users.filters.searchPlaceholder')}
           className={`${FIELD} max-w-xs flex-1`}
         />
         <select
@@ -592,23 +580,23 @@ export default function AdminUsersPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className={`${FIELD} w-auto`}
         >
-          <option value="">Tous les statuts</option>
-          {Object.entries(STATUS_LABELS).map(([code, label]) => (
+          <option value="">{t('admin.users.filters.allStatuses')}</option>
+          {STATUS_CODES.map((code) => (
             <option key={code} value={code}>
-              {label}
+              {t(`admin.users.statuses.${code}`)}
             </option>
           ))}
         </select>
         <button type="button" onClick={() => togglePanel('grant')} className={SECONDARY_BUTTON}>
-          Attribuer un rôle
+          {t('admin.users.filters.grantRole')}
         </button>
-        <span className="ml-auto text-sm text-text-dim">{visible.length} compte(s)</span>
+        <span className="ml-auto text-sm text-text-dim">{t('admin.users.filters.count', { count: visible.length })}</span>
       </div>
 
       {visible.length === 0 ? (
         <EmptyState
-          title="Aucun compte ne correspond"
-          detail="Ajustez la recherche ou le filtre de statut."
+          title={t('admin.users.empty')}
+          detail={t('admin.users.emptyDetail')}
           muted
         />
       ) : (
@@ -616,11 +604,11 @@ export default function AdminUsersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                <th className="px-4 py-3 font-medium">Compte</th>
-                <th className="px-4 py-3 font-medium">Rôles</th>
-                <th className="px-4 py-3 font-medium">Statut</th>
-                <th className="px-4 py-3 font-medium">Dernière connexion</th>
-                <th className="px-4 py-3 font-medium text-right">Actions</th>
+                <th className="px-4 py-3 font-medium">{t('admin.users.table.account')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.users.table.roles')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.users.table.status')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.users.table.lastLogin')}</th>
+                <th className="px-4 py-3 font-medium text-right">{t('admin.users.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -632,7 +620,7 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     {user.roles.length === 0 ? (
-                      <span className="text-xs text-status-red">Aucun rôle</span>
+                      <span className="text-xs text-status-red">{t('admin.users.table.noRole')}</span>
                     ) : (
                       <div className="flex flex-wrap gap-1">
                         {user.roles.map((role, index) => (
@@ -640,7 +628,7 @@ export default function AdminUsersPage() {
                             key={`${role.code}-${role.unitCode ?? 'global'}-${index}`}
                             className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-muted"
                           >
-                            {ROLE_LABELS[role.code] ?? role.code}
+                            {t(`admin.users.roles.${role.code}`, role.code)}
                             {role.unitName ? ` · ${role.unitName}` : ''}
                           </span>
                         ))}
@@ -649,11 +637,11 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_PILL[user.status]}`}>
-                      {STATUS_LABELS[user.status] ?? user.status}
+                      {t(`admin.users.statuses.${user.status}`, user.status)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-text-dim">
-                    {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('fr-FR') : 'Jamais'}
+                    {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString(localeOf(i18n)) : t('admin.users.table.never')}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-3 text-xs">
@@ -662,7 +650,7 @@ export default function AdminUsersPage() {
                         onClick={() => handleResetAccess(user)}
                         className="text-text-dim transition-colors hover:text-red-brand hover:underline"
                       >
-                        Réinitialiser l’accès
+                        {t('admin.users.table.resetAccess')}
                       </button>
                       {user.id !== me?.id && (
                         <button
@@ -674,7 +662,7 @@ export default function AdminUsersPage() {
                               : 'text-red-brand hover:underline'
                           }
                         >
-                          {user.status === 'ACTIVE' ? 'Suspendre' : 'Réactiver'}
+                          {user.status === 'ACTIVE' ? t('admin.users.table.suspend') : t('admin.users.table.reactivate')}
                         </button>
                       )}
                     </div>
@@ -690,33 +678,22 @@ export default function AdminUsersPage() {
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <div className="rounded-app border border-dashed border-border bg-surface-2/60 p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-text-muted">Synchronisation Entra ID</p>
-            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">Indisponible</span>
+            <p className="text-sm font-medium text-text-muted">{t('admin.users.entraSync.title')}</p>
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">{t('admin.users.entraSync.unavailable')}</span>
           </div>
-          <p className="mt-1 text-sm text-text-dim">
-            Aucun annuaire Entra ID n’est raccordé à ce déploiement : il n’y a pas de
-            locataire depuis lequel importer des comptes. Un bouton « Synchroniser » ne
-            pourrait ici que ne rien faire, ou inventer des personnes.
-          </p>
+          <p className="mt-1 text-sm text-text-dim">{t('admin.users.entraSync.detail')}</p>
         </div>
         <div className="rounded-app border border-dashed border-border bg-surface-2/60 p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-text-muted">Rattacher une identité Entra</p>
-            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">Indisponible</span>
+            <p className="text-sm font-medium text-text-muted">{t('admin.users.entraLink.title')}</p>
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">{t('admin.users.entraLink.unavailable')}</span>
           </div>
-          <p className="mt-1 text-sm text-text-dim">
-            Même raison. Les mots de passe sont gérés par la plateforme et vérifiés par
-            Argon2 ; l’authentification unique arrivera avec le connecteur, visible sur la
-            page Intégrations.
-          </p>
+          <p className="mt-1 text-sm text-text-dim">{t('admin.users.entraLink.detail')}</p>
         </div>
       </div>
 
       <p className="mt-4 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-        « Réinitialiser l’accès » révoque toutes les sessions ouvertes du compte et l’oblige
-        à se reconnecter. Aucun nouveau mot de passe n’est généré : sans relais SMTP, la
-        plateforme n’aurait aucun moyen de le transmettre, et l’afficher ici reviendrait à
-        écrire un identifiant vivant dans un navigateur.
+        {t('admin.users.footnote')}
       </p>
     </div>
   );

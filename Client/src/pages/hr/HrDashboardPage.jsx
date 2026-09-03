@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { dashboardApi } from '../../api/dashboard.js';
 import { assignmentsApi } from '../../api/organization.js';
@@ -33,6 +34,7 @@ const MONTH_MS = 30 * 86_400_000;
  * anime.js drives the count-ups and the completion ring, Framer Motion the list stagger.
  */
 export default function HrDashboardPage() {
+  const { t } = useTranslation();
   const [kpis, setKpis] = useState(null);
   const [pending, setPending] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -70,12 +72,12 @@ export default function HrDashboardPage() {
           .then((res) => setProbation(res.data ?? []))
           .catch(() => setProbation([]));
       } catch {
-        setError('Impossible de charger le tableau de bord RH.');
+        setError(t('hr.dashboard.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   useGsapContext(
     scopeRef,
@@ -132,8 +134,8 @@ export default function HrDashboardPage() {
       feed.push({
         id: 'pending-accounts',
         severity: 'red',
-        titleFr: `${stale.length} compte(s) en attente depuis plus de 3 jours`,
-        detailFr: `Le plus ancien attend depuis ${Math.max(...stale.map((a) => a.waitingDays))} jours.`,
+        title: t('hr.dashboard.alerts.pending.title', { count: stale.length }),
+        detail: t('hr.dashboard.alerts.pending.detail', { days: Math.max(...stale.map((a) => a.waitingDays)) }),
         href: '/app/hr/employees/unassigned',
       });
     }
@@ -143,10 +145,10 @@ export default function HrDashboardPage() {
       feed.push({
         id: 'open-requests',
         severity: 'blue',
-        titleFr: `${openRequests.length} demande(s) de compte ouverte(s) auprès du SI`,
-        detailFr: openRequests.some((request) => request.urgency === 'URGENT')
-          ? 'Dont au moins une marquée urgente.'
-          : 'En attente de création par le SI.',
+        title: t('hr.dashboard.alerts.requests.title', { count: openRequests.length }),
+        detail: openRequests.some((request) => request.urgency === 'URGENT')
+          ? t('hr.dashboard.alerts.requests.urgent')
+          : t('hr.dashboard.alerts.requests.detail'),
         href: '/app/hr/employees/request',
       });
     }
@@ -155,8 +157,8 @@ export default function HrDashboardPage() {
       feed.push({
         id: 'overdue',
         severity: 'red',
-        titleFr: `${kpis.onboarding.overdueTasks} étape(s) d'intégration en retard`,
-        detailFr: 'Des étapes ont dépassé leur date prévue sur les parcours en cours.',
+        title: t('hr.dashboard.alerts.overdue.title', { count: kpis.onboarding.overdueTasks }),
+        detail: t('hr.dashboard.alerts.overdue.detail'),
         href: '/app/hr/analytics',
       });
     }
@@ -165,8 +167,8 @@ export default function HrDashboardPage() {
       feed.push({
         id: 'blocked',
         severity: 'red',
-        titleFr: `${kpis.onboarding.blockedTasks} étape(s) bloquée(s)`,
-        detailFr: 'Ces étapes ont été signalées comme bloquées par leur responsable.',
+        title: t('hr.dashboard.alerts.blocked.title', { count: kpis.onboarding.blockedTasks }),
+        detail: t('hr.dashboard.alerts.blocked.detail'),
         href: '/app/hr/analytics',
       });
     }
@@ -175,8 +177,8 @@ export default function HrDashboardPage() {
       feed.push({
         id: 'surveys',
         severity: 'blue',
-        titleFr: `${satisfaction.roundsOverdue} enquête(s) sans réponse`,
-        detailFr: 'Des enquêtes de satisfaction ont dépassé leur échéance.',
+        title: t('hr.dashboard.alerts.surveys.title', { count: satisfaction.roundsOverdue }),
+        detail: t('hr.dashboard.alerts.surveys.detail'),
         href: '/app/hr/surveys/results',
       });
     }
@@ -185,16 +187,16 @@ export default function HrDashboardPage() {
       feed.push({
         id: 'jobs-without-description',
         severity: 'blue',
-        titleFr: `${kpis.quality.jobsWithoutDescription} poste(s) sans fiche de poste`,
-        detailFr: 'Ces postes existent dans l’organigramme mais n’ont pas de fiche.',
+        title: t('hr.dashboard.alerts.jobs.title', { count: kpis.quality.jobsWithoutDescription }),
+        detail: t('hr.dashboard.alerts.jobs.detail'),
         href: '/app/hr/positions',
       });
     }
 
     return feed;
-  }, [pending, requests, kpis, satisfaction]);
+  }, [pending, requests, kpis, satisfaction, t]);
 
-  if (loading) return <PageLoading label="Chargement du tableau de bord RH…" />;
+  if (loading) return <PageLoading label={t('hr.dashboard.loading')} />;
   if (error) return <PageError message={error} />;
 
   const waitingQueue = [...pending].sort((a, b) => b.waitingDays - a.waitingDays).slice(0, 6);
@@ -202,22 +204,22 @@ export default function HrDashboardPage() {
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Tableau de bord"
-        subtitle="Recrutements, intégrations en cours, satisfaction et alertes du périmètre RH."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.dashboard.title')}
+        subtitle={t('hr.dashboard.subtitle')}
         actions={
           <>
             <Link
               to="/app/hr/employees/request"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Demander un compte
+              {t('hr.dashboard.requestAccount')}
             </Link>
             <Link
               to="/app/hr/employees/unassigned"
               className="relative rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              File d’affectation
+              {t('hr.dashboard.assignmentQueue')}
               {pending.length > 0 && (
                 <span className="ml-2 rounded-full bg-white/25 px-1.5 py-0.5 text-xs font-semibold">
                   {pending.length}
@@ -230,11 +232,11 @@ export default function HrDashboardPage() {
 
       {/* Band 1 — the counters the spec names */}
       <div data-gsap="band" className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <SummaryTile label="Recrutements (30 j)" value={counters.hiredThisMonth} />
-        <SummaryTile label="Intégrations en cours" value={counters.inProgress} />
-        <SummaryTile label="Intégrations terminées" value={counters.completed} />
+        <SummaryTile label={t('hr.dashboard.tiles.hired')} value={counters.hiredThisMonth} />
+        <SummaryTile label={t('hr.dashboard.tiles.inProgress')} value={counters.inProgress} />
+        <SummaryTile label={t('hr.dashboard.tiles.completed')} value={counters.completed} />
         <SummaryTile
-          label="Étapes en retard"
+          label={t('hr.dashboard.tiles.overdue')}
           value={counters.late}
           tone={counters.late > 0 ? 'red' : undefined}
         />
@@ -251,22 +253,22 @@ export default function HrDashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="font-display text-xl text-text">
-                  Périodes d’essai à valider
+                  {t('hr.dashboard.probation.title')}
                   <span className="ml-2 rounded-full bg-red-brand/10 px-2 py-0.5 text-sm font-medium text-red-brand">
                     {probation.length}
                   </span>
                 </h2>
                 <p className="mt-1 text-sm text-text-dim">
                   {probation.length === 1
-                    ? 'Un responsable a transmis son évaluation. La décision vous revient.'
-                    : 'Des responsables ont transmis leurs évaluations. Les décisions vous reviennent.'}
+                    ? t('hr.dashboard.probation.one')
+                    : t('hr.dashboard.probation.other')}
                 </p>
               </div>
               <Link
                 to="/app/hr/probation"
                 className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
               >
-                Ouvrir la file
+                {t('hr.dashboard.openQueue')}
               </Link>
             </div>
 
@@ -282,7 +284,7 @@ export default function HrDashboardPage() {
               ))}
               {probation.length > 6 && (
                 <li className="px-1 py-1.5 text-xs text-text-dim">
-                  et {probation.length - 6} autre{probation.length - 6 > 1 ? 's' : ''}…
+                  {t('hr.dashboard.probation.more', { count: probation.length - 6 })}
                 </li>
               )}
             </ul>
@@ -293,7 +295,7 @@ export default function HrDashboardPage() {
       {/* Band 2 — gauge + satisfaction + alert feed */}
       <div data-gsap="band" className="mb-10 grid gap-8 lg:grid-cols-3">
         <section className="lg:col-span-1">
-          <h2 className={`mb-4 ${SECTION_TITLE}`}>Avancement</h2>
+          <h2 className={`mb-4 ${SECTION_TITLE}`}>{t('hr.dashboard.progress.title')}</h2>
           <div className={`${CARD} flex items-center gap-6 p-6`}>
             <ProgressRing
               percent={counters.averagePercent}
@@ -301,22 +303,22 @@ export default function HrDashboardPage() {
             />
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-                Progression moyenne
+                {t('hr.dashboard.progress.average')}
               </p>
               <p className="font-display text-2xl text-red-deep">
                 <CountUp value={counters.averagePercent} suffix="%" />
               </p>
               <p className="mt-1 text-xs text-text-dim">
                 {counters.completionRate === null || counters.completionRate === undefined
-                  ? 'Taux de complétion non mesurable.'
-                  : `Taux de complétion des parcours : ${counters.completionRate}%.`}
+                  ? t('hr.dashboard.progress.unavailable')
+                  : t('hr.dashboard.progress.completionRate', { percent: counters.completionRate })}
               </p>
             </div>
           </div>
 
           <div className={`${CARD} mt-4 p-6`}>
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-              Score de satisfaction
+              {t('hr.dashboard.satisfaction.title')}
             </p>
             {counters.satisfactionScore === null ? (
               <p className="font-display text-3xl text-text-dim">—</p>
@@ -327,21 +329,21 @@ export default function HrDashboardPage() {
             )}
             <p className="mt-1 text-xs text-text-dim">
               {satisfaction
-                ? `${satisfaction.roundsAnswered}/${satisfaction.roundsIssued} enquêtes renseignées.`
-                : 'Aucune enquête émise.'}
+                ? t('hr.dashboard.satisfaction.answered', { answered: satisfaction.roundsAnswered, issued: satisfaction.roundsIssued })
+                : t('hr.dashboard.satisfaction.none')}
             </p>
             <Link
               to="/app/hr/surveys/results"
               className="mt-3 inline-block text-xs font-medium text-red-brand hover:underline"
             >
-              Voir le détail des résultats →
+              {t('hr.dashboard.satisfaction.link')}
             </Link>
           </div>
         </section>
 
         <section className="flex flex-col lg:col-span-2">
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className={SECTION_TITLE}>Alertes</h2>
+            <h2 className={SECTION_TITLE}>{t('hr.dashboard.alerts.title')}</h2>
             <span className="text-sm text-text-dim">{alerts.length}</span>
           </div>
           <motion.div
@@ -360,12 +362,12 @@ export default function HrDashboardPage() {
                       : 'border-red-brand/40 bg-red-brand/10 text-red-deep'
                   }`}
                 >
-                  <p className="font-medium">{alert.titleFr}</p>
-                  <p className="text-xs opacity-80">{alert.detailFr}</p>
+                  <p className="font-medium">{alert.title}</p>
+                  <p className="text-xs opacity-80">{alert.detail}</p>
                 </Link>
               </motion.div>
             ))}
-            {alerts.length === 0 && <EmptyState detail="Aucune alerte. Tout est à jour." muted />}
+            {alerts.length === 0 && <EmptyState detail={t('hr.dashboard.alerts.empty')} muted />}
           </motion.div>
         </section>
       </div>
@@ -373,13 +375,13 @@ export default function HrDashboardPage() {
       {/* Band 3 — the affectation queue, oldest first */}
       <div data-gsap="band">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className={SECTION_TITLE}>Comptes en attente d’affectation</h2>
+          <h2 className={SECTION_TITLE}>{t('hr.dashboard.waiting.title')}</h2>
           <Link to="/app/hr/employees/unassigned" className="text-sm text-red-brand hover:underline">
-            Tout voir
+            {t('hr.dashboard.waiting.viewAll')}
           </Link>
         </div>
         {waitingQueue.length === 0 ? (
-          <EmptyState detail="Aucun compte en attente d’affectation." muted />
+          <EmptyState detail={t('hr.dashboard.waiting.empty')} muted />
         ) : (
           <motion.div
             variants={staggerContainer(0.06, 0.3)}
@@ -402,7 +404,7 @@ export default function HrDashboardPage() {
                           : 'bg-surface-2 text-text-dim'
                       }`}
                     >
-                      {account.waitingDays} j
+                      {t('hr.dashboard.waiting.days', { count: account.waitingDays })}
                     </span>
                   </div>
                   <p className="truncate text-xs text-text-dim">{account.email}</p>

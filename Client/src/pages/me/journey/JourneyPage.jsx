@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../../api/onboarding.js';
 import { ApiError } from '../../../api/client.js';
@@ -11,9 +12,10 @@ import { PageLoading, PageError, EmptyState } from '../../../components/manager/
 import { useGsapContext } from '../../../lib/motion/useGsapContext.js';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
 import { cn } from '../../../lib/cn.js';
+import { localeOf } from '../../../lib/formatDate.js';
 import {
   OWNER_DEPARTMENTS,
-  STATUS_LABELS,
+  STATUS_LABEL_KEYS,
   STATUS_STYLES,
   TASK_PHASES,
 } from './taskVocabulary.js';
@@ -59,6 +61,8 @@ export default function JourneyPage() {
   const [phaseFilter, setPhaseFilter] = useState('ALL');
   const reduce = useReducedMotion();
   const scopeRef = useRef(null);
+  // Hooks run before the loading guard below, or the hook order changes between renders.
+  const { t, i18n } = useTranslation();
 
   const load = useCallback(async () => {
     setError(null);
@@ -67,7 +71,7 @@ export default function JourneyPage() {
       setJourney(data);
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) setJourney(null);
-      else setError("Impossible de charger votre parcours d'intégration.");
+      else setError('load');
     } finally {
       setLoading(false);
     }
@@ -104,21 +108,24 @@ export default function JourneyPage() {
       else unphased.push(task);
     }
 
-    const ordered = TASK_PHASES.map((phase) => ({ ...phase, tasks: buckets.get(phase.id) })).filter(
-      (group) => group.tasks.length > 0,
-    );
+    const ordered = TASK_PHASES.map((phase) => ({
+      id: phase.id,
+      label: t(phase.labelKey),
+      detail: t(phase.detailKey),
+      tasks: buckets.get(phase.id),
+    })).filter((group) => group.tasks.length > 0);
 
     if (unphased.length > 0) {
       ordered.push({
         id: 'UNPHASED',
-        labelFr: 'Étapes non rattachées à une phase',
-        detailFr: 'Ces étapes n’ont pas de phase déclarée dans le modèle d’intégration.',
+        label: t('me.journey.unphased.label'),
+        detail: t('me.journey.unphased.detail'),
         tasks: unphased,
       });
     }
 
     return ordered;
-  }, [journey]);
+  }, [journey, t]);
 
   const visibleGroups = phaseFilter === 'ALL' ? groups : groups.filter((group) => group.id === phaseFilter);
 
@@ -133,34 +140,40 @@ export default function JourneyPage() {
         status,
       });
       await load();
-      setNotice({ tone: 'ok', textFr: `« ${task.titleFr} » : ${STATUS_LABELS[status].toLowerCase()}.` });
+      setNotice({
+        tone: 'ok',
+        text: t('me.journey.statusChanged', {
+          title: task.titleFr,
+          status: t(STATUS_LABEL_KEYS[status]).toLowerCase(),
+        }),
+      });
     } catch (err) {
       setNotice({
         tone: 'error',
-        textFr:
+        text:
           err instanceof ApiError && err.body?.message
             ? err.body.message
-            : "La mise à jour de l'étape a échoué.",
+            : t('me.journey.statusFailed'),
       });
     } finally {
       setSavingId(null);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement de votre parcours…" />;
-  if (error) return <PageError message={error} />;
+  if (loading) return <PageLoading label={t('me.journey.loading')} />;
+  if (error) return <PageError message={t('me.journey.loadFailed')} />;
 
   if (!journey) {
     return (
       <div className="flex flex-1 flex-col">
         <PageHeader
-          eyebrow="Mon espace"
-          title="Mon parcours"
-          subtitle="La feuille de route de votre intégration, étape par étape."
+          eyebrow={t('me.eyebrow')}
+          title={t('me.journey.titleShort')}
+          subtitle={t('me.journey.subtitle')}
         />
         <EmptyState
-          title="Aucun parcours enregistré"
-          detail="Aucun parcours d’intégration n’est encore rattaché à votre compte. Les RH le créent au moment de votre affectation à un poste."
+          title={t('me.journey.emptyTitle')}
+          detail={t('me.journey.emptyDetail')}
           muted
         />
       </div>
@@ -172,15 +185,15 @@ export default function JourneyPage() {
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Mon espace"
-        title="Mon parcours d’intégration"
+        eyebrow={t('me.eyebrow')}
+        title={t('me.journey.title')}
         subtitle={journey.templateTitleFr}
         actions={
           <Link
             to="/app/me"
             className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
           >
-            Tableau de bord
+            {t('me.journey.backToDashboard')}
           </Link>
         }
       />
@@ -192,16 +205,24 @@ export default function JourneyPage() {
           tone={progress.overdue > 0 || progress.blocked > 0 ? 'red' : progress.percent >= 100 ? 'green' : 'brand'}
         />
         <div className="grid flex-1 grid-cols-2 gap-6 sm:grid-cols-4">
-          <Figure label="Terminées" value={progress.completed} suffix={`/${progress.total}`} />
-          <Figure label="En retard" value={progress.overdue} tone={progress.overdue > 0 ? 'red' : undefined} />
-          <Figure label="Bloquées" value={progress.blocked} tone={progress.blocked > 0 ? 'red' : undefined} />
-          <Figure label="Phases" value={groups.length} />
+          <Figure label={t('me.journey.figures.completed')} value={progress.completed} suffix={`/${progress.total}`} />
+          <Figure
+            label={t('me.journey.figures.overdue')}
+            value={progress.overdue}
+            tone={progress.overdue > 0 ? 'red' : undefined}
+          />
+          <Figure
+            label={t('me.journey.figures.blocked')}
+            value={progress.blocked}
+            tone={progress.blocked > 0 ? 'red' : undefined}
+          />
+          <Figure label={t('me.journey.figures.phases')} value={groups.length} />
         </div>
       </div>
 
       {/* Band 2 — phase filter. */}
       <div data-gsap="band" className="mb-6 flex flex-wrap gap-2 border-b border-border">
-        {[{ id: 'ALL', labelFr: 'Toutes les phases' }, ...groups].map((tab) => (
+        {[{ id: 'ALL', label: t('me.journey.allPhases') }, ...groups].map((tab) => (
           <button
             key={tab.id}
             type="button"
@@ -213,7 +234,7 @@ export default function JourneyPage() {
                 : 'border-transparent text-text-dim hover:text-text',
             )}
           >
-            {tab.labelFr}
+            {tab.label}
             {tab.tasks ? ` (${tab.tasks.length})` : ''}
           </button>
         ))}
@@ -232,7 +253,7 @@ export default function JourneyPage() {
                 : 'border-status-red/40 bg-status-red/5 text-status-red',
             )}
           >
-            {notice.textFr}
+            {notice.text}
           </motion.p>
         )}
       </AnimatePresence>
@@ -242,13 +263,13 @@ export default function JourneyPage() {
         {visibleGroups.map((group) => (
           <section key={group.id}>
             <div className="mb-1 flex items-baseline justify-between gap-3">
-              <h2 className="font-display text-xl text-text">{group.labelFr}</h2>
+              <h2 className="font-display text-xl text-text">{group.label}</h2>
               <span className="text-sm text-text-dim">
                 {group.tasks.filter((task) => task.status === 'DONE' || task.status === 'VALIDATED').length}
                 /{group.tasks.length}
               </span>
             </div>
-            <p className="mb-4 text-xs text-text-dim">{group.detailFr}</p>
+            <p className="mb-4 text-xs text-text-dim">{group.detail}</p>
 
             <motion.ul
               variants={staggerContainer(0.05, 0.2)}
@@ -263,6 +284,8 @@ export default function JourneyPage() {
                     saving={savingId === task.milestoneId}
                     onStatus={(status) => changeStatus(task, status)}
                     reduce={reduce}
+                    t={t}
+                    locale={localeOf(i18n)}
                   />
                 </motion.li>
               ))}
@@ -271,7 +294,7 @@ export default function JourneyPage() {
         ))}
 
         {visibleGroups.length === 0 && (
-          <EmptyState detail="Aucune étape dans cette phase." muted />
+          <EmptyState detail={t('me.journey.emptyPhase')} muted />
         )}
       </div>
     </div>
@@ -290,7 +313,7 @@ function Figure({ label, value, suffix = '', tone }) {
   );
 }
 
-function TaskRow({ task, saving, onStatus, reduce }) {
+function TaskRow({ task, saving, onStatus, reduce, t, locale }) {
   const owner = OWNER_DEPARTMENTS[task.ownerDepartment];
   const blocked = task.status === 'BLOCKED';
 
@@ -308,14 +331,18 @@ function TaskRow({ task, saving, onStatus, reduce }) {
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium text-text-muted">{task.dayLabelFr}</span>
             <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', STATUS_STYLES[task.status])}>
-              {STATUS_LABELS[task.status]}
+              {t(STATUS_LABEL_KEYS[task.status] ?? '', { defaultValue: task.status })}
             </span>
-            {task.overdue && <span className="text-xs font-medium text-status-red">En retard</span>}
+            {task.overdue && (
+              <span className="text-xs font-medium text-status-red">{t('me.journey.overdue')}</span>
+            )}
             {task.dueSoon && !task.overdue && (
-              <span className="text-xs font-medium text-status-amber">Échéance proche</span>
+              <span className="text-xs font-medium text-status-amber">{t('me.journey.dueSoon')}</span>
             )}
             {!task.isRecommended && (
-              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">Facultative</span>
+              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">
+                {t('me.journey.optional')}
+              </span>
             )}
           </div>
 
@@ -329,23 +356,26 @@ function TaskRow({ task, saving, onStatus, reduce }) {
 
           {task.dueDate && (
             <p className="mt-1 text-xs text-text-muted">
-              Échéance : {new Date(task.dueDate).toLocaleDateString('fr-FR')}
+              {t('me.journey.dueDate', { date: new Date(task.dueDate).toLocaleDateString(locale) })}
             </p>
           )}
 
           {/*
             §2.1: "blocked tasks show the responsible department". The department comes from
             the milestone's own ownerDepartment, so it names who actually owns the step
-            rather than defaulting to the RH for everything. Without one declared, that gap
+            rather than defaulting to HR for everything. Without one declared, that gap
             is stated as such — a wrong contact costs more than a missing one.
           */}
           {blocked && (
             <p className="mt-2 rounded-app border border-status-red/30 bg-status-red/5 px-3 py-2 text-xs text-status-red">
               {owner
-                ? `Cette étape est bloquée. Service responsable : ${owner.labelFr} — ${owner.detailFr}`
-                : 'Cette étape est bloquée. Aucun service responsable n’est déclaré sur cette étape : signalez-le à votre manager.'}{' '}
+                ? t('me.journey.blocked.withOwner', {
+                    department: t(owner.labelKey),
+                    detail: t(owner.detailKey),
+                  })
+                : t('me.journey.blocked.noOwner')}{' '}
               <Link to={`/app/me/journey/${task.milestoneId}`} className="font-medium underline">
-                Demander de l’aide
+                {t('me.journey.blocked.askHelp')}
               </Link>
             </p>
           )}
@@ -367,19 +397,19 @@ function TaskRow({ task, saving, onStatus, reduce }) {
                       : 'border-border text-text hover:border-red-brand hover:text-red-brand',
                   )}
                 >
-                  {status === 'DONE' ? 'Marquer terminée' : STATUS_LABELS[status]}
+                  {status === 'DONE' ? t('me.journey.markDone') : t(STATUS_LABEL_KEYS[status])}
                 </button>
               ))}
             </div>
           ) : (
-            <span className="text-xs text-text-dim">Validée par votre manager</span>
+            <span className="text-xs text-text-dim">{t('me.journey.validatedByManager')}</span>
           )}
 
           <Link
             to={`/app/me/journey/${task.milestoneId}`}
             className="text-xs font-medium text-red-brand hover:underline"
           >
-            Ouvrir l’étape →
+            {t('me.journey.openTask')}
           </Link>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { publicApi } from '../../api/public.js';
 import {
@@ -19,31 +20,18 @@ import Takeover from '../../components/public/Takeover.jsx';
 
 const SECTION = 'mx-auto max-w-6xl px-6';
 
-/** What the platform does, in the company's own terms. */
+/**
+ * What the platform does, in the company's own terms. The copy lives in the catalogues;
+ * only the icon, the route and the key stems are structural.
+ */
 const CAPABILITIES = [
-  {
-    icon: '🗺️',
-    titleFr: 'Une structure lisible',
-    bodyFr:
-      'Chaque poste est rattaché à un responsable, chaque responsable à une structure. L’organigramme n’est pas un document annuel : il est la source que lisent les affectations et les évaluations.',
-    to: '/organigramme',
-    linkFr: 'Voir l’organigramme',
-  },
-  {
-    icon: '📈',
-    titleFr: 'Un parcours suivi',
-    bodyFr:
-      'De l’affectation à la fin de la période d’essai, chaque étape a une échéance et un responsable. Les retards se voient avant l’échéance, pas après.',
-  },
-  {
-    icon: '🎯',
-    titleFr: 'Des compétences évaluées',
-    bodyFr:
-      'Une matrice par poste, comparée au niveau réel du collaborateur. Les écarts nourrissent le plan de formation plutôt qu’un classeur.',
-  },
+  { id: 'structure', icon: '🗺️', to: '/organigramme', linkKey: 'public.home.capabilities.structureLink' },
+  { id: 'journey', icon: '📈' },
+  { id: 'skills', icon: '🎯' },
 ];
 
 export default function Home() {
+  const { t } = useTranslation();
   const [company, setCompany] = useState(null);
   const [values, setValues] = useState([]);
   const reduce = useReducedMotion();
@@ -70,7 +58,7 @@ export default function Home() {
           className={`${SECTION} relative grid flex-1 items-center gap-12 pb-20 pt-28 lg:grid-cols-[1.15fr_1fr] lg:pb-24 lg:pt-28`}
         >
           <div>
-            <Eyebrow>SOFICLEF SARL · depuis 1994</Eyebrow>
+            <Eyebrow>{t('public.home.eyebrow')}</Eyebrow>
 
             <motion.h1
               initial={reduce ? false : { opacity: 0, y: 18 }}
@@ -79,8 +67,11 @@ export default function Home() {
               className="font-display text-4xl leading-[1.08] text-text sm:text-5xl lg:text-6xl"
               style={{ textWrap: 'balance' }}
             >
-              Protéger la vie et les biens,
-              <span className="text-red-deep"> pièce après pièce.</span>
+              {/* Trans, not t: the accent half of the headline is an inline <span>, and
+                  which words it covers differs between languages. */}
+              <Trans i18nKey="public.home.heroTitle">
+                <span className="text-red-deep" />
+              </Trans>
             </motion.h1>
 
             <motion.p
@@ -89,8 +80,9 @@ export default function Home() {
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
               className="mt-5 max-w-xl text-[15px] leading-relaxed text-text-muted"
             >
-              {company?.missionFr ??
-                'Des solutions alliant design, fiabilité et confort — conçues, fabriquées et distribuées depuis Boumerdès.'}
+              {/* missionFr is database content and renders as-is in both languages; only
+                  the fallback sentence is ours to translate. */}
+              {company?.missionFr ?? t('public.home.heroLedeFallback')}
             </motion.p>
 
             <motion.div
@@ -102,18 +94,18 @@ export default function Home() {
               <Link
                 to="/entreprise"
                 data-cursor
-                data-cursor-text="Découvrir"
+                data-cursor-text={t('public.home.cursorDiscover')}
                 className="rounded-app bg-red-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-light"
               >
-                Découvrir l’entreprise
+                {t('public.home.heroCtaCompany')}
               </Link>
               <Link
                 to="/organigramme"
                 data-cursor
-                data-cursor-text="Voir"
+                data-cursor-text={t('public.home.cursorView')}
                 className="rounded-app border border-border px-5 py-2.5 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
               >
-                Notre organisation
+                {t('public.home.heroCtaOrg')}
               </Link>
             </motion.div>
           </div>
@@ -136,12 +128,21 @@ export default function Home() {
             className={`${SECTION} grid gap-px py-0 sm:grid-cols-2 lg:grid-cols-4`}
           >
             {[
-              { value: company.foundedYear, label: `Fondée à ${company.foundedCity}` },
-              { value: '15 000 m²', label: 'Entrepôt logistique' },
-              { value: 'ISO 9001', label: 'Certifiée depuis 2017' },
-              { value: 'OEA', label: 'Opérateur Économique Agréé' },
+              {
+                id: 'founded',
+                value: company.foundedYear,
+                label: t('public.home.stats.foundedIn', { city: company.foundedCity }),
+              },
+              { id: 'warehouse', value: '15 000 m²', label: t('public.home.stats.warehouse') },
+              { id: 'iso', value: 'ISO 9001', label: t('public.home.stats.certifiedSince') },
+              {
+                id: 'aeo',
+                // The acronym itself differs by language: OEA in French, AEO in English.
+                value: t('public.home.stats.trustedOperatorAcronym'),
+                label: t('public.home.stats.trustedOperator'),
+              },
             ].map((stat) => (
-              <RevealItem key={stat.label}>
+              <RevealItem key={stat.id}>
                 <div className="px-2 py-9 text-center">
                   <p className="font-display text-3xl text-red-deep sm:text-4xl">{stat.value}</p>
                   <p className="mt-1.5 text-xs uppercase tracking-[0.1em] text-text-dim">{stat.label}</p>
@@ -159,9 +160,9 @@ export default function Home() {
       {company?.activities?.length > 0 && (
         <section className={`${SECTION} py-20`}>
           <Reveal>
-            <Eyebrow>Nos métiers</Eyebrow>
+            <Eyebrow>{t('public.home.tradesEyebrow')}</Eyebrow>
             <h2 className="max-w-2xl font-display text-3xl leading-tight text-text sm:text-4xl">
-              Trois pôles, une même exigence de fiabilité.
+              {t('public.home.tradesTitle')}
             </h2>
             <DrawRule className="mt-6 max-w-2xl" />
           </Reveal>
@@ -199,13 +200,18 @@ export default function Home() {
         </div>
         <div className={`${SECTION} relative py-20`}>
           <Reveal className="mx-auto max-w-3xl text-center">
-            <Eyebrow>Notre vision</Eyebrow>
+            <Eyebrow>{t('public.home.visionEyebrow')}</Eyebrow>
             <p className="font-display text-2xl leading-snug text-text sm:text-3xl" style={{ textWrap: 'balance' }}>
-              «&nbsp;{company?.visionFr ??
-                'Devenir le leader national dans les solutions d’ouverture et de verrouillage innovantes.'}&nbsp;»
+              {/* The quotation marks belong to the language, not the layout: French uses
+                  guillemets with non-breaking spaces, English plain curly quotes. */}
+              {t('public.home.visionQuote', {
+                vision: company?.visionFr ?? t('public.home.visionFallback'),
+              })}
             </p>
             {company?.generalManager && (
-              <p className="mt-4 text-sm text-text-dim">{company.generalManager} · Directeur Général</p>
+              <p className="mt-4 text-sm text-text-dim">
+                {company.generalManager} · {t('public.home.visionRole')}
+              </p>
             )}
           </Reveal>
         </div>
@@ -215,8 +221,10 @@ export default function Home() {
       {values.length > 0 && (
         <section className={`${SECTION} py-20`}>
           <Reveal>
-            <Eyebrow>Ce qui nous tient</Eyebrow>
-            <h2 className="font-display text-3xl leading-tight text-text sm:text-4xl">Nos valeurs</h2>
+            <Eyebrow>{t('public.home.valuesEyebrow')}</Eyebrow>
+            <h2 className="font-display text-3xl leading-tight text-text sm:text-4xl">
+              {t('public.home.valuesTitle')}
+            </h2>
           </Reveal>
 
           <RevealGroup stagger={0.06} className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -241,31 +249,32 @@ export default function Home() {
       <section className="border-t border-border bg-surface">
         <div className={`${SECTION} py-20`}>
           <Reveal>
-            <Eyebrow>La plateforme d’intégration</Eyebrow>
+            <Eyebrow>{t('public.home.platform.eyebrow')}</Eyebrow>
             <h2 className="max-w-2xl font-display text-3xl leading-tight text-text sm:text-4xl">
-              Une intégration suivie, pas seulement lancée.
+              {t('public.home.platform.title')}
             </h2>
             <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-text-muted">
-              SOFICLEF accompagne chaque collaborateur de son affectation jusqu’à la fin de sa
-              période d’essai. Le parcours est le même pour tous ; ce qu’il contient dépend du poste.
+              {t('public.home.platform.lede')}
             </p>
           </Reveal>
 
           <RevealGroup className="mt-10 grid gap-5 lg:grid-cols-3">
             {CAPABILITIES.map((capability) => (
-              <RevealItem key={capability.titleFr} className="h-full">
+              <RevealItem key={capability.id} className="h-full">
                 <div className="flex h-full flex-col rounded-app border border-border bg-bg p-6">
                   <span aria-hidden className="text-2xl">{capability.icon}</span>
-                  <h3 className="mt-3 font-display text-lg text-text">{capability.titleFr}</h3>
+                  <h3 className="mt-3 font-display text-lg text-text">
+                    {t(`public.home.capabilities.${capability.id}Title`)}
+                  </h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-text-muted">
-                    {capability.bodyFr}
+                    {t(`public.home.capabilities.${capability.id}Body`)}
                   </p>
                   {capability.to && (
                     <Link
                       to={capability.to}
                       className="mt-4 text-sm font-medium text-red-brand hover:underline"
                     >
-                      {capability.linkFr} →
+                      {t(capability.linkKey)} →
                     </Link>
                   )}
                 </div>
@@ -281,17 +290,16 @@ export default function Home() {
         <div className={`${SECTION} relative py-20 text-center`}>
           <Reveal>
             <h2 className="font-display text-3xl text-text sm:text-4xl" style={{ textWrap: 'balance' }}>
-              Vous rejoignez SOFICLEF ?
+              {t('public.home.ctaTitle')}
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-[15px] text-text-muted">
-              Votre espace collaborateur réunit votre parcours, vos documents, vos formations et
-              votre organigramme.
+              {t('public.home.ctaLede')}
             </p>
             <Link
               to="/login"
               className="mt-7 inline-block rounded-app bg-red-brand px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              Accéder à mon espace
+              {t('public.home.ctaLink')}
             </Link>
           </Reveal>
         </div>

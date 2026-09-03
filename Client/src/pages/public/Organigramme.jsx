@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { publicApi } from '../../api/public.js';
 import OrgChart from '../../components/org/OrgChart.jsx';
@@ -21,22 +22,20 @@ const SECTION = 'mx-auto max-w-6xl px-6';
  * to the table shows up looking unfinished instead of silently vanishing from the chart.
  */
 const TYPE_META = {
-  DIRECTION: { labelFr: 'Direction', helpFr: 'Le sommet de la structure.' },
-  STRUCTURE: { labelFr: 'Structures', helpFr: 'Les grands ensembles opérationnels.' },
+  DIRECTION: { labelKey: 'public.org.types.directionLabel', helpKey: 'public.org.types.directionHelp' },
+  STRUCTURE: { labelKey: 'public.org.types.structureLabel', helpKey: 'public.org.types.structureHelp' },
   UNITE_PRODUCTION: {
-    labelFr: 'Unités de production',
-    helpFr: 'Les ateliers, rattachés à une structure.',
+    labelKey: 'public.org.types.uniteProductionLabel',
+    helpKey: 'public.org.types.uniteProductionHelp',
   },
   CELLULE: {
-    labelFr: 'Cellules fonctionnelles',
-    helpFr: 'Les fonctions transverses de support.',
+    labelKey: 'public.org.types.celluleLabel',
+    helpKey: 'public.org.types.celluleHelp',
   },
 };
 
 /** Display order, so the summary and the detail read top-down rather than alphabetically. */
 const TYPE_ORDER = ['DIRECTION', 'STRUCTURE', 'UNITE_PRODUCTION', 'CELLULE'];
-
-const typeLabel = (type) => TYPE_META[type]?.labelFr ?? type;
 
 /**
  * /organigramme — the public organisation chart, replacing the former Carrières page.
@@ -48,10 +47,17 @@ const typeLabel = (type) => TYPE_META[type]?.labelFr ?? type;
  * how the company is organised, not where it is short-handed.
  */
 export default function Organigramme() {
+  const { t } = useTranslation();
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [selected, setSelected] = useState(null);
+
+  /*
+   * An unmapped type still falls back to its raw stored value rather than disappearing, so
+   * a new type added to the table shows up looking unfinished instead of vanishing.
+   */
+  const typeLabel = (type) => (TYPE_META[type] ? t(TYPE_META[type].labelKey) : type);
 
   useEffect(() => {
     publicApi
@@ -107,17 +113,17 @@ export default function Organigramme() {
       <section data-flock className="relative flex min-h-[60svh] flex-col justify-center overflow-hidden border-b border-border">
         <MeshBackdrop />
         <div className={`${SECTION} relative pb-16 pt-28 lg:pb-20 lg:pt-28`}>
-          <Eyebrow>Organisation</Eyebrow>
+          <Eyebrow>{t('public.org.eyebrow')}</Eyebrow>
           <h1
             className="max-w-3xl font-display text-4xl leading-[1.1] text-text sm:text-5xl"
             style={{ textWrap: 'balance' }}
           >
-            L’organigramme de <span className="text-red-deep">SOFICLEF</span>
+            <Trans i18nKey="public.org.heroTitle">
+              <span className="text-red-deep" />
+            </Trans>
           </h1>
           <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-text-muted">
-            Des structures opérationnelles, des unités de production et des cellules
-            fonctionnelles, chacune avec un périmètre défini. C’est cette même structure que
-            lisent les affectations et les parcours d’intégration en interne.
+            {t('public.org.heroLede')}
           </p>
         </div>
       </section>
@@ -146,28 +152,25 @@ export default function Organigramme() {
       {/* ----------------------------------------------------------------- chart */}
       <section className={`${SECTION} py-16`}>
         <Reveal>
-          <Eyebrow>Vue d’ensemble</Eyebrow>
+          <Eyebrow>{t('public.org.chartEyebrow')}</Eyebrow>
           <h2 className="font-display text-3xl leading-tight text-text sm:text-4xl">
-            La structure, du sommet au terrain
+            {t('public.org.chartTitle')}
           </h2>
-          <p className="mt-3 max-w-2xl text-sm text-text-muted">
-            Cliquez sur une entité pour lire son périmètre. Le schéma se fait défiler
-            horizontalement sur les niveaux les plus larges.
-          </p>
+          <p className="mt-3 max-w-2xl text-sm text-text-muted">{t('public.org.chartLede')}</p>
         </Reveal>
 
         <Reveal delay={0.1}>
           <div className="mt-8 overflow-x-auto rounded-app border border-border bg-surface p-6 shadow-app">
             {loading ? (
-              <p className="py-12 text-center text-sm text-text-dim">Chargement de l’organigramme…</p>
+              <p className="py-12 text-center text-sm text-text-dim">{t('public.org.loading')}</p>
             ) : failed ? (
               <p className="py-12 text-center text-sm text-text-dim">
-                L’organigramme n’est pas disponible pour le moment.
+                {t('public.org.loadFailed')}
               </p>
             ) : (
               <OrgChart
                 nodes={nodes}
-                emptyLabel="La structure n’est pas encore publiée."
+                emptyLabel={t('public.org.notPublished')}
                 subtitleOf={(node) => typeLabel(node.type)}
                 onSelect={(node) => setSelected(node)}
               />
@@ -194,7 +197,7 @@ export default function Organigramme() {
                   onClick={() => setSelected(null)}
                   className="rounded-app border border-border bg-surface px-2.5 py-1 text-xs text-text-dim hover:text-red-brand"
                 >
-                  Fermer
+                  {t('common.actions.close')}
                 </button>
               </div>
               {selected.descriptionFr && (
@@ -212,9 +215,9 @@ export default function Organigramme() {
         <section className="border-t border-border bg-surface">
           <div className={`${SECTION} py-16`}>
             <Reveal>
-              <Eyebrow>Le détail</Eyebrow>
+              <Eyebrow>{t('public.org.detailEyebrow')}</Eyebrow>
               <h2 className="font-display text-3xl leading-tight text-text sm:text-4xl">
-                Ce que fait chaque entité
+                {t('public.org.detailTitle')}
               </h2>
               <DrawRule className="mt-6 max-w-2xl" />
             </Reveal>
@@ -225,7 +228,9 @@ export default function Organigramme() {
                   <Reveal>
                     <div className="mb-4 flex flex-wrap items-baseline gap-3 border-b border-border pb-2">
                       <h3 className="font-display text-xl text-red-deep">{typeLabel(type)}</h3>
-                      <p className="text-sm text-text-dim">{TYPE_META[type]?.helpFr}</p>
+                      <p className="text-sm text-text-dim">
+                        {TYPE_META[type] ? t(TYPE_META[type].helpKey) : null}
+                      </p>
                     </div>
                   </Reveal>
 
@@ -259,24 +264,21 @@ export default function Organigramme() {
       <section className="border-t border-border">
         <div className={`${SECTION} flex flex-wrap items-center justify-between gap-6 py-14`}>
           <div>
-            <h2 className="font-display text-2xl text-text">Cette structure vit au quotidien</h2>
-            <p className="mt-2 max-w-xl text-sm text-text-muted">
-              En interne, chaque poste de cet organigramme porte une fiche, un responsable et un
-              parcours d’intégration.
-            </p>
+            <h2 className="font-display text-2xl text-text">{t('public.org.ctaTitle')}</h2>
+            <p className="mt-2 max-w-xl text-sm text-text-muted">{t('public.org.ctaLede')}</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
               to="/entreprise"
               className="rounded-app border border-border px-5 py-2.5 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              L’entreprise
+              {t('public.links.theCompany')}
             </Link>
             <Link
               to="/strategie"
               className="rounded-app bg-red-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              Notre stratégie
+              {t('public.links.ourStrategy')}
             </Link>
           </div>
         </div>

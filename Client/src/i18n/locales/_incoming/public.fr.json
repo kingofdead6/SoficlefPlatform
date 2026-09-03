@@ -1,0 +1,194 @@
+{
+  "common": {
+    "states": {
+      "unavailableForNow": "Indisponible pour le moment."
+    }
+  },
+  "auth": {
+    "login": {
+      "backToSite": "Retour au site",
+      "emailLabel": "E-mail professionnel",
+      "emailPlaceholder": "prenom.nom@soficlef.local",
+      "highlight1": "Votre parcours d’intégration, étape par étape",
+      "highlight2": "Vos documents, formations et justificatifs",
+      "highlight3": "Votre position dans l’organigramme",
+      "hidePassword": "Masquer",
+      "invalidCredentials": "Identifiants invalides.",
+      "lede": "Accédez à votre parcours et à vos documents.",
+      "noAccessNote": "Vous n’avez pas encore d’accès ? Votre compte est créé par le service informatique, puis affecté par les ressources humaines.",
+      "panelTitle": "Votre espace collaborateur",
+      "passwordLabel": "Mot de passe",
+      "showPassword": "Afficher",
+      "submit": "Se connecter",
+      "submitting": "Connexion…",
+      "title": "Connexion",
+      "tooManyAttempts": "Trop de tentatives. Patientez quelques minutes avant de réessayer."
+    },
+    "pending": {
+      "body": "Votre compte n’est pas encore affecté à un poste. Les ressources humaines vous placeront prochainement.",
+      "title": "Compte en attente"
+    }
+  },
+  "public": {
+    "assistant": {
+      "askButton": "Demander",
+      "asking": "Recherche…",
+      "askFailed": "La recherche a échoué. Réessayez dans un instant.",
+      "defaultEmptyDetail": "Posez une question, ou choisissez l’une des suggestions ci-dessus.",
+      "defaultPlaceholder": "Posez votre question…",
+      "degraded": {
+        "error": "Le modèle n’a pas pu être joint — voici les résultats de la recherche.",
+        "modelLoading": "Le modèle est en cours de démarrage (comptez ~20 s) — voici les résultats de la recherche en attendant.",
+        "rateLimited": "Le quota du modèle est atteint — voici les résultats de la recherche.",
+        "timeout": "Le modèle n’a pas répondu à temps — voici les résultats de la recherche."
+      },
+      "noAnswer": "Je n’ai rien trouvé qui corresponde dans les données que vous êtes autorisé à consulter. Plutôt qu’une réponse approximative, l’assistant préfère ne rien affirmer : reformulez la question, ou consultez directement la rubrique concernée.",
+      "providerNone": "Aucun modèle de langage n’est raccordé : l’assistant répond par recherche dans vos données visibles, et cite ce qu’il a trouvé.",
+      "providerNote": "Réponses formulées par {{model}} ({{provider}}), à partir des seules données que vous pouvez déjà consulter.",
+      "providerNoteFallbackModel": "un modèle de langage",
+      "questionLabel": "Votre question",
+      "sources": "Sources",
+      "tooManyQuestions": "Trop de questions en peu de temps. Réessayez dans un instant.",
+      "ungroundedBadge": "Connaissances générales — hors données SOFICLEF",
+      "ungroundedNote": "Aucune information interne ne correspondait à cette question. Cette réponse vient des connaissances générales du modèle : vérifiez-la auprès des RH avant de vous en servir."
+    },
+    "company": {
+      "ctaLede": "Structures, unités de production et cellules fonctionnelles — l’organigramme complet.",
+      "ctaTitle": "Comment nous sommes organisés",
+      "eyebrow": "L’entreprise",
+      "heroLede": "De la fabrication de corps de serrure à la distribution nationale, SOFICLEF conçoit et produit depuis Boumerdès les composants qui ferment portes, coffres et bâtiments.",
+      "heroTitle": "Trente ans de <0>serrurerie industrielle</0> algérienne",
+      "identity": {
+        "certification": "Certification",
+        "eyebrow": "Carte d’identité",
+        "foundedCity": "Ville de création",
+        "foundedYear": "Année de création",
+        "generalManager": "Direction générale",
+        "headquarters": "Siège",
+        "legalForm": "Forme juridique",
+        "legalName": "Raison sociale",
+        "status": "Statut",
+        "title": "Les faits, sans emballage"
+      },
+      "loadFailed": "Les informations de l’entreprise ne sont pas disponibles pour le moment.",
+      "milestones": {
+        "eyebrow": "Repères",
+        "m1994Body": "SOFICLEF est fondée comme SARL, sur les solutions d’ouverture et de verrouillage.",
+        "m1994Title": "Création à Alger",
+        "m2017Body": "Le système de management de la qualité est certifié ISO 9001:2015 en septembre.",
+        "m2017Title": "Certification ISO 9001",
+        "mTodayBody": "Le statut OEA reconnaît la fiabilité de la chaîne logistique et douanière.",
+        "mTodayTitle": "Opérateur Économique Agréé",
+        "title": "Quelques dates",
+        "today": "Aujourd’hui"
+      },
+      "mission": "Mission",
+      "tradesTitle": "Produire, distribuer, livrer",
+      "vision": "Vision"
+    },
+    "footer": {
+      "discover": "Découvrir",
+      "employeeArea": "Espace collaborateur",
+      "headquarters": "Siège",
+      "headquartersAddress": "Si Mustapha\nBoumerdès, Algérie",
+      "quality": "Qualité",
+      "qualityDetail": "ISO 9001:2015\nOpérateur Économique Agréé",
+      "rights": "© {{year}} SOFICLEF SARL — Tous droits réservés.",
+      "tagline": "Solutions d’ouverture et de verrouillage, fabriquées en Algérie depuis 1994."
+    },
+    "home": {
+      "capabilities": {
+        "journeyBody": "De l’affectation à la fin de la période d’essai, chaque étape a une échéance et un responsable. Les retards se voient avant l’échéance, pas après.",
+        "journeyTitle": "Un parcours suivi",
+        "skillsBody": "Une matrice par poste, comparée au niveau réel du collaborateur. Les écarts nourrissent le plan de formation plutôt qu’un classeur.",
+        "skillsTitle": "Des compétences évaluées",
+        "structureBody": "Chaque poste est rattaché à un responsable, chaque responsable à une structure. L’organigramme n’est pas un document annuel : il est la source que lisent les affectations et les évaluations.",
+        "structureLink": "Voir l’organigramme",
+        "structureTitle": "Une structure lisible"
+      },
+      "ctaLede": "Votre espace collaborateur réunit votre parcours, vos documents, vos formations et votre organigramme.",
+      "ctaLink": "Accéder à mon espace",
+      "ctaTitle": "Vous rejoignez SOFICLEF ?",
+      "cursorDiscover": "Découvrir",
+      "cursorView": "Voir",
+      "eyebrow": "SOFICLEF SARL · depuis 1994",
+      "heroCtaCompany": "Découvrir l’entreprise",
+      "heroCtaOrg": "Notre organisation",
+      "heroLedeFallback": "Des solutions alliant design, fiabilité et confort — conçues, fabriquées et distribuées depuis Boumerdès.",
+      "heroTitle": "Protéger la vie et les biens,<0> pièce après pièce.</0>",
+      "platform": {
+        "eyebrow": "La plateforme d’intégration",
+        "lede": "SOFICLEF accompagne chaque collaborateur de son affectation jusqu’à la fin de sa période d’essai. Le parcours est le même pour tous ; ce qu’il contient dépend du poste.",
+        "title": "Une intégration suivie, pas seulement lancée."
+      },
+      "stats": {
+        "certifiedSince": "Certifiée depuis 2017",
+        "foundedIn": "Fondée à {{city}}",
+        "trustedOperator": "Opérateur Économique Agréé",
+        "trustedOperatorAcronym": "OEA",
+        "warehouse": "Entrepôt logistique"
+      },
+      "tradesEyebrow": "Nos métiers",
+      "tradesTitle": "Trois pôles, une même exigence de fiabilité.",
+      "valuesEyebrow": "Ce qui nous tient",
+      "valuesTitle": "Nos valeurs",
+      "visionEyebrow": "Notre vision",
+      "visionFallback": "Devenir le leader national dans les solutions d’ouverture et de verrouillage innovantes.",
+      "visionQuote": "« {{vision}} »",
+      "visionRole": "Directeur Général"
+    },
+    "links": {
+      "theCompany": "L’entreprise",
+      "ourStrategy": "Notre stratégie",
+      "viewOrgChart": "Voir l’organigramme"
+    },
+    "marks": {
+      "key": "Clé SOFICLEF, marque graphique",
+      "lockKey": "Serrure et clé, marque graphique de SOFICLEF",
+      "takeover": "SOFICLEF en un mot"
+    },
+    "org": {
+      "chartEyebrow": "Vue d’ensemble",
+      "chartLede": "Cliquez sur une entité pour lire son périmètre. Le schéma se fait défiler horizontalement sur les niveaux les plus larges.",
+      "chartTitle": "La structure, du sommet au terrain",
+      "ctaLede": "En interne, chaque poste de cet organigramme porte une fiche, un responsable et un parcours d’intégration.",
+      "ctaTitle": "Cette structure vit au quotidien",
+      "detailEyebrow": "Le détail",
+      "detailTitle": "Ce que fait chaque entité",
+      "eyebrow": "Organisation",
+      "heroLede": "Des structures opérationnelles, des unités de production et des cellules fonctionnelles, chacune avec un périmètre défini. C’est cette même structure que lisent les affectations et les parcours d’intégration en interne.",
+      "heroTitle": "L’organigramme de <0>SOFICLEF</0>",
+      "loadFailed": "L’organigramme n’est pas disponible pour le moment.",
+      "loading": "Chargement de l’organigramme…",
+      "notPublished": "La structure n’est pas encore publiée.",
+      "types": {
+        "celluleHelp": "Les fonctions transverses de support.",
+        "celluleLabel": "Cellules fonctionnelles",
+        "directionHelp": "Le sommet de la structure.",
+        "directionLabel": "Direction",
+        "structureHelp": "Les grands ensembles opérationnels.",
+        "structureLabel": "Structures",
+        "uniteProductionHelp": "Les ateliers, rattachés à une structure.",
+        "uniteProductionLabel": "Unités de production"
+      }
+    },
+    "strategy": {
+      "ctaLede": "Ces objectifs se déclinent dans les structures, unités et cellules de l’entreprise.",
+      "ctaTitle": "Une stratégie portée par une structure",
+      "eyebrowFallback": "Plan stratégique",
+      "heroTitle": "Où nous allons, et <0>comment nous y allons</0>",
+      "loadFailed": "La stratégie n’est pas disponible pour le moment.",
+      "loading": "Chargement de la stratégie…",
+      "marketsEyebrow": "Nos marchés",
+      "marketsLede": "Pour chaque marché servi, une approche, une cible de part de marché et une cible de chiffre d’affaires.",
+      "marketsTitle": "Un objectif par marché",
+      "marketShare": "Part de marché",
+      "projectsEyebrow": "Projets structurants",
+      "projectsTitle": "Les chantiers en cours",
+      "revenue": "Chiffre d’affaires"
+    },
+    "takeover": {
+      "body": "Depuis 1994, nous concevons et fabriquons en Algérie les serrures, poignées et coffres qui protègent la vie et les biens — du corps de serrure à la distribution nationale."
+    }
+  }
+}

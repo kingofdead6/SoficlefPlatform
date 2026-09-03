@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { adminApi } from '../../../api/admin.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -7,59 +8,41 @@ import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
 import Toggle from '../../../components/ui/Toggle.jsx';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const FIELD =
   'w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
-const MODE_META = {
-  PRODUCTION: {
-    labelFr: 'Production',
-    pill: 'bg-status-green/10 text-status-green',
-    meaningFr: 'Le connecteur doit s’adresser au système réel.',
-  },
-  MOCK: {
-    labelFr: 'Simulé',
-    pill: 'bg-red-brand/10 text-red-brand',
-    meaningFr: 'Le connecteur répond avec des données de démonstration, volontairement.',
-  },
-};
-
-const ENV_META = {
-  production: 'Une adresse est configurée dans l’environnement du serveur.',
-  mock: 'La variable d’environnement vaut « mock ».',
-  unconfigured: 'Aucune adresse n’est configurée dans l’environnement du serveur.',
+const MODE_PILL = {
+  PRODUCTION: 'bg-status-green/10 text-status-green',
+  MOCK: 'bg-red-brand/10 text-red-brand',
 };
 
 /**
  * Which config fields each connector offers. Deliberately a small, explicit map rather than
- * a free-form JSON editor: an administrator setting up SMTP should see "hôte" and "port",
+ * a free-form JSON editor: an administrator setting up SMTP should see "host" and "port",
  * not be asked to hand-write a JSON object whose keys nobody validates. A connector absent
- * from this map is still listed and switchable — it simply has no fields yet.
+ * from this map is still listed and switchable — it simply has no fields yet. Field labels
+ * live under admin.integrations.fields.* in the catalogues.
  */
 const CONFIG_FIELDS = {
   smtp: [
-    { key: 'host', labelFr: 'Hôte SMTP', placeholder: 'smtp.soficlef.dz' },
-    { key: 'port', labelFr: 'Port', placeholder: '587' },
-    { key: 'from', labelFr: 'Expéditeur', placeholder: 'no-reply@soficlef.dz' },
+    { key: 'host', labelKey: 'smtp.host', placeholder: 'smtp.soficlef.dz' },
+    { key: 'port', labelKey: 'smtp.port', placeholder: '587' },
+    { key: 'from', labelKey: 'smtp.from', placeholder: 'no-reply@soficlef.dz' },
   ],
   entra: [
-    { key: 'tenantId', labelFr: 'Identifiant du locataire', placeholder: 'Aucun locataire disponible' },
-    { key: 'clientId', labelFr: 'Identifiant de l’application', placeholder: '' },
+    { key: 'tenantId', labelKey: 'entra.tenantId', placeholderKey: 'entra.tenantIdPlaceholder' },
+    { key: 'clientId', labelKey: 'entra.clientId', placeholder: '' },
   ],
-  hrApi: [{ key: 'baseUrl', labelFr: 'URL de base du SIRH', placeholder: 'https://sirh.example/api' }],
-  directory: [{ key: 'path', labelFr: 'Chemin du partage', placeholder: '\\\\serveur\\partage' }],
-  storage: [{ key: 'driver', labelFr: 'Pilote de stockage', placeholder: 's3 | local' }],
+  hrApi: [{ key: 'baseUrl', labelKey: 'hrApi.baseUrl', placeholder: 'https://sirh.example/api' }],
+  directory: [{ key: 'path', labelKey: 'directory.path', placeholder: '\\\\serveur\\partage' }],
+  storage: [{ key: 'driver', labelKey: 'storage.driver', placeholder: 's3 | local' }],
   ai: [
-    { key: 'endpoint', labelFr: 'Adresse du fournisseur', placeholder: 'https://…' },
-    { key: 'model', labelFr: 'Modèle', placeholder: '' },
+    { key: 'endpoint', labelKey: 'ai.endpoint', placeholder: 'https://…' },
+    { key: 'model', labelKey: 'ai.model', placeholder: '' },
   ],
-};
-
-const TEST_REASON_LABELS = {
-  not_configured: 'Rien à joindre',
-  unreachable: 'Injoignable',
-  resolved: 'Nom résolu',
 };
 
 /**
@@ -82,6 +65,7 @@ const TEST_REASON_LABELS = {
  * always returns "connexion réussie" only ever tests itself.
  */
 export default function IntegrationsPage() {
+  const { t, i18n } = useTranslation();
   const [connectors, setConnectors] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -100,11 +84,11 @@ export default function IntegrationsPage() {
       setSummary(payload.summary ?? null);
       setError(null);
     } catch {
-      setError('Impossible de charger les connecteurs.');
+      setError(t('admin.integrations.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -128,9 +112,7 @@ export default function IntegrationsPage() {
     if (
       next === 'PRODUCTION' &&
       connector.envMode !== 'production' &&
-      !window.confirm(
-        `Passer « ${connector.definition.labelFr} » en production ? Aucune adresse n’est configurée dans l’environnement du serveur : le connecteur sera déclaré en production sans être raccordé.`,
-      )
+      !window.confirm(t('admin.integrations.confirmProductionSwitch', { label: connector.definition.labelFr }))
     ) {
       return;
     }
@@ -144,11 +126,14 @@ export default function IntegrationsPage() {
         tone: next === 'PRODUCTION' && connector.envMode !== 'production' ? 'warn' : 'ok',
         text:
           next === 'PRODUCTION' && connector.envMode !== 'production'
-            ? `« ${connector.definition.labelFr} » est déclaré en production, mais l’environnement du serveur ne lui donne aucune adresse.`
-            : `« ${connector.definition.labelFr} » est désormais en ${MODE_META[next].labelFr.toLowerCase()}.`,
+            ? t('admin.integrations.declaredProductionUnreachable', { label: connector.definition.labelFr })
+            : t('admin.integrations.switchedTo', {
+                label: connector.definition.labelFr,
+                mode: t(`admin.integrations.mode.${next.toLowerCase()}`).toLowerCase(),
+              }),
       });
     } catch (err) {
-      setNotice({ tone: 'warn', text: err.body?.message ?? 'Le changement de mode a échoué.' });
+      setNotice({ tone: 'warn', text: err.body?.message ?? t('admin.integrations.toggleFailed') });
     } finally {
       setBusyKey(null);
     }
@@ -165,9 +150,9 @@ export default function IntegrationsPage() {
         return next;
       });
       await load();
-      setNotice({ tone: 'ok', text: 'Configuration enregistrée.' });
+      setNotice({ tone: 'ok', text: t('admin.integrations.configSaved') });
     } catch (err) {
-      setNotice({ tone: 'warn', text: err.body?.message ?? 'L’enregistrement a échoué.' });
+      setNotice({ tone: 'warn', text: err.body?.message ?? t('admin.integrations.saveFailed') });
     } finally {
       setBusyKey(null);
     }
@@ -186,8 +171,8 @@ export default function IntegrationsPage() {
         [connector.key]: {
           ok: false,
           reason: 'error',
-          detailFr: err.body?.message ?? 'Le test n’a pas pu être exécuté.',
-          checkedFr: 'Aucun test effectué.',
+          detailFr: err.body?.message ?? t('admin.integrations.testFailedFallback'),
+          checkedFr: t('admin.integrations.testNoneRun'),
         },
       }));
     } finally {
@@ -195,18 +180,18 @@ export default function IntegrationsPage() {
     }
   }
 
-  if (loading) return <PageLoading label="Chargement des connecteurs…" />;
+  if (loading) return <PageLoading label={t('admin.integrations.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Administration"
-        title="Intégrations"
-        subtitle="Ce à quoi la plateforme est raccordée, ce qu’elle est censée l’être, et l’écart entre les deux."
+        eyebrow={t('admin.integrations.eyebrow')}
+        title={t('admin.integrations.title')}
+        subtitle={t('admin.integrations.subtitle')}
         actions={
           <button type="button" onClick={load} className={SECONDARY_BUTTON}>
-            Actualiser
+            {t('admin.integrations.refresh')}
           </button>
         }
       />
@@ -217,10 +202,10 @@ export default function IntegrationsPage() {
         animate="visible"
         className="mb-6 grid gap-4 sm:grid-cols-3"
       >
-        <Tile label="Déclarés en production" value={summary?.production ?? 0} />
-        <Tile label="En mode simulé" value={summary?.mock ?? 0} />
+        <Tile label={t('admin.integrations.tiles.production')} value={summary?.production ?? 0} />
+        <Tile label={t('admin.integrations.tiles.mock')} value={summary?.mock ?? 0} />
         <Tile
-          label="Déclarés sans être raccordés"
+          label={t('admin.integrations.tiles.mismatched')}
           value={summary?.mismatched ?? 0}
           tone={(summary?.mismatched ?? 0) > 0 ? 'red' : undefined}
         />
@@ -246,14 +231,8 @@ export default function IntegrationsPage() {
 
       {mismatched.length > 0 && (
         <div className="mb-6 rounded-app border border-status-red/30 bg-status-red/5 p-4 text-sm text-status-red">
-          <p className="font-medium">
-            {mismatched.length} connecteur(s) déclarés en production sans adresse dans
-            l’environnement du serveur.
-          </p>
-          <p className="mt-1">
-            Le mode enregistré ici est une intention. Le raccordement, lui, se fait par
-            variable d’environnement au déploiement : tant qu’elle est vide, rien ne part.
-          </p>
+          <p className="font-medium">{t('admin.integrations.mismatchedWarning', { count: mismatched.length })}</p>
+          <p className="mt-1">{t('admin.integrations.mismatchedWarningBody')}</p>
         </div>
       )}
 
@@ -264,7 +243,8 @@ export default function IntegrationsPage() {
         className="space-y-3"
       >
         {connectors.map((connector) => {
-          const meta = MODE_META[connector.mode] ?? MODE_META.MOCK;
+          const modeKey = connector.mode === 'PRODUCTION' ? 'production' : 'mock';
+          const pill = MODE_PILL[connector.mode] ?? MODE_PILL.MOCK;
           const fields = CONFIG_FIELDS[connector.key] ?? [];
           const open = expanded === connector.key;
           const test = tests[connector.key];
@@ -277,21 +257,24 @@ export default function IntegrationsPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-medium text-text">{connector.definition.labelFr}</h2>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${meta.pill}`}>
-                      {meta.labelFr}
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pill}`}>
+                      {t(`admin.integrations.mode.${modeKey}`)}
                     </span>
                     {connector.envMismatch && (
                       <span className="rounded-full bg-status-red/10 px-2 py-0.5 text-xs font-medium text-status-red">
-                        Non raccordé
+                        {t('admin.integrations.notConfigured')}
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 text-sm text-text-dim">{meta.meaningFr}</p>
+                  <p className="mt-1 text-sm text-text-dim">
+                    {t(`admin.integrations.mode.${modeKey}Meaning`)}
+                  </p>
                   {connector.mode === 'MOCK' && (
                     <p className="mt-1 text-sm text-text-dim">{connector.definition.consequenceFr}</p>
                   )}
                   <p className="mt-2 text-xs text-text-dim">
-                    Environnement : {ENV_META[connector.envMode] ?? connector.envMode}{' '}
+                    {t('admin.integrations.env.label')}{' '}
+                    {t(`admin.integrations.env.${connector.envMode}`, connector.envMode)}{' '}
                     <code className="font-mono text-[10px]">{connector.definition.envVar}</code>
                   </p>
                 </div>
@@ -304,10 +287,10 @@ export default function IntegrationsPage() {
                     checked={connector.mode === 'PRODUCTION'}
                     disabled={busyKey === connector.key}
                     onChange={() => handleToggleMode(connector)}
-                    label={`Basculer ${connector.definition.labelFr}`}
+                    label={t('admin.integrations.toggleLabel', { label: connector.definition.labelFr })}
                   />
                   <span className="text-[10px] uppercase tracking-wide text-text-dim">
-                    Simulé ↔ Production
+                    {t('admin.integrations.toggleCaption')}
                   </span>
 
                   <div className="flex gap-3 text-xs">
@@ -317,14 +300,14 @@ export default function IntegrationsPage() {
                       onClick={() => handleTest(connector)}
                       className="text-red-brand hover:underline disabled:opacity-60"
                     >
-                      Tester
+                      {t('admin.integrations.test')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setExpanded(open ? null : connector.key)}
                       className="text-text-dim transition-colors hover:text-red-brand hover:underline"
                     >
-                      {open ? 'Fermer' : 'Configurer'}
+                      {open ? t('admin.integrations.close') : t('admin.integrations.configure')}
                     </button>
                   </div>
                 </div>
@@ -347,7 +330,9 @@ export default function IntegrationsPage() {
                       }`}
                     >
                       <p className="font-medium">
-                        {test.ok ? 'Vérification effectuée' : TEST_REASON_LABELS[test.reason] ?? 'Échec'}
+                        {test.ok
+                          ? t('admin.integrations.testOutcome.ok')
+                          : t(`admin.integrations.testReasons.${test.reason}`, t('admin.integrations.testOutcome.failed'))}
                       </p>
                       <p className="mt-1">{test.detailFr}</p>
                       <p className="mt-1 text-xs opacity-80">{test.checkedFr}</p>
@@ -368,21 +353,18 @@ export default function IntegrationsPage() {
                   >
                     <div className="mt-4 border-t border-border pt-4">
                       {fields.length === 0 ? (
-                        <p className="text-sm text-text-dim">
-                          Ce connecteur n’a pas encore de paramètres à saisir : seul son mode
-                          est réglable ici.
-                        </p>
+                        <p className="text-sm text-text-dim">{t('admin.integrations.noFieldsYet')}</p>
                       ) : (
                         <>
                           <div className="grid gap-3 sm:grid-cols-3">
                             {fields.map((field) => (
                               <div key={field.key}>
                                 <label className="mb-1 block text-sm font-medium text-text">
-                                  {field.labelFr}
+                                  {t(`admin.integrations.fields.${field.labelKey}`)}
                                 </label>
                                 <input
                                   value={draft[field.key] ?? ''}
-                                  placeholder={field.placeholder}
+                                  placeholder={field.placeholderKey ? t(`admin.integrations.fields.${field.placeholderKey}`) : field.placeholder}
                                   onChange={(e) => setDraftField(connector.key, field.key, e.target.value)}
                                   className={FIELD}
                                 />
@@ -396,7 +378,7 @@ export default function IntegrationsPage() {
                               onClick={() => handleSaveConfig(connector)}
                               className={PRIMARY_BUTTON}
                             >
-                              {busyKey === connector.key ? 'Enregistrement…' : 'Enregistrer'}
+                              {busyKey === connector.key ? t('common.states.saving') : t('common.actions.save')}
                             </button>
                           </div>
                         </>
@@ -404,8 +386,8 @@ export default function IntegrationsPage() {
 
                       {connector.lastTestedAt && (
                         <p className="mt-3 text-xs text-text-dim">
-                          Dernier test : {new Date(connector.lastTestedAt).toLocaleString('fr-FR')} —{' '}
-                          {connector.lastTestOk ? 'vérification concluante' : 'sans succès'}.
+                          {t('admin.integrations.lastTested', { date: new Date(connector.lastTestedAt).toLocaleString(localeOf(i18n)) })}{' '}
+                          {connector.lastTestOk ? t('admin.integrations.lastTestOk') : t('admin.integrations.lastTestFailed')}.
                         </p>
                       )}
                     </div>
@@ -418,25 +400,17 @@ export default function IntegrationsPage() {
       </motion.div>
 
       {connectors.length === 0 && (
-        <EmptyState title="Aucun connecteur déclaré" detail="Le catalogue des connecteurs est vide." muted />
+        <EmptyState title={t('admin.integrations.empty')} detail={t('admin.integrations.emptyDetail')} muted />
       )}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <div className="rounded-app border border-dashed border-border bg-surface-2/60 p-4">
-          <p className="text-sm font-medium text-text-muted">Ce que le commutateur fait</p>
-          <p className="mt-1 text-sm text-text-dim">
-            Il enregistre durablement le mode voulu pour chaque connecteur, avec une entrée
-            dans le journal d’audit. C’est l’intention déclarée par l’administration.
-          </p>
+          <p className="text-sm font-medium text-text-muted">{t('admin.integrations.whatSwitchDoes.title')}</p>
+          <p className="mt-1 text-sm text-text-dim">{t('admin.integrations.whatSwitchDoes.body')}</p>
         </div>
         <div className="rounded-app border border-dashed border-border bg-surface-2/60 p-4">
-          <p className="text-sm font-medium text-text-muted">Ce qu’il ne fait pas</p>
-          <p className="mt-1 text-sm text-text-dim">
-            Il ne raccorde aucun système : l’adresse réelle vient de l’environnement du
-            serveur, fixé au déploiement. Aucun locataire Entra ID, aucun SIRH et aucun
-            relais SMTP ne répond à ce déploiement — le bouton « Tester » le dit
-            explicitement plutôt que d’afficher un vert de complaisance.
-          </p>
+          <p className="text-sm font-medium text-text-muted">{t('admin.integrations.whatSwitchDoesNot.title')}</p>
+          <p className="mt-1 text-sm text-text-dim">{t('admin.integrations.whatSwitchDoesNot.body')}</p>
         </div>
       </div>
     </div>

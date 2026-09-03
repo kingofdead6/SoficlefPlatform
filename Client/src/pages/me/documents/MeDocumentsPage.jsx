@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { documentsApi } from '../../../api/documents.js';
 import { ApiError } from '../../../api/client.js';
@@ -10,6 +11,7 @@ import { PageLoading, PageError, EmptyState } from '../../../components/manager/
 import { useGsapContext } from '../../../lib/motion/useGsapContext.js';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
 import { cn } from '../../../lib/cn.js';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 
@@ -19,41 +21,18 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
  *
  * Slug-matching rather than a schema column: `Document` has no category field, and adding
  * one would mean a migration whose only consumer is this page's headings. A document whose
- * slug matches nothing falls into "Autres documents" rather than disappearing — an
+ * slug matches nothing falls into "Other documents" rather than disappearing — an
  * unclassified document is still a document the recruit must be able to open.
+ *
+ * The regexes stay French-only on purpose: they match `slug` and `titleFr`, which are
+ * database content, not UI text. Translating them would stop them matching anything.
  */
 const FAMILIES = [
-  {
-    id: 'welcome',
-    labelFr: 'Livret d’accueil',
-    detailFr: 'Ce qu’il faut savoir en arrivant : l’entreprise, ses sites, ses usages.',
-    match: /accueil|welcome|livret|bienvenue/i,
-  },
-  {
-    id: 'rules',
-    labelFr: 'Règlement intérieur',
-    detailFr: 'Les règles applicables à tous les collaborateurs.',
-    match: /reglement|règlement|interieur|intérieur|discipline/i,
-  },
-  {
-    id: 'procedures',
-    labelFr: 'Procédures RH et qualité',
-    detailFr: 'Congés, notes de frais, procédures du système de management de la qualité.',
-    match: /procedure|procédure|rh|qualite|qualité|smq|process/i,
-  },
-  {
-    id: 'it',
-    labelFr: 'Charte informatique',
-    detailFr: 'L’usage des équipements, des comptes et des données de l’entreprise.',
-    match: /informatique|charte|it|si|systeme-information|cyber/i,
-  },
+  { id: 'welcome', match: /accueil|welcome|livret|bienvenue/i },
+  { id: 'rules', match: /reglement|règlement|interieur|intérieur|discipline/i },
+  { id: 'procedures', match: /procedure|procédure|rh|qualite|qualité|smq|process/i },
+  { id: 'it', match: /informatique|charte|it|si|systeme-information|cyber/i },
 ];
-
-const OTHERS = {
-  id: 'others',
-  labelFr: 'Autres documents',
-  detailFr: 'Les documents publiés qui ne relèvent d’aucune des familles ci-dessus.',
-};
 
 /**
  * /app/me/documents — Documents (route guide §2.1, CHAIN/SITE).
@@ -80,13 +59,15 @@ export default function MeDocumentsPage() {
   const [filter, setFilter] = useState('ALL');
   const reduce = useReducedMotion();
   const scopeRef = useRef(null);
+  // Hooks run before the loading guard below, or the hook order changes between renders.
+  const { t, i18n } = useTranslation();
 
   const load = useCallback(async () => {
     try {
       const { data } = await documentsApi.mine();
       setDocuments(data);
     } catch {
-      setError('Impossible de charger la bibliothèque documentaire.');
+      setError('load');
     } finally {
       setLoading(false);
     }
@@ -121,14 +102,26 @@ export default function MeDocumentsPage() {
         claimed.add(doc.id);
         return true;
       });
-      return { ...family, documents: docs };
+      return {
+        id: family.id,
+        label: t(`me.documents.families.${family.id}.label`),
+        detail: t(`me.documents.families.${family.id}.detail`),
+        documents: docs,
+      };
     });
 
     const rest = documents.filter((doc) => !claimed.has(doc.id));
-    if (rest.length > 0) families.push({ ...OTHERS, documents: rest });
+    if (rest.length > 0) {
+      families.push({
+        id: 'others',
+        label: t('me.documents.families.others.label'),
+        detail: t('me.documents.families.others.detail'),
+        documents: rest,
+      });
+    }
 
     return families.filter((family) => family.documents.length > 0);
-  }, [documents]);
+  }, [documents, t]);
 
   const summary = useMemo(() => {
     const readable = documents.filter((doc) => doc.availability === 'AVAILABLE');
@@ -148,37 +141,37 @@ export default function MeDocumentsPage() {
     try {
       await documentsApi.acknowledge(doc.id);
       await load();
-      setNotice({ tone: 'ok', textFr: `« ${doc.titleFr} » : lecture confirmée.` });
+      setNotice({ tone: 'ok', text: t('me.documents.acknowledgeOk', { title: doc.titleFr }) });
     } catch (err) {
       setNotice({
         tone: 'error',
-        textFr:
+        text:
           err instanceof ApiError && err.body?.message
             ? err.body.message
-            : "L'enregistrement de votre confirmation a échoué.",
+            : t('me.documents.acknowledgeFailed'),
       });
     } finally {
       setBusyId(null);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement des documents…" />;
-  if (error) return <PageError message={error} />;
+  if (loading) return <PageLoading label={t('me.documents.loading')} />;
+  if (error) return <PageError message={t('me.documents.loadFailed')} />;
 
   const visibleGroups = filter === 'ALL' ? groups : groups.filter((group) => group.id === filter);
 
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Mon espace"
-        title="Mes documents"
-        subtitle="Les documents de référence à lire en arrivant. Confirmer votre lecture enregistre la date et l’heure ; les RH suivent ce point depuis leur bibliothèque."
+        eyebrow={t('me.eyebrow')}
+        title={t('me.documents.title')}
+        subtitle={t('me.documents.subtitle')}
       />
 
       {documents.length === 0 ? (
         <EmptyState
-          title="Aucun document publié"
-          detail="La bibliothèque documentaire est vide pour le moment."
+          title={t('me.documents.emptyTitle')}
+          detail={t('me.documents.emptyDetail')}
           muted
         />
       ) : (
@@ -189,10 +182,10 @@ export default function MeDocumentsPage() {
               tone={summary.percent >= 100 ? 'green' : summary.pending > 0 ? 'brand' : 'brand'}
             />
             <div className="grid flex-1 grid-cols-2 gap-6 sm:grid-cols-3">
-              <Figure label="Documents publiés" value={summary.total} />
-              <Figure label="Lectures confirmées" value={summary.acknowledged} />
+              <Figure label={t('me.documents.figures.published')} value={summary.total} />
+              <Figure label={t('me.documents.figures.acknowledged')} value={summary.acknowledged} />
               <Figure
-                label="En attente de vous"
+                label={t('me.documents.figures.pendingOnYou')}
                 value={Math.max(0, summary.readable - summary.acknowledged)}
                 tone={summary.readable - summary.acknowledged > 0 ? 'red' : undefined}
               />
@@ -200,7 +193,7 @@ export default function MeDocumentsPage() {
           </div>
 
           <div data-gsap="band" className="mb-6 flex flex-wrap gap-2 border-b border-border">
-            {[{ id: 'ALL', labelFr: 'Tous' }, ...groups].map((tab) => (
+            {[{ id: 'ALL', label: t('common.all') }, ...groups].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
@@ -212,7 +205,7 @@ export default function MeDocumentsPage() {
                     : 'border-transparent text-text-dim hover:text-text',
                 )}
               >
-                {tab.labelFr}
+                {tab.label}
                 {tab.documents ? ` (${tab.documents.length})` : ''}
               </button>
             ))}
@@ -231,7 +224,7 @@ export default function MeDocumentsPage() {
                     : 'border-status-red/40 bg-status-red/5 text-status-red',
                 )}
               >
-                {notice.textFr}
+                {notice.text}
               </motion.p>
             )}
           </AnimatePresence>
@@ -239,8 +232,8 @@ export default function MeDocumentsPage() {
           <div data-gsap="band" className="flex-1 space-y-10">
             {visibleGroups.map((group) => (
               <section key={group.id}>
-                <h2 className="font-display text-xl text-text">{group.labelFr}</h2>
-                <p className="mb-4 text-xs text-text-dim">{group.detailFr}</p>
+                <h2 className="font-display text-xl text-text">{group.label}</h2>
+                <p className="mb-4 text-xs text-text-dim">{group.detail}</p>
 
                 <motion.ul
                   variants={staggerContainer(0.05, 0.15)}
@@ -257,6 +250,8 @@ export default function MeDocumentsPage() {
                         onAcknowledge={() => acknowledge(doc)}
                         busy={busyId === doc.id}
                         reduce={reduce}
+                        t={t}
+                        locale={localeOf(i18n)}
                       />
                     </motion.li>
                   ))}
@@ -281,7 +276,7 @@ function Figure({ label, value, tone }) {
   );
 }
 
-function DocumentRow({ doc, open, onToggle, onAcknowledge, busy, reduce }) {
+function DocumentRow({ doc, open, onToggle, onAcknowledge, busy, reduce, t, locale }) {
   const readable = doc.availability === 'AVAILABLE' && Boolean(doc.url);
   const acknowledged = Boolean(doc.acknowledgedAt);
 
@@ -293,15 +288,15 @@ function DocumentRow({ doc, open, onToggle, onAcknowledge, busy, reduce }) {
             <h3 className="font-medium text-text">{doc.titleFr}</h3>
             {acknowledged ? (
               <span className="rounded-full bg-status-green/10 px-2 py-0.5 text-xs font-medium text-status-green">
-                Lu et accepté
+                {t('me.documents.acknowledged')}
               </span>
             ) : readable ? (
               <span className="rounded-full bg-red-brand/10 px-2 py-0.5 text-xs font-medium text-red-brand">
-                À lire
+                {t('me.documents.toRead')}
               </span>
             ) : (
               <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">
-                Pas encore disponible
+                {t('me.documents.pending')}
               </span>
             )}
           </div>
@@ -310,15 +305,13 @@ function DocumentRow({ doc, open, onToggle, onAcknowledge, busy, reduce }) {
 
           {acknowledged && (
             <p className="mt-1 font-mono text-[11px] text-text-dim">
-              Confirmé le {new Date(doc.acknowledgedAt).toLocaleString('fr-FR')}
+              {t('me.documents.acknowledgedAt', {
+                date: new Date(doc.acknowledgedAt).toLocaleString(locale),
+              })}
             </p>
           )}
 
-          {!readable && (
-            <p className="mt-1 text-xs text-text-dim">
-              Aucun fichier n’est encore attaché à ce document. Il ne peut donc pas être lu ni confirmé.
-            </p>
-          )}
+          {!readable && <p className="mt-1 text-xs text-text-dim">{t('me.documents.noFile')}</p>}
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -329,7 +322,7 @@ function DocumentRow({ doc, open, onToggle, onAcknowledge, busy, reduce }) {
                 onClick={onToggle}
                 className="rounded-app border border-border px-3 py-1.5 text-xs font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
               >
-                {open ? 'Fermer' : 'Lire'}
+                {open ? t('me.documents.close') : t('me.documents.read')}
               </button>
               <a
                 href={doc.url}
@@ -337,7 +330,7 @@ function DocumentRow({ doc, open, onToggle, onAcknowledge, busy, reduce }) {
                 rel="noreferrer"
                 className="rounded-app border border-border px-3 py-1.5 text-xs font-medium text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
               >
-                Ouvrir dans un onglet
+                {t('me.documents.openInTab')}
               </a>
             </>
           )}
@@ -348,7 +341,7 @@ function DocumentRow({ doc, open, onToggle, onAcknowledge, busy, reduce }) {
               onClick={onAcknowledge}
               className="rounded-app bg-red-brand px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
             >
-              {busy ? 'Enregistrement…' : 'J’ai lu et j’accepte'}
+              {busy ? t('common.states.saving') : t('me.documents.acknowledgeButton')}
             </button>
           )}
         </div>
@@ -368,10 +361,7 @@ function DocumentRow({ doc, open, onToggle, onAcknowledge, busy, reduce }) {
               src={doc.url}
               className="h-[70vh] w-full bg-surface-2"
             />
-            <p className="px-4 py-2 text-[11px] text-text-dim">
-              Si le document ne s’affiche pas ici (format non pris en charge par le navigateur), utilisez « Ouvrir
-              dans un onglet ».
-            </p>
+            <p className="px-4 py-2 text-[11px] text-text-dim">{t('me.documents.iframeFallback')}</p>
           </motion.div>
         )}
       </AnimatePresence>

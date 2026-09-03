@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { surveysApi } from '../../api/surveys.js';
 
-const INDICATOR_LABELS = {
-  WELCOME_QUALITY: "Qualité de l'accueil",
-  SUPPORT_LEVEL: 'Accompagnement',
-  ROLE_CLARITY: 'Clarté du rôle',
-  MANAGER_RELATIONSHIP: 'Relation avec le manager',
-  WORKING_CONDITIONS: 'Conditions de travail',
+/** API indicator codes → catalogue keys. The codes themselves come from the server. */
+const INDICATOR_LABEL_KEYS = {
+  WELCOME_QUALITY: 'surveys.indicators.welcomeQuality',
+  SUPPORT_LEVEL: 'surveys.indicators.supportLevel',
+  ROLE_CLARITY: 'surveys.indicators.roleClarity',
+  MANAGER_RELATIONSHIP: 'surveys.indicators.managerRelationship',
+  WORKING_CONDITIONS: 'surveys.indicators.workingConditions',
 };
 
 /** The aggregate satisfaction report — counts and averages only, never individual answers. */
 export default function SurveysReportPage() {
+  const { t } = useTranslation();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,42 +25,49 @@ export default function SurveysReportPage() {
         const { data } = await surveysApi.satisfaction();
         setSummary(data);
       } catch {
-        setError('Impossible de charger les enquêtes de satisfaction.');
+        setError(t('surveys.loadFailed'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
-  if (loading) return <div className="p-6 text-text-dim">Chargement…</div>;
+  if (loading) return <div className="p-6 text-text-dim">{t('common.states.loading')}</div>;
   if (error) return <div className="p-6 text-status-red">{error}</div>;
 
   return (
     <div>
-      <h1 className="mb-1 font-display text-2xl text-red-deep">Enquêtes de satisfaction</h1>
-      <p className="mb-6 text-text-dim">Résultats agrégés — aucune réponse individuelle n'est affichée ici.</p>
+      <h1 className="mb-1 font-display text-2xl text-red-deep">{t('surveys.title')}</h1>
+      <p className="mb-6 text-text-dim">{t('surveys.subtitle')}</p>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label="Score" value={summary.score === null ? '—' : `${summary.score}%`} />
-        <StatTile label="Taux de réponse" value={summary.responseRate === null ? '—' : `${summary.responseRate}%`} />
-        <StatTile label="Enquêtes envoyées" value={summary.roundsIssued} />
-        <StatTile label="En retard" value={summary.roundsOverdue} />
+        <StatTile label={t('surveys.stats.score')} value={summary.score === null ? '—' : `${summary.score}%`} />
+        <StatTile
+          label={t('surveys.stats.responseRate')}
+          value={summary.responseRate === null ? '—' : `${summary.responseRate}%`}
+        />
+        <StatTile label={t('surveys.stats.roundsIssued')} value={summary.roundsIssued} />
+        <StatTile label={t('surveys.stats.roundsOverdue')} value={summary.roundsOverdue} />
       </div>
 
       <div className="mb-6 overflow-hidden rounded-app border border-border bg-surface shadow-app">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-              <th className="px-4 py-2 font-medium">Indicateur</th>
-              <th className="px-4 py-2 font-medium">Moyenne</th>
-              <th className="px-4 py-2 font-medium">Score</th>
-              <th className="px-4 py-2 font-medium">Réponses</th>
+              <th className="px-4 py-2 font-medium">{t('surveys.columns.indicator')}</th>
+              <th className="px-4 py-2 font-medium">{t('surveys.columns.average')}</th>
+              <th className="px-4 py-2 font-medium">{t('surveys.stats.score')}</th>
+              <th className="px-4 py-2 font-medium">{t('surveys.columns.responses')}</th>
             </tr>
           </thead>
           <tbody>
             {summary.indicators.map((indicator) => (
               <tr key={indicator.indicator} className="border-b border-border last:border-0">
-                <td className="px-4 py-2 text-text">{INDICATOR_LABELS[indicator.indicator] ?? indicator.indicator}</td>
+                <td className="px-4 py-2 text-text">
+                  {INDICATOR_LABEL_KEYS[indicator.indicator]
+                    ? t(INDICATOR_LABEL_KEYS[indicator.indicator])
+                    : indicator.indicator}
+                </td>
                 <td className="px-4 py-2 text-text-dim">{indicator.average ?? '—'}</td>
                 <td className="px-4 py-2 text-text-dim">{indicator.percent === null ? '—' : `${indicator.percent}%`}</td>
                 <td className="px-4 py-2 text-text-dim">{indicator.responses}</td>
@@ -71,15 +81,15 @@ export default function SurveysReportPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-              <th className="px-4 py-2 font-medium">Jalon</th>
-              <th className="px-4 py-2 font-medium">Score</th>
-              <th className="px-4 py-2 font-medium">Réponses</th>
+              <th className="px-4 py-2 font-medium">{t('surveys.columns.milestone')}</th>
+              <th className="px-4 py-2 font-medium">{t('surveys.stats.score')}</th>
+              <th className="px-4 py-2 font-medium">{t('surveys.columns.responses')}</th>
             </tr>
           </thead>
           <tbody>
             {summary.byMilestone.map((milestone) => (
               <tr key={milestone.dayOffset} className="border-b border-border last:border-0">
-                <td className="px-4 py-2 text-text">J+{milestone.dayOffset}</td>
+                <td className="px-4 py-2 text-text">{t('surveys.dayOffset', { days: milestone.dayOffset })}</td>
                 <td className="px-4 py-2 text-text-dim">{milestone.score === null ? '—' : `${milestone.score}%`}</td>
                 <td className="px-4 py-2 text-text-dim">{milestone.answered}</td>
               </tr>

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 /**
  * The key, treated as a physical object rather than a flat mark.
@@ -36,6 +37,7 @@ function KeyShape({ fill, opacity = 1 }) {
 }
 
 export default function KeyStage({ className = '' }) {
+  const { t } = useTranslation();
   const reduce = useReducedMotion();
   const stageRef = useRef(null);
 
@@ -117,7 +119,7 @@ export default function KeyStage({ className = '' }) {
 
       <motion.div
         role="img"
-        aria-label="Clé SOFICLEF, marque graphique"
+        aria-label={t('public.marks.key')}
         style={
           reduce
             ? undefined

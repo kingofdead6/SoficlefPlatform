@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../../api/onboarding.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -13,6 +14,7 @@ const SEVERITY_STYLES = {
 };
 
 export default function RecruitsPage() {
+  const { t } = useTranslation();
   const [recruits, setRecruits] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,22 +28,22 @@ export default function RecruitsPage() {
         setRecruits(data);
         setAlerts(a ?? []);
       } catch {
-        setError('Impossible de charger les nouvelles recrues.');
+        setError(t('manager.recruits.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
-  if (loading) return <PageLoading label="Chargement des recrues…" />;
+  if (loading) return <PageLoading label={t('manager.recruits.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Manager"
-        title="Nouvelles recrues"
-        subtitle="Les collaborateurs en intégration dans votre périmètre."
+        eyebrow={t('manager.eyebrow')}
+        title={t('manager.recruits.title')}
+        subtitle={t('manager.recruits.subtitle')}
       />
 
       {alerts.length > 0 && (
@@ -84,9 +86,9 @@ export default function RecruitsPage() {
             >
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="font-display text-lg text-text">{recruit.displayName}</h2>
-                <span className="text-xs text-text-muted">J+{recruit.dayNumber}</span>
+                <span className="text-xs text-text-muted">{t('manager.dayPlus', { count: recruit.dayNumber })}</span>
               </div>
-              <p className="mb-3 text-sm text-text-dim">{recruit.positionFr ?? 'Poste non renseigné'}</p>
+              <p className="mb-3 text-sm text-text-dim">{recruit.positionFr ?? t('manager.noPosition')}</p>
               <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-surface-2">
                 <motion.div
                   className="h-full bg-red-brand"
@@ -96,25 +98,31 @@ export default function RecruitsPage() {
                 />
               </div>
               <div className="mb-3 flex flex-wrap gap-3 text-xs text-text-dim">
-                <span>{recruit.done}/{recruit.total} étapes</span>
-                {recruit.overdue > 0 && <span className="text-status-red">{recruit.overdue} en retard</span>}
-                {recruit.blocked > 0 && <span className="text-status-red">{recruit.blocked} bloquée(s)</span>}
+                <span>{t('manager.recruits.stepsRatio', { done: recruit.done, total: recruit.total })}</span>
+                {recruit.overdue > 0 && (
+                  <span className="text-status-red">{t('manager.overdueCount', { count: recruit.overdue })}</span>
+                )}
+                {recruit.blocked > 0 && (
+                  <span className="text-status-red">{t('manager.blockedCount', { count: recruit.blocked })}</span>
+                )}
                 {recruit.evaluationsDue.length > 0 && (
-                  <span className="text-status-amber">{recruit.evaluationsDue.length} évaluation(s) à faire</span>
+                  <span className="text-status-amber">
+                    {t('manager.recruits.evaluationsDueCount', { count: recruit.evaluationsDue.length })}
+                  </span>
                 )}
               </div>
               <Link
                 to={`/app/manager/recruits/${recruit.userId}`}
                 className="text-sm font-medium text-red-brand hover:underline"
               >
-                Voir le dossier →
+                {t('manager.recruits.viewRecord')} →
               </Link>
             </motion.div>
           </motion.li>
         ))}
       </motion.ul>
       {recruits.length === 0 && (
-        <EmptyState detail="Aucune recrue dans votre périmètre." />
+        <EmptyState detail={t('manager.recruits.empty')} />
       )}
     </div>
   );

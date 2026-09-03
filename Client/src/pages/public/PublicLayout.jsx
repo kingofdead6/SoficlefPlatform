@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { Fragment, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { ScrollProgress } from '../../components/public/Visuals.jsx';
 import DotNav from '../../components/public/DotNav.jsx';
@@ -14,12 +15,26 @@ import CursorFlock from '../../components/public/CursorFlock.jsx';
  * layout's flow. The footer below is the only chrome this shell still owns.
  */
 const NAV = [
-  { to: '/entreprise', labelFr: 'Entreprise' },
-  { to: '/strategie', labelFr: 'Stratégie' },
-  { to: '/organigramme', labelFr: 'Organigramme' },
+  { to: '/entreprise', labelKey: 'nav.public.company' },
+  { to: '/strategie', labelKey: 'nav.public.strategy' },
+  { to: '/organigramme', labelKey: 'nav.public.orgChart' },
 ];
 
+/**
+ * Address-style blocks are one catalogue entry with newlines rather than several keys, so a
+ * translator sees the whole block; the line breaks are rendered here.
+ */
+function MultilineText({ value }) {
+  return value.split('\n').map((line, index) => (
+    <Fragment key={line}>
+      {index > 0 && <br />}
+      {line}
+    </Fragment>
+  ));
+}
+
 export default function PublicLayout() {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
 
   /*
@@ -48,20 +63,18 @@ export default function PublicLayout() {
         <div className="mx-auto grid max-w-6xl gap-8 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="font-display text-lg text-red-deep">SOFICLEF</p>
-            <p className="mt-2 text-sm text-text-dim">
-              Solutions d’ouverture et de verrouillage, fabriquées en Algérie depuis 1994.
-            </p>
+            <p className="mt-2 text-sm text-text-dim">{t('public.footer.tagline')}</p>
           </div>
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-text-dim">
-              Découvrir
+              {t('public.footer.discover')}
             </p>
             <ul className="space-y-1.5 text-sm">
               {NAV.map((item) => (
                 <li key={item.to}>
                   <Link to={item.to} className="text-text-muted hover:text-red-brand">
-                    {item.labelFr}
+                    {t(item.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -70,32 +83,30 @@ export default function PublicLayout() {
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-text-dim">
-              Siège
+              {t('public.footer.headquarters')}
             </p>
             <p className="text-sm text-text-muted">
-              Si Mustapha
-              <br />
-              Boumerdès, Algérie
+              <MultilineText value={t('public.footer.headquartersAddress')} />
             </p>
           </div>
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-text-dim">
-              Qualité
+              {t('public.footer.quality')}
             </p>
             <p className="text-sm text-text-muted">
-              ISO 9001:2015
-              <br />
-              Opérateur Économique Agréé
+              <MultilineText value={t('public.footer.qualityDetail')} />
             </p>
           </div>
         </div>
 
         <div className="border-t border-border">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4 text-xs text-text-dim">
-            <span>© {new Date().getFullYear()} SOFICLEF SARL — Tous droits réservés.</span>
+            {/* The year is interpolated as a string: as a number i18next would group it
+                into "2 026" under the French locale. */}
+            <span>{t('public.footer.rights', { year: String(new Date().getFullYear()) })}</span>
             <Link to="/login" className="hover:text-red-brand">
-              Espace collaborateur
+              {t('public.footer.employeeArea')}
             </Link>
           </div>
         </div>

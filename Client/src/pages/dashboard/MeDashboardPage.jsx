@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../api/onboarding.js';
 import PageHeader from '../../components/manager/PageHeader.jsx';
@@ -9,6 +10,7 @@ import CountUp from '../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../components/manager/PageStates.jsx';
 import { useGsapContext } from '../../lib/motion/useGsapContext.js';
 import { staggerContainer, staggerItem, initialOrNone } from '../../lib/motion/variants.js';
+import { localeOf } from '../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const SECTION_TITLE = 'font-display text-xl text-text';
@@ -18,24 +20,7 @@ const SECTION_TITLE = 'font-display text-xl text-text';
  * Each carries the sentence that says what the phase *means*, because "PROBATION" on its
  * own tells a new arrival nothing about what is expected of them this week.
  */
-const PHASES = {
-  PRE_ONBOARDING: {
-    labelFr: 'Avant l’arrivée',
-    detailFr: 'Les étapes administratives à préparer avant votre premier jour.',
-  },
-  DAY_ONE: {
-    labelFr: 'Jour J',
-    detailFr: 'Accueil, badge, poste de travail : la journée d’arrivée.',
-  },
-  PROBATION: {
-    labelFr: 'Période d’essai',
-    detailFr: 'Prise de poste, formation et points d’étape avec votre manager.',
-  },
-  COMPLETED: {
-    labelFr: 'Parcours terminé',
-    detailFr: 'Toutes les étapes de votre parcours d’intégration sont faites.',
-  },
-};
+const PHASE_IDS = ['PRE_ONBOARDING', 'DAY_ONE', 'PROBATION', 'COMPLETED'];
 
 /**
  * /app/me — Dashboard (route guide §2.1, CORE).
@@ -56,6 +41,8 @@ export default function MeDashboardPage() {
   const [error, setError] = useState(null);
   const reduce = useReducedMotion();
   const scopeRef = useRef(null);
+  // Hooks run before the loading guard below, or the hook order changes between renders.
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     (async () => {
@@ -63,7 +50,7 @@ export default function MeDashboardPage() {
         const { data } = await onboardingApi.meOverview();
         setData(data);
       } catch {
-        setError('Impossible de charger votre tableau de bord.');
+        setError('load');
       } finally {
         setLoading(false);
       }
@@ -88,33 +75,55 @@ export default function MeDashboardPage() {
   /**
    * The countdown. `dayNumber` is negative before the start date, 0 on it, positive after —
    * so the same field answers both "how long until I start" and "how long have I been here",
-   * and the wording has to change with the sign or it reads as a mistake.
+   * and the wording has to change with the sign or it reads as a mistake. Each form is its
+   * own key rather than a prefix plus a number: English says "D-3" and "Day one", which no
+   * single concatenation produces.
    */
   const countdown = useMemo(() => {
     if (!data || data.dayNumber === null) return null;
     const n = data.dayNumber;
     if (n < 0) {
-      return { badge: `J-${Math.abs(n)}`, detailFr: `Arrivée dans ${Math.abs(n)} jour${Math.abs(n) > 1 ? 's' : ''}.` };
+      const days = Math.abs(n);
+      return {
+        badge: t('me.dashboard.countdown.beforeBadge', { count: days }),
+        detail: t('me.dashboard.countdown.beforeDetail', { count: days }),
+      };
     }
-    if (n === 0) return { badge: 'Jour J', detailFr: 'C’est aujourd’hui votre premier jour.' };
-    return { badge: `J+${n}`, detailFr: `${n} jour${n > 1 ? 's' : ''} depuis votre arrivée.` };
-  }, [data]);
+    if (n === 0) {
+      return {
+        badge: t('me.dashboard.countdown.dayOneBadge'),
+        detail: t('me.dashboard.countdown.dayOneDetail'),
+      };
+    }
+    return {
+      badge: t('me.dashboard.countdown.afterBadge', { count: n }),
+      detail: t('me.dashboard.countdown.afterDetail', { count: n }),
+    };
+  }, [data, t]);
 
-  if (loading) return <PageLoading label="Chargement de votre tableau de bord…" />;
-  if (error) return <PageError message={error} />;
+  if (loading) return <PageLoading label={t('me.dashboard.loading')} />;
+  if (error) return <PageError message={t('me.dashboard.loadFailed')} />;
 
-  const phase = PHASES[data.phase] ?? { labelFr: data.phase, detailFr: '' };
+  const phase = PHASE_IDS.includes(data.phase)
+    ? {
+        label: t(`me.dashboard.phases.${data.phase}.label`),
+        detail: t(`me.dashboard.phases.${data.phase}.detail`),
+      }
+    : { label: data.phase, detail: '' };
   const ringTone = data.overdueCount > 0 ? 'red' : data.progress.percent >= 100 ? 'green' : 'brand';
 
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Mon espace"
-        title={`Bonjour, ${data.displayName}`}
+        eyebrow={t('me.eyebrow')}
+        title={t('me.dashboard.greeting', { name: data.displayName })}
         subtitle={
           data.position?.titleFr
-            ? `${data.position.titleFr} — ${phase.detailFr}`
-            : `Poste en cours d’affectation — ${phase.detailFr}`
+            ? t('me.dashboard.subtitleWithPosition', {
+                position: data.position.titleFr,
+                detail: phase.detail,
+              })
+            : t('me.dashboard.subtitleUnassigned', { detail: phase.detail })
         }
         actions={
           <>
@@ -122,13 +131,13 @@ export default function MeDashboardPage() {
               to="/app/me/journey"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Mon parcours
+              {t('me.dashboard.myJourney')}
             </Link>
             <Link
               to="/app/me/assistant"
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              Poser une question
+              {t('me.dashboard.askQuestion')}
             </Link>
           </>
         }
@@ -137,33 +146,35 @@ export default function MeDashboardPage() {
       {/* Band 1 — where I am: phase, countdown, and the figures behind them. */}
       <div data-gsap="band" className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className={`${CARD} p-5`}>
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">Phase actuelle</p>
-          <p className="font-display text-2xl leading-tight text-red-deep">{phase.labelFr}</p>
-          <p className="mt-1 text-xs text-text-dim">{phase.detailFr}</p>
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
+            {t('me.dashboard.phaseLabel')}
+          </p>
+          <p className="font-display text-2xl leading-tight text-red-deep">{phase.label}</p>
+          <p className="mt-1 text-xs text-text-dim">{phase.detail}</p>
         </div>
 
         <div className={`${CARD} p-5`}>
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">Compte à rebours</p>
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
+            {t('me.dashboard.countdown.label')}
+          </p>
           {countdown ? (
             <>
               <p className="font-display text-3xl text-red-deep">{countdown.badge}</p>
-              <p className="mt-1 text-xs text-text-dim">{countdown.detailFr}</p>
+              <p className="mt-1 text-xs text-text-dim">{countdown.detail}</p>
             </>
           ) : (
-            <p className="mt-1 text-sm text-text-dim">
-              Aucune date d’arrivée enregistrée pour votre compte.
-            </p>
+            <p className="mt-1 text-sm text-text-dim">{t('me.dashboard.countdown.none')}</p>
           )}
         </div>
 
         <SummaryTile
-          label="Enquêtes à remplir"
+          label={t('me.dashboard.openSurveys')}
           value={data.openSurveys}
           tone={data.openSurveys > 0 ? 'red' : undefined}
           href="/app/me/surveys"
         />
         <SummaryTile
-          label="Modules à valider"
+          label={t('me.dashboard.trainingOutstanding')}
           value={data.trainingOutstanding}
           tone={data.trainingOutstanding > 0 ? 'red' : undefined}
           href="/app/me/training"
@@ -175,25 +186,28 @@ export default function MeDashboardPage() {
         <section className={`flex flex-col items-center justify-center ${CARD} p-8`}>
           <ProgressRing percent={data.progress.percent} tone={ringTone} />
           <p className="mt-4 text-center text-sm text-text-dim">
-            {data.progress.done} sur {data.progress.total} étape{data.progress.total > 1 ? 's' : ''} terminée
-            {data.progress.done > 1 ? 's' : ''}
+            {t('me.dashboard.progress.done', {
+              count: data.progress.total,
+              done: data.progress.done,
+              total: data.progress.total,
+            })}
           </p>
           {data.overdueCount > 0 && (
             <p className="mt-1 text-center text-xs font-medium text-status-red">
-              <CountUp value={data.overdueCount} /> étape(s) en retard
+              {t('me.dashboard.progress.overdue', { count: data.overdueCount })}
             </p>
           )}
           <Link
             to="/app/me/journey"
             className="mt-5 rounded-app border border-border px-3 py-1.5 text-xs font-medium text-red-brand transition-colors hover:border-red-brand"
           >
-            Voir le parcours complet
+            {t('me.dashboard.progress.seeFullJourney')}
           </Link>
         </section>
 
         <section className="flex flex-col lg:col-span-2">
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className={SECTION_TITLE}>Prochaines étapes</h2>
+            <h2 className={SECTION_TITLE}>{t('me.dashboard.nextTasks.title')}</h2>
             <span className="text-sm text-text-dim">{data.nextTasks.length}</span>
           </div>
 
@@ -220,8 +234,8 @@ export default function MeDashboardPage() {
                       <span
                         className={`shrink-0 text-xs ${task.overdue ? 'font-medium text-status-red' : 'text-text-dim'}`}
                       >
-                        {task.overdue ? 'En retard · ' : ''}
-                        {new Date(task.dueDate).toLocaleDateString('fr-FR')}
+                        {task.overdue ? `${t('me.dashboard.nextTasks.overdue')} · ` : ''}
+                        {new Date(task.dueDate).toLocaleDateString(localeOf(i18n))}
                       </span>
                     )}
                   </div>
@@ -234,8 +248,8 @@ export default function MeDashboardPage() {
             ))}
             {data.nextTasks.length === 0 && (
               <EmptyState
-                title="Rien en attente"
-                detail="Aucune étape ne vous attend pour le moment."
+                title={t('me.dashboard.nextTasks.emptyTitle')}
+                detail={t('me.dashboard.nextTasks.emptyDetail')}
                 muted
               />
             )}
@@ -243,21 +257,23 @@ export default function MeDashboardPage() {
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <ContactCard
-              label="Mon manager"
+              label={t('me.dashboard.contacts.manager')}
               name={data.manager?.displayName}
               lines={[data.manager?.email, data.manager?.phone].filter(Boolean)}
               href="/app/me/team"
-              hrefLabelFr="Voir mon équipe"
+              hrefLabel={t('me.dashboard.contacts.seeTeam')}
             />
             <ContactCard
-              label="Contact RH"
+              label={t('me.dashboard.contacts.hr')}
               name={data.hrContact?.nameFr}
               lines={[
                 data.hrContact?.roleFr,
-                data.hrContact?.extension ? `Poste ${data.hrContact.extension}` : null,
+                data.hrContact?.extension
+                  ? t('me.dashboard.contacts.extension', { extension: data.hrContact.extension })
+                  : null,
               ].filter(Boolean)}
               href="/app/me/team"
-              hrefLabelFr="Tous les contacts clés"
+              hrefLabel={t('me.dashboard.contacts.allContacts')}
             />
           </div>
         </section>
@@ -285,7 +301,9 @@ function SummaryTile({ label, value, tone, href }) {
   );
 }
 
-function ContactCard({ label, name, lines, href, hrefLabelFr }) {
+function ContactCard({ label, name, lines, href, hrefLabel }) {
+  const { t } = useTranslation();
+
   return (
     <div className={`${CARD} p-4`}>
       <p className="mb-1 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">{label}</p>
@@ -299,10 +317,10 @@ function ContactCard({ label, name, lines, href, hrefLabelFr }) {
           ))}
         </>
       ) : (
-        <p className="text-sm text-text-dim">Non renseigné pour l’instant.</p>
+        <p className="text-sm text-text-dim">{t('me.dashboard.contacts.none')}</p>
       )}
       <Link to={href} className="mt-2 inline-block text-xs font-medium text-red-brand hover:underline">
-        {hrefLabelFr}
+        {hrefLabel}
       </Link>
     </div>
   );

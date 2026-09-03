@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { dashboardApi } from '../../../api/dashboard.js';
 import { surveysApi } from '../../../api/surveys.js';
@@ -44,6 +45,7 @@ const PERIODS = [
  * rather than implying the filters moved a number they did not.
  */
 export default function HrAnalyticsPage() {
+  const { t } = useTranslation();
   const [kpis, setKpis] = useState(null);
   const [directory, setDirectory] = useState([]);
   const [satisfaction, setSatisfaction] = useState(null);
@@ -111,7 +113,7 @@ export default function HrAnalyticsPage() {
     [loading, kpis],
   );
 
-  if (loading) return <PageLoading label="Chargement des indicateurs…" />;
+  if (loading) return <PageLoading label={t('hr.pages.analytics.loading')} />;
   if (error) return <PageError message={error} />;
 
   const hr = kpis?.hr;
@@ -155,9 +157,9 @@ export default function HrAnalyticsPage() {
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Analytique"
-        subtitle="Les indicateurs du Module 10 : complétion, durée d’intégration, confirmation, satisfaction, formation et turnover à six mois."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.pages.analytics.title')}
+        subtitle={t('hr.pages.analytics.subtitle')}
         actions={
           <Link
             to="/app/hr/analytics/reports"

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { assistantApi } from '../../../api/assistant.js';
 import { onboardingApi } from '../../../api/onboarding.js';
@@ -28,40 +29,16 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
  * the copy below is driven by the `provider` field rather than asserting either state.
  */
 
-/** Openers per agent, showing what each can really answer rather than inviting free chat. */
-const SUGGESTIONS = {
-  orientation: [
-    'Qui est responsable de la qualité ?',
-    'À qui m’adresser pour mon badge ?',
-    'Qui gère les ressources humaines ?',
-  ],
-  onboarding: [
-    'Quelles étapes de mon parcours restent à faire ?',
-    'Qu’est-ce qui est en retard ?',
-    'Que dois-je faire cette semaine ?',
-  ],
-  training: [
-    'Quels modules sont obligatoires ?',
-    'Où en suis-je dans mes formations ?',
-    'Quel est le seuil de réussite ?',
-  ],
-  documents: [
-    'Où trouver le règlement intérieur ?',
-    'Quelle procédure pour les congés ?',
-    'Où est la charte informatique ?',
-  ],
-  competencies: [
-    'Quelles compétences mon poste demande-t-il ?',
-    'Quels sont mes écarts de compétences ?',
-  ],
-};
-
-const PLACEHOLDERS = {
-  orientation: 'Ex. : qui s’occupe des contrats de travail ?',
-  onboarding: 'Ex. : quelles étapes me restent à faire ?',
-  training: 'Ex. : quels modules dois-je encore valider ?',
-  documents: 'Ex. : où est la procédure de congés ?',
-  competencies: 'Ex. : quelles compétences sont attendues à mon poste ?',
+/**
+ * Openers per agent, showing what each can really answer rather than inviting free chat.
+ * Held as catalogue keys, resolved inside the component so they follow a language switch.
+ */
+const SUGGESTION_KEYS = {
+  orientation: ['orientation1', 'orientation2', 'orientation3'],
+  onboarding: ['onboarding1', 'onboarding2', 'onboarding3'],
+  training: ['training1', 'training2', 'training3'],
+  documents: ['documents1', 'documents2', 'documents3'],
+  competencies: ['competencies1', 'competencies2'],
 };
 
 /** The agents this page offers, in the order they matter to a new arrival. */
@@ -76,6 +53,8 @@ export default function MeAssistantPage() {
   const [error, setError] = useState(null);
   const [activeId, setActiveId] = useState(null);
   const reduce = useReducedMotion();
+  // Hooks run before the loading guard below, or the hook order changes between renders.
+  const { t } = useTranslation();
 
   useEffect(() => {
     (async () => {
@@ -89,7 +68,7 @@ export default function MeAssistantPage() {
         setModelName(agentsRes.modelName ?? null);
         setOverview(overviewRes.data);
       } catch {
-        setError("Impossible de charger l'assistant.");
+        setError('load');
       } finally {
         setLoading(false);
       }
@@ -106,25 +85,28 @@ export default function MeAssistantPage() {
 
   const active = usable.find((agent) => agent.id === activeId) ?? usable[0] ?? null;
 
-  if (loading) return <PageLoading label="Chargement de l’assistant…" />;
-  if (error) return <PageError message={error} />;
+  if (loading) return <PageLoading label={t('assistant.loading')} />;
+  if (error) return <PageError message={t('assistant.loadFailed')} />;
+
+  const suggestions = (SUGGESTION_KEYS[active?.id] ?? []).map((key) =>
+    t(`me.assistant.suggestions.${key}`),
+  );
+  const placeholder = active?.id
+    ? t(`me.assistant.placeholders.${active.id}`, { defaultValue: t('me.assistant.placeholders.default') })
+    : t('me.assistant.placeholders.default');
 
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Mon espace"
-        title="Assistant"
-        subtitle="Une question sur qui fait quoi, sur votre parcours, vos formations, les procédures ou les compétences attendues ? L’assistant cherche dans les données que vous êtes autorisé à consulter, et cite ce qu’il a trouvé."
+        eyebrow={t('me.eyebrow')}
+        title={t('me.assistant.title')}
+        subtitle={t('me.assistant.subtitle')}
       />
 
       <div className="grid flex-1 gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           {usable.length === 0 ? (
-            <EmptyState
-              title="Aucun agent disponible"
-              detail="Votre compte ne dispose des droits de lecture d’aucune des ressources que ces agents interrogent."
-              muted
-            />
+            <EmptyState title={t('assistant.empty.title')} detail={t('assistant.empty.detail')} muted />
           ) : (
             <motion.section
               variants={sectionVariants}
@@ -157,8 +139,8 @@ export default function MeAssistantPage() {
                   purposeFr={active.purposeFr}
                   provider={provider}
                   modelName={modelName}
-                  suggestions={SUGGESTIONS[active.id] ?? []}
-                  placeholder={PLACEHOLDERS[active.id] ?? 'Posez votre question…'}
+                  suggestions={suggestions}
+                  placeholder={placeholder}
                 />
               )}
             </motion.section>
@@ -174,33 +156,33 @@ export default function MeAssistantPage() {
           className="space-y-4"
         >
           <div className={`${CARD} p-5`}>
-            <h2 className="mb-3 font-display text-lg text-text">Où j’en suis</h2>
+            <h2 className="mb-3 font-display text-lg text-text">{t('me.assistant.status.title')}</h2>
             {overview ? (
               <ul className="space-y-2 text-sm">
-                <Row label="Avancement du parcours" value={`${overview.progress.percent} %`} />
+                <Row label={t('me.assistant.status.progress')} value={`${overview.progress.percent} %`} />
                 <Row
-                  label="Étapes en retard"
+                  label={t('me.assistant.status.overdue')}
                   value={overview.overdueCount}
                   tone={overview.overdueCount > 0 ? 'red' : undefined}
                 />
                 <Row
-                  label="Enquêtes à remplir"
+                  label={t('me.assistant.status.openSurveys')}
                   value={overview.openSurveys}
                   tone={overview.openSurveys > 0 ? 'red' : undefined}
                 />
                 <Row
-                  label="Modules à valider"
+                  label={t('me.assistant.status.trainingOutstanding')}
                   value={overview.trainingOutstanding}
                   tone={overview.trainingOutstanding > 0 ? 'red' : undefined}
                 />
               </ul>
             ) : (
-              <p className="text-sm text-text-dim">Aucun parcours d’intégration rattaché à votre compte.</p>
+              <p className="text-sm text-text-dim">{t('me.assistant.noJourney')}</p>
             )}
           </div>
 
           <div className={`${CARD} p-5`}>
-            <h2 className="mb-2 font-display text-lg text-text">Les agents de la plateforme</h2>
+            <h2 className="mb-2 font-display text-lg text-text">{t('me.assistant.agentsTitle')}</h2>
             <ul className="space-y-3">
               {agents.map((agent) => (
                 <li key={agent.id}>
@@ -214,7 +196,9 @@ export default function MeAssistantPage() {
                           : 'bg-surface-2 text-text-dim',
                       )}
                     >
-                      {agent.available !== false ? 'Disponible' : 'Hors de vos droits'}
+                      {agent.available !== false
+                        ? t('assistant.agents.available')
+                        : t('assistant.agents.unavailable')}
                     </span>
                   </div>
                   <p className="text-xs text-text-dim">{agent.purposeFr}</p>
@@ -223,11 +207,7 @@ export default function MeAssistantPage() {
             </ul>
             <div className="mt-4 border-t border-border pt-3">
               <ProviderNote provider={provider} modelName={modelName} />
-              <p className="mt-2 text-xs text-text-dim">
-                Un agent ne voit jamais plus que vous : il interroge les mêmes données, avec vos
-                propres droits, et une réponse cite toujours sa source ou reconnaît n’avoir rien
-                trouvé.
-              </p>
+              <p className="mt-2 text-xs text-text-dim">{t('me.assistant.rights')}</p>
             </div>
           </div>
         </motion.aside>

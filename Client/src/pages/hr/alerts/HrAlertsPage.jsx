@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { alertsApi } from '../../../api/alerts.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -51,6 +52,7 @@ const EMPTY_FORM = {
  * dispatcher will read; claiming they already send mail would be false.
  */
 export default function HrAlertsPage() {
+  const { t } = useTranslation();
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -155,15 +157,15 @@ export default function HrAlertsPage() {
     }
   }
 
-  if (loading) return <PageLoading label="Chargement des règles…" />;
+  if (loading) return <PageLoading label={t('hr.pages.alerts.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Règles d’alerte"
-        subtitle="Qui est relancé, au bout de combien de jours, et vers qui la relance remonte."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.pages.alerts.title')}
+        subtitle={t('hr.pages.alerts.subtitle')}
         actions={
           <button
             type="button"

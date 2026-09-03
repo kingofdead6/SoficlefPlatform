@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { adminApi } from '../../../api/admin.js';
 import { rolesApi } from '../../../api/users.js';
@@ -12,51 +13,41 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const FIELD =
   'w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
-/** The four action columns of the matrix, in the order §2.4 names them. */
-const ACTION_COLUMNS = [
-  { action: 'read', labelFr: 'Lire' },
-  { action: 'update', labelFr: 'Écrire' },
-  { action: 'validate', labelFr: 'Valider' },
-  { action: 'delete', labelFr: 'Supprimer' },
-];
+/** The four action columns of the matrix, in the order §2.4 names them. Labels live under
+ * admin.roles.actionColumns.* in the catalogues. */
+const ACTION_COLUMNS = ['read', 'update', 'validate', 'delete'];
 
 /**
  * The permission catalogue is `resource:action`; §2.4 asks for a role × module × action
- * matrix. "Module" is the resource, given a French name here so the matrix reads as a
- * business grid rather than as a dump of identifiers. A resource absent from this map still
- * appears — under its raw code — rather than being silently dropped from the grid.
+ * matrix. "Module" is the resource, given a name here so the matrix reads as a business grid
+ * rather than as a dump of identifiers. A resource absent from this list still appears —
+ * under its raw code — rather than being silently dropped from the grid. Labels live under
+ * admin.roles.resources.* in the catalogues.
  */
-const RESOURCE_LABELS = {
-  organization_unit: 'Structures',
-  position: 'Postes',
-  assignment: 'Affectations',
-  job: 'Emplois',
-  job_description: 'Fiches de poste',
-  competency: 'Compétences',
-  assessment: 'Évaluations',
-  onboarding_template: 'Modèles d’intégration',
-  onboarding_instance: 'Parcours d’intégration',
-  onboarding_task: 'Étapes d’intégration',
-  remark: 'Remarques',
-  kaizen_action: 'Actions Kaizen',
-  document: 'Documents',
-  report: 'Rapports',
-  dashboard: 'Tableaux de bord',
-  notification: 'Notifications',
-  survey: 'Enquêtes',
-  training: 'Formation',
-  user: 'Comptes',
-  role: 'Rôles',
-  audit_log: 'Journal d’audit',
-  setting: 'Paramètres',
-};
-
-const BUILTIN_LABELS = {
-  ADMIN: 'Administrateur',
-  HR: 'DRH / RH',
-  MANAGER: 'Manager',
-  EMPLOYEE: 'Collaborateur',
-};
+const RESOURCE_KEYS = [
+  'organization_unit',
+  'position',
+  'assignment',
+  'job',
+  'job_description',
+  'competency',
+  'assessment',
+  'onboarding_template',
+  'onboarding_instance',
+  'onboarding_task',
+  'remark',
+  'kaizen_action',
+  'document',
+  'report',
+  'dashboard',
+  'notification',
+  'survey',
+  'training',
+  'user',
+  'role',
+  'audit_log',
+  'setting',
+];
 
 const EMPTY_FORM = { code: '', nameFr: '', descriptionFr: '', permissions: [] };
 
@@ -81,6 +72,7 @@ const EMPTY_FORM = { code: '', nameFr: '', descriptionFr: '', permissions: [] };
  * change to the authorization layer, not to this screen.
  */
 export default function AdminRolesPage() {
+  const { t } = useTranslation();
   const [builtins, setBuiltins] = useState([]);
   const [customRoles, setCustomRoles] = useState([]);
   const [catalogue, setCatalogue] = useState([]);
@@ -102,21 +94,21 @@ export default function AdminRolesPage() {
       setCatalogue(customRes.catalogue ?? []);
       setError(null);
     } catch {
-      setError('Impossible de charger les rôles.');
+      setError(t('admin.roles.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  /** Resources present in the catalogue, ordered as RESOURCE_LABELS declares them. */
+  /** Resources present in the catalogue, ordered as RESOURCE_KEYS declares them. */
   const resources = useMemo(() => {
     const present = [...new Set(catalogue.map((code) => code.split(':')[0]))];
-    const ordered = Object.keys(RESOURCE_LABELS).filter((key) => present.includes(key));
-    const extras = present.filter((key) => !RESOURCE_LABELS[key]).sort();
+    const ordered = RESOURCE_KEYS.filter((key) => present.includes(key));
+    const extras = present.filter((key) => !RESOURCE_KEYS.includes(key)).sort();
     return [...ordered, ...extras];
   }, [catalogue]);
 
@@ -178,7 +170,7 @@ export default function AdminRolesPage() {
       setFormError(
         err.body?.fieldErrors
           ? Object.values(err.body.fieldErrors).flat().join(' ')
-          : err.body?.message ?? 'L’enregistrement du rôle a échoué.',
+          : err.body?.message ?? t('admin.roles.form.saveFailed'),
       );
     } finally {
       setSaving(false);
@@ -186,7 +178,7 @@ export default function AdminRolesPage() {
   }
 
   async function handleDelete(role) {
-    if (!window.confirm(`Supprimer le rôle « ${role.nameFr} » ?`)) return;
+    if (!window.confirm(t('admin.roles.confirmDelete', { name: role.nameFr }))) return;
     try {
       await adminApi.deleteCustomRole(role.id);
       if (selectedId === role.id) {
@@ -195,11 +187,11 @@ export default function AdminRolesPage() {
       }
       await load();
     } catch (err) {
-      setFormError(err.body?.message ?? 'La suppression a échoué.');
+      setFormError(err.body?.message ?? t('admin.roles.form.deleteFailed'));
     }
   }
 
-  if (loading) return <PageLoading label="Chargement des rôles…" />;
+  if (loading) return <PageLoading label={t('admin.roles.loading')} />;
   if (error) return <PageError message={error} />;
 
   const totalCustomPermissions = customRoles.reduce(
@@ -210,12 +202,12 @@ export default function AdminRolesPage() {
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Administration"
-        title="Rôles et permissions"
-        subtitle="La matrice rôle × module × action : ce que chaque profil a le droit de lire, écrire, valider et supprimer."
+        eyebrow={t('admin.roles.eyebrow')}
+        title={t('admin.roles.title')}
+        subtitle={t('admin.roles.subtitle')}
         actions={
           <button type="button" onClick={showForm ? () => setShowForm(false) : openCreate} className={PRIMARY_BUTTON}>
-            {showForm ? 'Annuler' : 'Nouveau rôle personnalisé'}
+            {showForm ? t('admin.roles.cancel') : t('admin.roles.newCustomRole')}
           </button>
         }
       />
@@ -226,18 +218,18 @@ export default function AdminRolesPage() {
         animate="visible"
         className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        <Tile label="Rôles intégrés" value={builtins.length} />
-        <Tile label="Rôles personnalisés" value={customRoles.length} />
-        <Tile label="Permissions du catalogue" value={catalogue.length} />
-        <Tile label="Permissions accordées (personnalisés)" value={totalCustomPermissions} />
+        <Tile label={t('admin.roles.tiles.builtin')} value={builtins.length} />
+        <Tile label={t('admin.roles.tiles.custom')} value={customRoles.length} />
+        <Tile label={t('admin.roles.tiles.catalogue')} value={catalogue.length} />
+        <Tile label={t('admin.roles.tiles.grantedCustom')} value={totalCustomPermissions} />
       </motion.div>
 
       <div className="mb-6 flex gap-1 border-b border-border">
         <TabButton active={tab === 'builtin'} onClick={() => setTab('builtin')}>
-          Rôles intégrés ({builtins.length})
+          {t('admin.roles.tabs.builtin', { count: builtins.length })}
         </TabButton>
         <TabButton active={tab === 'custom'} onClick={() => setTab('custom')}>
-          Rôles personnalisés ({customRoles.length})
+          {t('admin.roles.tabs.custom', { count: customRoles.length })}
         </TabButton>
       </div>
 
@@ -251,24 +243,21 @@ export default function AdminRolesPage() {
             transition={{ duration: 0.25 }}
           >
             <p className="mb-4 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-sm text-text-dim">
-              Ces quatre profils sont définis dans le code de la plateforme, pas en base :
-              chaque requête vérifie les droits de l’appelant, et interroger une table à ce
-              moment-là placerait un aller-retour vers la base au cœur de chaque contrôle
-              d’accès. Ils sont donc consultables ici mais modifiables uniquement par
-              déploiement. Pour un besoin différent, créez un rôle personnalisé.
+              {t('admin.roles.builtinNote')}
             </p>
 
             <div className="space-y-8">
               {builtins.map((role) => (
                 <RoleMatrix
                   key={role.id}
-                  titleFr={BUILTIN_LABELS[role.code] ?? role.nameFr}
-                  subtitleFr={`${role.userCount} compte(s) · ${role.permissions.length} permission(s)`}
+                  titleFr={t(`admin.roles.builtinLabels.${role.code}`, role.nameFr)}
+                  subtitleFr={t('admin.roles.roleUsage', { users: role.userCount, permissions: role.permissions.length })}
                   description={role.description}
                   resources={resources}
                   granted={new Set(role.permissions)}
                   readOnly
                   reduce={reduce}
+                  t={t}
                 />
               ))}
             </div>
@@ -293,27 +282,27 @@ export default function AdminRolesPage() {
                 >
                   <div className={`${CARD} mb-6 space-y-4 p-6`}>
                     <h2 className="font-display text-lg text-text">
-                      {selectedId ? `Modifier « ${form.nameFr} »` : 'Nouveau rôle personnalisé'}
+                      {selectedId ? t('admin.roles.form.editTitle', { name: form.nameFr }) : t('admin.roles.form.createTitle')}
                     </h2>
 
                     <div className="grid gap-3 sm:grid-cols-3">
                       <div>
-                        <label className="mb-1 block text-sm font-medium text-text">Code</label>
+                        <label className="mb-1 block text-sm font-medium text-text">{t('admin.roles.form.code')}</label>
                         <input
                           required
                           disabled={Boolean(selectedId)}
                           pattern="[A-Za-z][A-Za-z0-9_]*"
-                          placeholder="AUDITEUR_QUALITE"
+                          placeholder={t('admin.roles.form.codePlaceholder')}
                           value={form.code}
                           onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
                           className={`${FIELD} font-mono disabled:opacity-60`}
                         />
                         <p className="mt-1 text-xs text-text-dim">
-                          {selectedId ? 'Le code d’un rôle existant ne change pas.' : 'Majuscules, sans espace.'}
+                          {selectedId ? t('admin.roles.form.codeHintExisting') : t('admin.roles.form.codeHintNew')}
                         </p>
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="mb-1 block text-sm font-medium text-text">Intitulé</label>
+                        <label className="mb-1 block text-sm font-medium text-text">{t('admin.roles.form.name')}</label>
                         <input
                           required
                           minLength={2}
@@ -325,7 +314,7 @@ export default function AdminRolesPage() {
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-text">Description</label>
+                      <label className="mb-1 block text-sm font-medium text-text">{t('admin.roles.form.description')}</label>
                       <textarea
                         rows={2}
                         value={form.descriptionFr}
@@ -336,13 +325,14 @@ export default function AdminRolesPage() {
 
                     <div>
                       <p className="mb-2 text-sm font-medium text-text">
-                        Permissions ({form.permissions.length} sélectionnée(s))
+                        {t('admin.roles.form.permissions', { count: form.permissions.length })}
                       </p>
                       <MatrixGrid
                         resources={resources}
                         catalogue={catalogue}
                         granted={new Set(form.permissions)}
                         onToggle={togglePermission}
+                        t={t}
                       />
                     </div>
 
@@ -350,10 +340,10 @@ export default function AdminRolesPage() {
 
                     <div className="flex justify-end gap-2">
                       <button type="button" onClick={() => setShowForm(false)} className={SECONDARY_BUTTON}>
-                        Annuler
+                        {t('common.actions.cancel')}
                       </button>
                       <button type="submit" disabled={saving} className={PRIMARY_BUTTON}>
-                        {saving ? 'Enregistrement…' : 'Enregistrer le rôle'}
+                        {saving ? t('admin.roles.form.saving') : t('admin.roles.form.save')}
                       </button>
                     </div>
                   </div>
@@ -364,8 +354,8 @@ export default function AdminRolesPage() {
             {customRoles.length === 0 ? (
               <EmptyState
                 muted
-                title="Aucun rôle personnalisé"
-                detail="Les quatre profils intégrés couvrent l’usage courant. Créez un rôle personnalisé pour un besoin qu’aucun d’eux ne décrit — un auditeur externe, par exemple, qui lirait sans jamais écrire."
+                title={t('admin.roles.customEmpty')}
+                detail={t('admin.roles.customEmptyDetail')}
               />
             ) : (
               <div className="space-y-8">
@@ -373,22 +363,23 @@ export default function AdminRolesPage() {
                   <RoleMatrix
                     key={role.id}
                     titleFr={role.nameFr}
-                    subtitleFr={`${role.code} · ${(role.permissions ?? []).length} permission(s)`}
+                    subtitleFr={t('admin.roles.customUsage', { code: role.code, count: (role.permissions ?? []).length })}
                     description={role.descriptionFr}
                     resources={resources}
                     granted={new Set(role.permissions ?? [])}
                     readOnly
                     reduce={reduce}
+                    t={t}
                     actions={
                       role.isSystem ? (
-                        <span className="text-xs text-text-dim">Rôle intégré — non modifiable</span>
+                        <span className="text-xs text-text-dim">{t('admin.roles.builtinRoleTag')}</span>
                       ) : (
                         <div className="flex gap-3 text-xs">
                           <button type="button" onClick={() => openEdit(role)} className="text-red-brand hover:underline">
-                            Modifier
+                            {t('admin.roles.edit')}
                           </button>
                           <button type="button" onClick={() => handleDelete(role)} className="text-status-red hover:underline">
-                            Supprimer
+                            {t('admin.roles.delete')}
                           </button>
                         </div>
                       )
@@ -399,11 +390,7 @@ export default function AdminRolesPage() {
             )}
 
             <p className="mt-8 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-              Un rôle personnalisé est enregistré durablement, avec ses permissions validées
-              contre le catalogue de la plateforme. Il n’est pas encore *attribuable* à un
-              compte : l’attribution passe par les quatre codes intégrés, seuls reconnus par
-              la couche d’autorisation. Définir le rôle est la partie durable ; le brancher
-              sur l’attribution est une évolution de cette couche, pas de cet écran.
+              {t('admin.roles.customFootnote')}
             </p>
           </motion.section>
         )}
@@ -438,7 +425,7 @@ function TabButton({ active, onClick, children }) {
 }
 
 /** One role's matrix, wrapped in a card with its heading and optional actions. */
-function RoleMatrix({ titleFr, subtitleFr, description, resources, granted, actions, reduce }) {
+function RoleMatrix({ titleFr, subtitleFr, description, resources, granted, actions, reduce, t }) {
   return (
     <motion.section
       initial={reduce ? false : { opacity: 0, y: 12 }}
@@ -454,7 +441,7 @@ function RoleMatrix({ titleFr, subtitleFr, description, resources, granted, acti
         </div>
         {actions}
       </div>
-      <MatrixGrid resources={resources} granted={granted} />
+      <MatrixGrid resources={resources} granted={granted} t={t} />
     </motion.section>
   );
 }
@@ -469,19 +456,19 @@ function RoleMatrix({ titleFr, subtitleFr, description, resources, granted, acti
  * undefined ones as "—", which is how an administrator sees that "valider" is simply not a
  * concept for, say, notifications.
  */
-function MatrixGrid({ resources, granted, catalogue, onToggle }) {
+function MatrixGrid({ resources, granted, catalogue, onToggle, t }) {
   const editable = typeof onToggle === 'function';
   const defined = catalogue ? new Set(catalogue) : null;
 
   return (
     <div className="overflow-x-auto rounded-app border border-border">
-      <table className="w-full min-w-[520px] text-sm">
+      <table className="w-full min-w-130 text-sm">
         <thead>
           <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-            <th className="px-4 py-2 font-medium">Module</th>
-            {ACTION_COLUMNS.map((column) => (
-              <th key={column.action} className="px-3 py-2 text-center font-medium">
-                {column.labelFr}
+            <th className="px-4 py-2 font-medium">{t('admin.roles.matrix.module')}</th>
+            {ACTION_COLUMNS.map((action) => (
+              <th key={action} className="px-3 py-2 text-center font-medium">
+                {t(`admin.roles.actionColumns.${action}`)}
               </th>
             ))}
           </tr>
@@ -489,11 +476,12 @@ function MatrixGrid({ resources, granted, catalogue, onToggle }) {
         <tbody>
           {resources.map((resource) => (
             <tr key={resource} className="border-b border-border last:border-0">
-              <td className="px-4 py-2 text-text">{RESOURCE_LABELS[resource] ?? resource}</td>
-              {ACTION_COLUMNS.map((column) => {
-                const code = `${resource}:${column.action}`;
+              <td className="px-4 py-2 text-text">{t(`admin.roles.resources.${resource}`, resource)}</td>
+              {ACTION_COLUMNS.map((action) => {
+                const code = `${resource}:${action}`;
                 const exists = defined ? defined.has(code) : true;
                 const on = granted.has(code);
+                const actionLabel = t(`admin.roles.actionColumns.${action}`);
 
                 if (editable) {
                   return (
@@ -503,11 +491,11 @@ function MatrixGrid({ resources, granted, catalogue, onToggle }) {
                           type="checkbox"
                           checked={on}
                           onChange={() => onToggle(code)}
-                          aria-label={`${RESOURCE_LABELS[resource] ?? resource} — ${column.labelFr}`}
-                          className="accent-[var(--color-red-brand)]"
+                          aria-label={`${t(`admin.roles.resources.${resource}`, resource)} — ${actionLabel}`}
+                          className="accent-red-brand"
                         />
                       ) : (
-                        <span className="text-xs text-text-dim" title="Cette action n’existe pas pour ce module">
+                        <span className="text-xs text-text-dim" title={t('admin.roles.matrix.notApplicable')}>
                           —
                         </span>
                       )}
@@ -523,7 +511,7 @@ function MatrixGrid({ resources, granted, catalogue, onToggle }) {
                           ? 'inline-block h-2.5 w-2.5 rounded-full bg-red-brand'
                           : 'text-xs text-text-dim'
                       }
-                      aria-label={on ? 'Accordé' : 'Non accordé'}
+                      aria-label={on ? t('admin.roles.matrix.granted') : t('admin.roles.matrix.notGranted')}
                     >
                       {on ? '' : '—'}
                     </span>

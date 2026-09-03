@@ -1,11 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../../api/onboarding.js';
 import { PageLoading, PageError } from '../../../components/manager/PageStates.jsx';
 
+/** Values are protocol (sent to the API verbatim); only the visible label is translated. */
 const DEPARTMENTS = ['HR', 'IT', 'HSE', 'QUALITY', 'MANAGER', 'EMPLOYEE'];
+const DEPARTMENT_LABEL_KEYS = {
+  HR: 'manager.assignTask.departments.HR',
+  IT: 'manager.assignTask.departments.IT',
+  HSE: 'manager.assignTask.departments.HSE',
+  QUALITY: 'manager.assignTask.departments.QUALITY',
+  MANAGER: 'manager.assignTask.departments.MANAGER',
+  EMPLOYEE: 'manager.assignTask.departments.EMPLOYEE',
+};
 
 const fieldClass =
   'w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
@@ -17,6 +27,7 @@ const fieldClass =
  * than faked; the task itself still records title/description/due date/owner.)
  */
 export default function AssignTaskPage() {
+  const { t } = useTranslation();
   const { userId } = useParams();
   const navigate = useNavigate();
   const [recruit, setRecruit] = useState(null);
@@ -32,12 +43,12 @@ export default function AssignTaskPage() {
         const { data } = await onboardingApi.managerRecruit(userId);
         setRecruit(data);
       } catch {
-        setError('Recrue introuvable.');
+        setError(t('manager.recruitNotFound'));
       } finally {
         setLoading(false);
       }
     })();
-  }, [userId]);
+  }, [userId, t]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -49,20 +60,20 @@ export default function AssignTaskPage() {
       await onboardingApi.createManagerTask({ ...form, instanceId, dueDate: form.dueDate || null });
       navigate(`/app/manager/recruits/${userId}`);
     } catch {
-      setError("La création de la tâche a échoué.");
+      setError(t('manager.assignTask.createFailed'));
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement…" />;
+  if (loading) return <PageLoading label={t('common.states.loading')} />;
   if (error && !recruit) return <PageError message={error} />;
   if (!recruit) return null;
 
   return (
     <div className="mx-auto max-w-xl">
       <Link to={`/app/manager/recruits/${userId}`} className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← Retour à {recruit.displayName}
+        ← {t('manager.backTo', { name: recruit.displayName })}
       </Link>
 
       <motion.div
@@ -71,8 +82,8 @@ export default function AssignTaskPage() {
         transition={{ duration: 0.4 }}
         className="mb-6 border-b border-border pb-6"
       >
-        <h1 className="mb-1 font-display text-3xl text-red-deep">Assigner une tâche</h1>
-        <p className="text-text-dim">Nouvelle tâche ad hoc pour {recruit.displayName}.</p>
+        <h1 className="mb-1 font-display text-3xl text-red-deep">{t('manager.assignTask.title')}</h1>
+        <p className="text-text-dim">{t('manager.assignTask.subtitle', { name: recruit.displayName })}</p>
       </motion.div>
 
       <motion.form
@@ -83,7 +94,7 @@ export default function AssignTaskPage() {
         className="space-y-4 rounded-app border border-border bg-surface p-6 shadow-app"
       >
         <div>
-          <label className="mb-1 block text-sm font-medium text-text">Titre</label>
+          <label className="mb-1 block text-sm font-medium text-text">{t('common.labels.title')}</label>
           <input
             type="text"
             required
@@ -93,7 +104,7 @@ export default function AssignTaskPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-text">Description</label>
+          <label className="mb-1 block text-sm font-medium text-text">{t('common.labels.description')}</label>
           <textarea
             value={form.detailFr}
             onChange={(e) => setForm((prev) => ({ ...prev, detailFr: e.target.value }))}
@@ -103,7 +114,7 @@ export default function AssignTaskPage() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-text">Échéance</label>
+            <label className="mb-1 block text-sm font-medium text-text">{t('common.labels.dueDate')}</label>
             <input
               type="date"
               value={form.dueDate}
@@ -112,14 +123,16 @@ export default function AssignTaskPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-text">Responsable</label>
+            <label className="mb-1 block text-sm font-medium text-text">{t('manager.assignTask.owner')}</label>
             <select
               value={form.ownerDepartment}
               onChange={(e) => setForm((prev) => ({ ...prev, ownerDepartment: e.target.value }))}
               className={fieldClass}
             >
               {DEPARTMENTS.map((dep) => (
-                <option key={dep} value={dep}>{dep}</option>
+                <option key={dep} value={dep}>
+                  {DEPARTMENT_LABEL_KEYS[dep] ? t(DEPARTMENT_LABEL_KEYS[dep]) : dep}
+                </option>
               ))}
             </select>
           </div>
@@ -143,7 +156,7 @@ export default function AssignTaskPage() {
             to={`/app/manager/recruits/${userId}`}
             className="rounded-app border border-border px-4 py-2 text-sm font-medium text-text-dim transition hover:bg-surface-2"
           >
-            Annuler
+            {t('common.actions.cancel')}
           </Link>
           <motion.button
             type="submit"
@@ -164,7 +177,7 @@ export default function AssignTaskPage() {
                 {submitting && (
                   <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />
                 )}
-                {submitting ? 'Envoi…' : 'Assigner'}
+                {submitting ? t('common.states.sending') : t('manager.assignTask.submit')}
               </motion.span>
             </AnimatePresence>
           </motion.button>

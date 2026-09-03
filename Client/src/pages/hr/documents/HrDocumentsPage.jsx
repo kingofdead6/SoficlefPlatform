@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { documentsApi } from '../../../api/documents.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -37,6 +38,7 @@ const AVAILABILITY_LABELS = {
  * which are the only classification fields the model actually has.
  */
 export default function HrDocumentsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [storageConfigured, setStorageConfigured] = useState(true);
@@ -205,15 +207,15 @@ export default function HrDocumentsPage() {
     }));
   }
 
-  if (loading) return <PageLoading label="Chargement de la bibliothèque…" />;
+  if (loading) return <PageLoading label={t('hr.pages.documents.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Bibliothèque documentaire"
-        subtitle="Publier les documents de référence et suivre leurs accusés de lecture."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.pages.documents.title')}
+        subtitle={t('hr.pages.documents.subtitle')}
         actions={
           canCreate ? (
             <button

@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { auditApi } from '../../../api/audit.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 
-const URGENCY_LABELS = { HIGH: 'Urgent', NORMAL: 'Normal', LOW: 'Peut attendre' };
 const URGENCY_PILL = {
   HIGH: 'bg-status-red/10 text-status-red',
   NORMAL: 'bg-surface-2 text-text-dim',
@@ -52,6 +53,7 @@ const AGE_TEXT = {
  * different implementations to drift apart.
  */
 export default function AdminProvisioningPage() {
+  const { t, i18n } = useTranslation();
   const [queue, setQueue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,11 +65,11 @@ export default function AdminProvisioningPage() {
       setQueue(data);
       setError(null);
     } catch {
-      setError('Impossible de charger la file de provisionnement.');
+      setError(t('admin.provisioning.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -84,7 +86,7 @@ export default function AdminProvisioningPage() {
     };
   }, [queue]);
 
-  if (loading) return <PageLoading label="Chargement de la file…" />;
+  if (loading) return <PageLoading label={t('admin.provisioning.loading')} />;
   if (error) return <PageError message={error} />;
 
   const { requests, unplaced } = queue;
@@ -92,16 +94,16 @@ export default function AdminProvisioningPage() {
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Administration"
-        title="File de provisionnement"
-        subtitle="Les deux côtés du relais : ce que les RH ont demandé et que le SI n’a pas encore créé, et ce que le SI a créé et que personne n’a encore affecté."
+        eyebrow={t('admin.provisioning.eyebrow')}
+        title={t('admin.provisioning.title')}
+        subtitle={t('admin.provisioning.subtitle')}
         actions={
           <>
             <button type="button" onClick={load} className={SECONDARY_BUTTON}>
-              Actualiser
+              {t('admin.provisioning.refresh')}
             </button>
             <Link to="/admin/users" className={PRIMARY_BUTTON}>
-              Créer un compte
+              {t('admin.provisioning.createAccount')}
             </Link>
           </>
         }
@@ -113,29 +115,26 @@ export default function AdminProvisioningPage() {
         animate="visible"
         className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        <Tile label="Demandes RH ouvertes" value={stats.requests} tone={stats.requests > 0 ? 'red' : undefined} />
-        <Tile label="Comptes non affectés" value={stats.unplaced} tone={stats.unplaced > 0 ? 'red' : undefined} />
-        <Tile label={`En attente > ${AGING.warn} j`} value={stats.aging} tone={stats.aging > 0 ? 'red' : undefined} />
-        <Tile label="Attente la plus longue" value={stats.oldest} suffix=" j" />
+        <Tile label={t('admin.provisioning.tiles.openRequests')} value={stats.requests} tone={stats.requests > 0 ? 'red' : undefined} />
+        <Tile label={t('admin.provisioning.tiles.unplacedAccounts')} value={stats.unplaced} tone={stats.unplaced > 0 ? 'red' : undefined} />
+        <Tile label={t('admin.provisioning.tiles.aging', { days: AGING.warn })} value={stats.aging} tone={stats.aging > 0 ? 'red' : undefined} />
+        <Tile label={t('admin.provisioning.tiles.oldest')} value={stats.oldest} suffix=" j" />
       </motion.div>
 
       <div className="grid flex-1 gap-8 lg:grid-cols-2">
         {/* Side 1 — HR asked, SI has not created */}
         <section className="flex flex-col">
           <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="font-display text-xl text-text">Demandes en attente de création</h2>
+            <h2 className="font-display text-xl text-text">{t('admin.provisioning.requestsSide.title')}</h2>
             <span className="text-sm text-text-dim">{requests.length}</span>
           </div>
-          <p className="mb-4 text-sm text-text-dim">
-            Ouvertes par les RH pour un recrutement à venir. Chacune attend qu’un compte
-            soit créé sur la page Comptes.
-          </p>
+          <p className="mb-4 text-sm text-text-dim">{t('admin.provisioning.requestsSide.description')}</p>
 
           {requests.length === 0 ? (
             <EmptyState
               muted
-              title="Aucune demande en attente"
-              detail="Les RH n’ont aucune demande de compte ouverte : rien n’est bloqué de ce côté du relais."
+              title={t('admin.provisioning.requestsSide.empty')}
+              detail={t('admin.provisioning.requestsSide.emptyDetail')}
             />
           ) : (
             <motion.div
@@ -156,7 +155,7 @@ export default function AdminProvisioningPage() {
                       <div className="min-w-0">
                         <p className="font-medium text-text">{request.candidateNameFr}</p>
                         <p className="text-sm text-text-dim">
-                          {request.plannedPositionFr ?? 'Poste non précisé'}
+                          {request.plannedPositionFr ?? t('admin.provisioning.requestsSide.positionUnspecified')}
                         </p>
                       </div>
                       <span
@@ -164,28 +163,28 @@ export default function AdminProvisioningPage() {
                           URGENCY_PILL[request.urgency] ?? URGENCY_PILL.NORMAL
                         }`}
                       >
-                        {URGENCY_LABELS[request.urgency] ?? request.urgency}
+                        {t(`admin.provisioning.urgency.${request.urgency}`, request.urgency)}
                       </span>
                     </div>
 
                     <dl className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
-                      <Detail label="Demandé par" value={request.requestedBy?.displayName ?? '—'} />
+                      <Detail label={t('admin.provisioning.requestsSide.requestedBy')} value={request.requestedBy?.displayName ?? '—'} />
                       <Detail
-                        label="Embauche prévue"
+                        label={t('admin.provisioning.requestsSide.plannedHire')}
                         value={
                           request.plannedHireDate
-                            ? new Date(request.plannedHireDate).toLocaleDateString('fr-FR')
-                            : 'Non précisée'
+                            ? new Date(request.plannedHireDate).toLocaleDateString(localeOf(i18n))
+                            : t('admin.provisioning.requestsSide.plannedHireUnspecified')
                         }
                       />
                       <Detail
-                        label="Ouverte le"
-                        value={new Date(request.createdAt).toLocaleDateString('fr-FR')}
+                        label={t('admin.provisioning.requestsSide.openedOn')}
+                        value={new Date(request.createdAt).toLocaleDateString(localeOf(i18n))}
                       />
                       <div className="flex gap-1">
-                        <dt className="text-text-dim">En attente :</dt>
+                        <dt className="text-text-dim">{t('admin.provisioning.requestsSide.waiting')}</dt>
                         <dd className={`font-medium ${AGE_TEXT[tone]}`}>
-                          {request.waitingDays} jour(s)
+                          {t('admin.provisioning.requestsSide.waitingDays', { count: request.waitingDays })}
                         </dd>
                       </div>
                     </dl>
@@ -199,19 +198,16 @@ export default function AdminProvisioningPage() {
         {/* Side 2 — SI created, nobody placed */}
         <section className="flex flex-col">
           <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="font-display text-xl text-text">Comptes créés, non affectés</h2>
+            <h2 className="font-display text-xl text-text">{t('admin.provisioning.unplacedSide.title')}</h2>
             <span className="text-sm text-text-dim">{unplaced.length}</span>
           </div>
-          <p className="mb-4 text-sm text-text-dim">
-            Le compte existe et la personne peut se connecter, mais aucun poste ne lui est
-            rattaché : ni organigramme, ni parcours d’intégration, ni responsable.
-          </p>
+          <p className="mb-4 text-sm text-text-dim">{t('admin.provisioning.unplacedSide.description')}</p>
 
           {unplaced.length === 0 ? (
             <EmptyState
               muted
-              title="Aucun compte en suspens"
-              detail="Tous les comptes créés sont rattachés à un poste."
+              title={t('admin.provisioning.unplacedSide.empty')}
+              detail={t('admin.provisioning.unplacedSide.emptyDetail')}
             />
           ) : (
             <motion.div
@@ -234,7 +230,7 @@ export default function AdminProvisioningPage() {
                       <p className="font-medium text-text">{account.displayName}</p>
                       <p className="text-xs text-text-dim">{account.email}</p>
                       <p className="mt-1 text-xs text-text-dim">
-                        Créé le {new Date(account.createdAt).toLocaleDateString('fr-FR')}
+                        {t('admin.provisioning.unplacedSide.createdOn', { date: new Date(account.createdAt).toLocaleDateString(localeOf(i18n)) })}
                       </p>
                     </div>
                     <span className={`shrink-0 text-sm font-medium ${AGE_TEXT[tone]}`}>
@@ -249,11 +245,11 @@ export default function AdminProvisioningPage() {
       </div>
 
       <p className="mt-8 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-        Cette page observe le relais, elle ne l’exécute pas : la création d’un compte se fait
-        sur <Link to="/admin/users" className="text-red-brand hover:underline">Comptes</Link>, et
-        l’affectation à un poste relève des RH. Aucune relance automatique n’est envoyée —
-        aucun planificateur ne tourne dans l’application, et aucun relais SMTP n’est
-        raccordé. Les délais ci-dessus sont donc à lire, pas à attendre.
+        <Trans i18nKey="admin.provisioning.footnote">
+          text
+          <Link to="/admin/users" className="text-red-brand hover:underline">Comptes</Link>
+          text
+        </Trans>
       </p>
     </div>
   );

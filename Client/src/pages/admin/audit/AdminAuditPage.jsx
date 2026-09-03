@@ -1,47 +1,47 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { auditApi } from '../../../api/audit.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const FIELD =
-  'rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
+  'w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
 /**
- * The audit vocabulary, in French. Mirrors server domain/audit/actions.js: an action absent
- * from this map still renders — under its raw code — rather than being hidden, so a newly
- * added action is visible the day it first fires instead of the day someone remembers to
- * translate it.
+ * The audit vocabulary. Mirrors server domain/audit/actions.js: an action absent from this
+ * list still renders — under its raw code — rather than being hidden, so a newly added
+ * action is visible the day it first fires instead of the day someone remembers to translate
+ * it. Labels themselves live under admin.audit.actions.* in the catalogues.
  */
-const ACTION_LABELS = {
-  'auth.login': 'Connexion',
-  'auth.login_failed': 'Échec de connexion',
-  'auth.logout': 'Déconnexion',
-  'auth.session_revoked': 'Session révoquée',
-  'auth.password_changed': 'Mot de passe modifié',
-  'user.created': 'Compte créé',
-  'user.updated': 'Compte modifié',
-  'user.status_changed': 'Statut de compte modifié',
-  'user.role_assigned': 'Rôle attribué',
-  'user.role_revoked': 'Rôle retiré',
-  'user.role_assignment_denied': 'Attribution de rôle refusée',
-  'user.assigned': 'Affectation à un poste',
-  'user.assignment_ended': 'Fin d’affectation',
-  'role.permission_changed': 'Permissions modifiées',
-  'entity.created': 'Création',
-  'entity.updated': 'Modification',
-  'entity.deleted': 'Suppression',
-  'entity.validated': 'Validation',
-  'access.denied': 'Accès refusé',
-  'document.downloaded': 'Document téléchargé',
-  'report.exported': 'Rapport exporté',
-};
-
-const ACTION_OPTIONS = Object.keys(ACTION_LABELS);
+const ACTION_OPTIONS = [
+  'auth.login',
+  'auth.login_failed',
+  'auth.logout',
+  'auth.session_revoked',
+  'auth.password_changed',
+  'user.created',
+  'user.updated',
+  'user.status_changed',
+  'user.role_assigned',
+  'user.role_revoked',
+  'user.role_assignment_denied',
+  'user.assigned',
+  'user.assignment_ended',
+  'role.permission_changed',
+  'entity.created',
+  'entity.updated',
+  'entity.deleted',
+  'entity.validated',
+  'access.denied',
+  'document.downloaded',
+  'report.exported',
+];
 
 /** Actions that mean something went wrong, for the counter and the row tint. */
 const REFUSALS = new Set(['auth.login_failed', 'access.denied', 'user.role_assignment_denied']);
@@ -70,6 +70,7 @@ function csvCell(value) {
  * contained something other than what is on screen would be worse than no export.
  */
 export default function AdminAuditPage() {
+  const { t, i18n } = useTranslation();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -85,12 +86,12 @@ export default function AdminAuditPage() {
       setRows(data ?? []);
       setError(null);
     } catch {
-      setError('Impossible de charger le journal d’audit.');
+      setError(t('admin.audit.loadError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load(EMPTY_FILTERS);
@@ -124,12 +125,21 @@ export default function AdminAuditPage() {
    * that mangles every "é" is not an export.
    */
   function handleExport() {
-    const header = ['Date', 'Acteur', 'Action', 'Code action', 'Entité', 'Identifiant', 'Adresse IP'];
+    const actionLabel = (action) => t(`admin.audit.actions.${action}`, action);
+    const header = [
+      t('admin.audit.table.date'),
+      t('admin.audit.table.actor'),
+      t('admin.audit.table.action'),
+      t('common.labels.type'),
+      t('admin.audit.table.entity'),
+      t('common.labels.name'),
+      t('admin.audit.table.ip'),
+    ];
     const lines = rows.map((row) =>
       [
-        new Date(row.createdAt).toLocaleString('fr-FR'),
+        new Date(row.createdAt).toLocaleString(localeOf(i18n)),
         row.actorLabel,
-        ACTION_LABELS[row.action] ?? row.action,
+        actionLabel(row.action),
         row.action,
         row.entityType,
         row.entityId,
@@ -144,7 +154,7 @@ export default function AdminAuditPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `journal-audit-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `${t('admin.audit.exportFilePrefix')}-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -154,15 +164,15 @@ export default function AdminAuditPage() {
   const filtered =
     applied.search || applied.action || applied.from || applied.to;
 
-  if (loading) return <PageLoading label="Chargement du journal…" />;
+  if (loading) return <PageLoading label={t('admin.audit.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Administration"
-        title="Journal d’audit"
-        subtitle="Chaque connexion et chaque action enregistrée, avec son auteur, son horodatage et son adresse IP."
+        eyebrow={t('admin.audit.eyebrow')}
+        title={t('admin.audit.title')}
+        subtitle={t('admin.audit.subtitle')}
         actions={
           <button
             type="button"
@@ -170,7 +180,7 @@ export default function AdminAuditPage() {
             disabled={rows.length === 0}
             className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
           >
-            Exporter en CSV ({rows.length})
+            {t('admin.audit.exportButton', { count: rows.length })}
           </button>
         }
       />
@@ -181,39 +191,39 @@ export default function AdminAuditPage() {
         animate="visible"
         className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        <Tile label="Entrées affichées" value={stats.entries} />
-        <Tile label="Acteurs distincts" value={stats.actors} />
-        <Tile label="Types d’action" value={stats.distinctActions} />
-        <Tile label="Refus" value={stats.refusals} tone={stats.refusals > 0 ? 'red' : undefined} />
+        <Tile label={t('admin.audit.tiles.entries')} value={stats.entries} />
+        <Tile label={t('admin.audit.tiles.actors')} value={stats.actors} />
+        <Tile label={t('admin.audit.tiles.actionTypes')} value={stats.distinctActions} />
+        <Tile label={t('admin.audit.tiles.refusals')} value={stats.refusals} tone={stats.refusals > 0 ? 'red' : undefined} />
       </motion.div>
 
       <form onSubmit={handleSubmit} className={`${CARD} mb-6 flex flex-wrap items-end gap-3 p-4`}>
-        <div className="min-w-[12rem] flex-1">
-          <label className="mb-1 block text-xs font-medium text-text-dim">Acteur ou entité</label>
+        <div className="min-w-48 flex-1">
+          <label className="mb-1 block text-xs font-medium text-text-dim">{t('admin.audit.filters.searchLabel')}</label>
           <input
             value={filters.search}
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-            placeholder="Nom, e-mail, type d’entité…"
+            placeholder={t('admin.audit.filters.searchPlaceholder')}
             className={`${FIELD} w-full`}
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-text-dim">Action</label>
+          <label className="mb-1 block text-xs font-medium text-text-dim">{t('admin.audit.filters.actionLabel')}</label>
           <select
             value={filters.action}
             onChange={(e) => setFilters((f) => ({ ...f, action: e.target.value }))}
             className={FIELD}
           >
-            <option value="">Toutes</option>
+            <option value="">{t('admin.audit.filters.allActions')}</option>
             {ACTION_OPTIONS.map((action) => (
               <option key={action} value={action}>
-                {ACTION_LABELS[action]}
+                {t(`admin.audit.actions.${action}`)}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-text-dim">Du</label>
+          <label className="mb-1 block text-xs font-medium text-text-dim">{t('admin.audit.filters.fromLabel')}</label>
           <input
             type="date"
             value={filters.from}
@@ -222,7 +232,7 @@ export default function AdminAuditPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-text-dim">Au</label>
+          <label className="mb-1 block text-xs font-medium text-text-dim">{t('admin.audit.filters.toLabel')}</label>
           <input
             type="date"
             value={filters.to}
@@ -231,7 +241,7 @@ export default function AdminAuditPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-text-dim">Lignes</label>
+          <label className="mb-1 block text-xs font-medium text-text-dim">{t('admin.audit.filters.limitLabel')}</label>
           <select
             value={filters.limit}
             onChange={(e) => setFilters((f) => ({ ...f, limit: Number(e.target.value) }))}
@@ -246,11 +256,11 @@ export default function AdminAuditPage() {
         </div>
         <div className="flex gap-2">
           <button type="submit" disabled={refreshing} className={PRIMARY_BUTTON}>
-            {refreshing ? 'Filtrage…' : 'Filtrer'}
+            {refreshing ? t('admin.audit.filters.submitting') : t('admin.audit.filters.submit')}
           </button>
           {filtered && (
             <button type="button" onClick={handleReset} className={SECONDARY_BUTTON}>
-              Réinitialiser
+              {t('admin.audit.filters.reset')}
             </button>
           )}
         </div>
@@ -259,23 +269,19 @@ export default function AdminAuditPage() {
       {rows.length === 0 ? (
         <EmptyState
           muted
-          title="Aucune entrée"
-          detail={
-            filtered
-              ? 'Aucune entrée ne correspond à ces filtres. Élargissez la période ou changez d’action.'
-              : 'Le journal est vide : aucune action n’a encore été enregistrée sur cette instance.'
-          }
+          title={t('admin.audit.empty')}
+          detail={filtered ? t('admin.audit.emptyFiltered') : t('admin.audit.emptyAll')}
         />
       ) : (
         <div className={`overflow-x-auto ${CARD}`}>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Acteur</th>
-                <th className="px-4 py-3 font-medium">Action</th>
-                <th className="px-4 py-3 font-medium">Entité</th>
-                <th className="px-4 py-3 font-medium">Adresse IP</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.table.date')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.table.actor')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.table.action')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.table.entity')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.table.ip')}</th>
               </tr>
             </thead>
             <tbody>
@@ -289,7 +295,7 @@ export default function AdminAuditPage() {
                     }`}
                   >
                     <td className="whitespace-nowrap px-4 py-3 text-xs text-text-dim">
-                      {new Date(row.createdAt).toLocaleString('fr-FR')}
+                      {new Date(row.createdAt).toLocaleString(localeOf(i18n))}
                     </td>
                     <td className="px-4 py-3 text-text">{row.actorLabel ?? '—'}</td>
                     <td className="px-4 py-3">
@@ -298,7 +304,7 @@ export default function AdminAuditPage() {
                           refusal ? 'bg-status-red/10 text-status-red' : 'bg-surface-2 text-text-muted'
                         }`}
                       >
-                        {ACTION_LABELS[row.action] ?? row.action}
+                        {t(`admin.audit.actions.${row.action}`, row.action)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-text-dim">
@@ -315,11 +321,7 @@ export default function AdminAuditPage() {
       )}
 
       <p className="mt-6 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-        Les filtres sont appliqués par le serveur, sur l’ensemble du journal : filtrer une
-        page déjà chargée ne répondrait pas à « montre-moi tous les refus de mars ». Le
-        serveur plafonne une requête à 500 lignes. L’export CSV reprend exactement les{' '}
-        {rows.length} ligne(s) affichées ci-dessus — ni plus, ni moins — et le fichier est
-        généré dans votre navigateur, sans transiter par un service tiers.
+        {t('admin.audit.footnote', { count: rows.length })}
       </p>
     </div>
   );

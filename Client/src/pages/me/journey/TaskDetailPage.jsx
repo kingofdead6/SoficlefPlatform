@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../../api/onboarding.js';
 import { personalFilesApi } from '../../../api/personal-files.js';
@@ -9,7 +10,8 @@ import PageHeader from '../../../components/manager/PageHeader.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { sectionVariants, staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
 import { cn } from '../../../lib/cn.js';
-import { OWNER_DEPARTMENTS, STATUS_LABELS, STATUS_STYLES, TASK_PHASES } from './taskVocabulary.js';
+import { localeOf } from '../../../lib/formatDate.js';
+import { OWNER_DEPARTMENTS, STATUS_LABEL_KEYS, STATUS_STYLES, TASK_PHASES } from './taskVocabulary.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const SECTION_TITLE = 'font-display text-lg text-text';
@@ -29,6 +31,11 @@ const NEXT_STATUSES = {
  * the record still says what was agreed even after this string is edited. It is written to
  * be true of what the platform can actually prove: that an authenticated session belonging
  * to this person confirmed, at this instant, having read the task's document.
+ *
+ * Deliberately *not* translated. The record has to hold the words the person actually read,
+ * and the server column is a single French field — showing English while filing French
+ * would make the record a claim about words nobody saw. The panel around it is translated;
+ * the statement itself is quoted as-is in both languages, which is what a legal record does.
  */
 const SIGNATURE_STATEMENT_FR =
   'Je confirme avoir pris connaissance du document associé à cette étape et en accepter le contenu. Je reconnais que cette confirmation est enregistrée avec mon identifiant de compte, la date et l’heure.';
@@ -66,6 +73,9 @@ export default function TaskDetailPage() {
   const [selectedFileId, setSelectedFileId] = useState('');
   const fileInputRef = useRef(null);
   const reduce = useReducedMotion();
+  // Hooks run before the loading guard below, or the hook order changes between renders.
+  const { t, i18n } = useTranslation();
+  const locale = localeOf(i18n);
 
   const load = useCallback(async () => {
     setError(null);
@@ -79,11 +89,7 @@ export default function TaskDetailPage() {
       setDetail(detailRes.data);
       setFiles(filesRes.data ?? []);
     } catch (err) {
-      setError(
-        err instanceof ApiError && err.status === 404
-          ? "Cette étape n'existe pas dans votre parcours."
-          : "Impossible de charger cette étape.",
-      );
+      setError(err instanceof ApiError && err.status === 404 ? 'notFound' : 'load');
     } finally {
       setLoading(false);
     }
@@ -107,9 +113,12 @@ export default function TaskDetailPage() {
         status,
       });
       await load();
-      setNotice({ tone: 'ok', textFr: `Étape marquée « ${STATUS_LABELS[status].toLowerCase()} ».` });
+      setNotice({
+        tone: 'ok',
+        text: t('me.task.statusChanged', { status: t(STATUS_LABEL_KEYS[status]).toLowerCase() }),
+      });
     } catch (err) {
-      setNotice({ tone: 'error', textFr: messageOf(err, "La mise à jour de l'étape a échoué.") });
+      setNotice({ tone: 'error', text: messageOf(err, t('me.task.statusFailed')) });
     } finally {
       setBusy(null);
     }
@@ -126,9 +135,9 @@ export default function TaskDetailPage() {
       const { comments } = await onboardingApi.postTaskComment(detail.task.milestoneId, body);
       setDetail((current) => ({ ...current, comments }));
       setCommentDraft('');
-      setNotice({ tone: 'ok', textFr: 'Message envoyé.' });
+      setNotice({ tone: 'ok', text: t('me.task.comments.posted') });
     } catch (err) {
-      setNotice({ tone: 'error', textFr: messageOf(err, "L'envoi du message a échoué.") });
+      setNotice({ tone: 'error', text: messageOf(err, t('me.task.comments.postFailed')) });
     } finally {
       setBusy(null);
     }
@@ -140,9 +149,9 @@ export default function TaskDetailPage() {
     try {
       const { signature } = await onboardingApi.signTask(detail.task.milestoneId, SIGNATURE_STATEMENT_FR);
       setDetail((current) => ({ ...current, signature }));
-      setNotice({ tone: 'ok', textFr: 'Votre confirmation de lecture a été enregistrée.' });
+      setNotice({ tone: 'ok', text: t('me.task.signatureSaved') });
     } catch (err) {
-      setNotice({ tone: 'error', textFr: messageOf(err, "L'enregistrement a échoué.") });
+      setNotice({ tone: 'error', text: messageOf(err, t('me.task.saveFailed')) });
     } finally {
       setBusy(null);
     }
@@ -152,7 +161,7 @@ export default function TaskDetailPage() {
     event.preventDefault();
     const file = fileInputRef.current?.files?.[0];
     if (!selectedFileId || !file) {
-      setNotice({ tone: 'error', textFr: 'Choisissez la pièce concernée puis un fichier.' });
+      setNotice({ tone: 'error', text: t('me.task.files.pickBoth') });
       return;
     }
 
@@ -164,16 +173,18 @@ export default function TaskDetailPage() {
       setFiles(data);
       setSelectedFileId('');
       if (fileInputRef.current) fileInputRef.current.value = '';
-      setNotice({ tone: 'ok', textFr: 'Pièce transmise aux RH pour vérification.' });
+      setNotice({ tone: 'ok', text: t('me.task.files.submitted') });
     } catch (err) {
-      setNotice({ tone: 'error', textFr: messageOf(err, "La transmission a échoué.") });
+      setNotice({ tone: 'error', text: messageOf(err, t('me.task.files.submitFailed')) });
     } finally {
       setBusy(null);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement de l’étape…" />;
-  if (error) return <PageError message={error} />;
+  if (loading) return <PageLoading label={t('me.task.loading')} />;
+  if (error) {
+    return <PageError message={error === 'notFound' ? t('me.task.notFound') : t('me.task.loadFailed')} />;
+  }
   if (!detail) return null;
 
   const { task, history, comments, signature, previousId, nextId } = detail;
@@ -184,7 +195,9 @@ export default function TaskDetailPage() {
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow={phase ? `Mon parcours · ${phase.labelFr}` : 'Mon parcours'}
+        eyebrow={
+          phase ? t('me.task.eyebrowWithPhase', { phase: t(phase.labelKey) }) : t('me.task.eyebrow')
+        }
         title={task.titleFr}
         subtitle={task.dayLabelFr}
         actions={
@@ -193,14 +206,14 @@ export default function TaskDetailPage() {
               to="/app/me/journey"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Retour au parcours
+              {t('me.task.toJourney')}
             </Link>
             {previousId && (
               <Link
                 to={`/app/me/journey/${previousId}`}
                 className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
               >
-                ← Précédente
+                {t('me.task.previous')}
               </Link>
             )}
             {nextId && (
@@ -208,7 +221,7 @@ export default function TaskDetailPage() {
                 to={`/app/me/journey/${nextId}`}
                 className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text-dim transition-colors hover:border-red-brand hover:text-red-brand"
               >
-                Suivante →
+                {t('me.task.next')}
               </Link>
             )}
           </>
@@ -228,7 +241,7 @@ export default function TaskDetailPage() {
                 : 'border-status-red/40 bg-status-red/5 text-status-red',
             )}
           >
-            {notice.textFr}
+            {notice.text}
           </motion.p>
         )}
       </AnimatePresence>
@@ -244,50 +257,56 @@ export default function TaskDetailPage() {
           >
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', STATUS_STYLES[task.status])}>
-                {STATUS_LABELS[task.status]}
+                {t(STATUS_LABEL_KEYS[task.status] ?? '', { defaultValue: task.status })}
               </span>
-              {task.overdue && <span className="text-xs font-medium text-status-red">En retard</span>}
+              {task.overdue && (
+                <span className="text-xs font-medium text-status-red">{t('me.journey.overdue')}</span>
+              )}
               {task.dueSoon && !task.overdue && (
-                <span className="text-xs font-medium text-status-amber">Échéance proche</span>
+                <span className="text-xs font-medium text-status-amber">{t('me.journey.dueSoon')}</span>
               )}
               {!task.isRecommended && (
-                <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">Facultative</span>
+                <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">
+                  {t('me.journey.optional')}
+                </span>
               )}
             </div>
 
-            <h2 className={`mb-2 ${SECTION_TITLE}`}>Ce qui vous est demandé</h2>
+            <h2 className={`mb-2 ${SECTION_TITLE}`}>{t('me.task.brief')}</h2>
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-dim">{task.detailFr}</p>
 
             {task.noteFr && (
               <div className="mt-4 rounded-app border border-border bg-surface-2 p-3 text-sm text-text-dim">
-                <p className="mb-1 text-xs font-medium uppercase tracking-[0.08em] text-text-muted">Note</p>
+                <p className="mb-1 text-xs font-medium uppercase tracking-[0.08em] text-text-muted">
+                  {t('me.task.noteLabel')}
+                </p>
                 {task.noteFr}
               </div>
             )}
 
             <dl className="mt-6 grid gap-4 border-t border-border pt-5 sm:grid-cols-3">
-              <Field label="Service responsable">
+              <Field label={t('me.task.fields.owner')}>
                 {owner ? (
                   <>
-                    {owner.labelFr}
-                    <span className="block text-xs text-text-dim">{owner.detailFr}</span>
+                    {t(owner.labelKey)}
+                    <span className="block text-xs text-text-dim">{t(owner.detailKey)}</span>
                   </>
                 ) : (
-                  <span className="text-text-dim">Non déclaré sur cette étape</span>
+                  <span className="text-text-dim">{t('me.task.fields.noOwner')}</span>
                 )}
               </Field>
-              <Field label="Échéance">
+              <Field label={t('me.task.fields.dueDate')}>
                 {task.dueDate ? (
                   <span className={task.overdue ? 'text-status-red' : undefined}>
-                    {new Date(task.dueDate).toLocaleDateString('fr-FR')}
+                    {new Date(task.dueDate).toLocaleDateString(locale)}
                   </span>
                 ) : (
-                  <span className="text-text-dim">Aucune</span>
+                  <span className="text-text-dim">{t('me.task.fields.noDueDate')}</span>
                 )}
               </Field>
-              <Field label="Terminée le">
+              <Field label={t('me.task.fields.completedAt')}>
                 {task.completedAt ? (
-                  new Date(task.completedAt).toLocaleDateString('fr-FR')
+                  new Date(task.completedAt).toLocaleDateString(locale)
                 ) : (
                   <span className="text-text-dim">—</span>
                 )}
@@ -309,13 +328,13 @@ export default function TaskDetailPage() {
                         : 'border-border text-text hover:border-red-brand hover:text-red-brand',
                     )}
                   >
-                    {status === 'DONE' ? 'Marquer terminée' : STATUS_LABELS[status]}
+                    {status === 'DONE' ? t('me.journey.markDone') : t(STATUS_LABEL_KEYS[status])}
                   </button>
                 ))}
               </div>
             ) : (
               <p className="mt-6 border-t border-border pt-5 text-sm text-text-dim">
-                Cette étape a été validée par votre manager : elle ne peut plus être modifiée depuis votre espace.
+                {t('me.task.validatedNote')}
               </p>
             )}
           </motion.section>
@@ -328,24 +347,26 @@ export default function TaskDetailPage() {
             transition={{ delay: reduce ? 0 : 0.06 }}
             className={`${CARD} p-6`}
           >
-            <h2 className={`mb-1 ${SECTION_TITLE}`}>Confirmation de lecture</h2>
+            <h2 className={`mb-1 ${SECTION_TITLE}`}>{t('me.task.acknowledge.title')}</h2>
             <p className="mb-4 text-xs leading-relaxed text-text-dim">
-              Il ne s’agit pas d’une signature électronique qualifiée : la plateforme ne dispose ni d’autorité de
-              certification, ni de clé de signature, ni d’horodatage certifié. Ce qui est conservé est un
-              <strong className="font-medium text-text-muted"> accusé de lecture</strong> : votre identifiant de
-              compte, le texte exact auquel vous adhérez, la date et l’heure, et une empreinte SHA-256 de
-              l’ensemble qui permet de détecter une modification ultérieure de ce texte.
+              {t('me.task.acknowledge.disclaimer')}
+              <strong className="font-medium text-text-muted">
+                {t('me.task.acknowledge.disclaimerEmphasis')}
+              </strong>
+              {t('me.task.acknowledge.disclaimerEnd')}
             </p>
 
             {signature ? (
               <div className="rounded-app border border-status-green/40 bg-status-green/5 p-4">
-                <p className="text-sm font-medium text-status-green">Confirmation enregistrée</p>
+                <p className="text-sm font-medium text-status-green">{t('me.task.acknowledge.recorded')}</p>
                 <p className="mt-1 text-xs text-text-dim">
-                  Le {new Date(signature.signedAt).toLocaleString('fr-FR')}
+                  {t('me.task.acknowledge.recordedAt', {
+                    date: new Date(signature.signedAt).toLocaleString(locale),
+                  })}
                 </p>
                 <p className="mt-3 whitespace-pre-wrap text-sm text-text-dim">« {signature.statementFr} »</p>
                 <p className="mt-3 break-all font-mono text-[11px] text-text-dim">
-                  Empreinte : {signature.signatureHash}
+                  {t('me.task.acknowledge.hash', { hash: signature.signatureHash })}
                 </p>
               </div>
             ) : (
@@ -360,7 +381,7 @@ export default function TaskDetailPage() {
                     onChange={(event) => setSignatureAgreed(event.target.checked)}
                     className="mt-0.5 accent-[var(--color-red-brand)]"
                   />
-                  J’ai lu ce texte et je le confirme.
+                  {t('me.task.acknowledge.agreeLabel')}
                 </label>
                 <button
                   type="button"
@@ -368,7 +389,7 @@ export default function TaskDetailPage() {
                   onClick={sign}
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
                 >
-                  {busy === 'sign' ? 'Enregistrement…' : 'Enregistrer ma confirmation'}
+                  {busy === 'sign' ? t('me.task.acknowledge.saving') : t('me.task.acknowledge.submit')}
                 </button>
               </div>
             )}
@@ -381,11 +402,8 @@ export default function TaskDetailPage() {
             animate="visible"
             transition={{ delay: reduce ? 0 : 0.12 }}
           >
-            <h2 className={`mb-1 ${SECTION_TITLE}`}>Échanges sur cette étape</h2>
-            <p className="mb-4 text-xs text-text-dim">
-              Bloqué ou en doute ? Écrivez ici : votre manager et les RH voient ce fil depuis le dossier de votre
-              intégration.
-            </p>
+            <h2 className={`mb-1 ${SECTION_TITLE}`}>{t('me.task.comments.title')}</h2>
+            <p className="mb-4 text-xs text-text-dim">{t('me.task.comments.help')}</p>
 
             <motion.ul
               variants={staggerContainer(0.05)}
@@ -398,7 +416,7 @@ export default function TaskDetailPage() {
                   <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
                     <span className="text-sm font-medium text-text">{comment.authorLabel}</span>
                     <span className="text-xs text-text-dim">
-                      {new Date(comment.createdAt).toLocaleString('fr-FR')}
+                      {new Date(comment.createdAt).toLocaleString(locale)}
                     </span>
                   </div>
                   <p className="whitespace-pre-wrap text-sm text-text-dim">{comment.bodyFr}</p>
@@ -408,19 +426,19 @@ export default function TaskDetailPage() {
 
             {comments.length === 0 && (
               <div className="mb-4">
-                <EmptyState detail="Aucun message pour l’instant." muted />
+                <EmptyState detail={t('me.task.comments.empty')} muted />
               </div>
             )}
 
             <form onSubmit={postComment} className={`${CARD} p-4`}>
               <label className="block text-sm text-text-muted">
-                Votre message
+                {t('me.task.comments.yourMessage')}
                 <textarea
                   value={commentDraft}
                   onChange={(event) => setCommentDraft(event.target.value)}
                   rows={3}
                   maxLength={4000}
-                  placeholder="Ex. : je n’ai pas reçu le formulaire à signer, à qui dois-je m’adresser ?"
+                  placeholder={t('me.task.comments.placeholder')}
                   className="mt-1 w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand"
                 />
               </label>
@@ -429,7 +447,7 @@ export default function TaskDetailPage() {
                 disabled={busy === 'comment' || commentDraft.trim().length === 0}
                 className="mt-3 rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
               >
-                {busy === 'comment' ? 'Envoi…' : 'Envoyer'}
+                {busy === 'comment' ? t('me.task.comments.sending') : t('me.task.comments.send')}
               </button>
             </form>
           </motion.section>
@@ -444,18 +462,17 @@ export default function TaskDetailPage() {
             transition={{ delay: reduce ? 0 : 0.08 }}
             className={`${CARD} p-5`}
           >
-            <h2 className={`mb-1 ${SECTION_TITLE}`}>Pièces à fournir</h2>
+            <h2 className={`mb-1 ${SECTION_TITLE}`}>{t('me.task.files.title')}</h2>
             <p className="mb-4 text-xs text-text-dim">
-              Les pièces administratives ne sont pas rattachées à une étape précise dans la plateforme : elles
-              constituent votre dossier RH. Vous pouvez en transmettre une ici, elle apparaîtra dans
+              {t('me.task.files.help')}
               <Link to="/app/me/files" className="ml-1 font-medium text-red-brand hover:underline">
-                Mes justificatifs
+                {t('me.task.files.linkLabel')}
               </Link>
               .
             </p>
 
             {outstanding.length === 0 ? (
-              <EmptyState detail="Aucune pièce n’est attendue de votre part." muted />
+              <EmptyState detail={t('me.task.files.empty')} muted />
             ) : (
               <form onSubmit={submitFile} className="space-y-3">
                 <select
@@ -463,11 +480,11 @@ export default function TaskDetailPage() {
                   onChange={(event) => setSelectedFileId(event.target.value)}
                   className="w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand"
                 >
-                  <option value="">Choisir la pièce…</option>
+                  <option value="">{t('me.task.files.chooseOne')}</option>
                   {outstanding.map((file) => (
                     <option key={file.id} value={file.id}>
                       {file.labelFr}
-                      {file.status === 'REJECTED' ? ' (à refaire)' : ''}
+                      {file.status === 'REJECTED' ? t('me.task.files.redo') : ''}
                     </option>
                   ))}
                 </select>
@@ -481,7 +498,7 @@ export default function TaskDetailPage() {
                   disabled={busy === 'file'}
                   className="w-full rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
                 >
-                  {busy === 'file' ? 'Envoi…' : 'Transmettre la pièce'}
+                  {busy === 'file' ? t('me.task.files.sending') : t('me.task.files.submit')}
                 </button>
               </form>
             )}
@@ -493,24 +510,27 @@ export default function TaskDetailPage() {
             animate="visible"
             transition={{ delay: reduce ? 0 : 0.14 }}
           >
-            <h2 className={`mb-1 ${SECTION_TITLE}`}>Historique</h2>
-            <p className="mb-4 text-xs text-text-dim">
-              Reconstitué depuis le journal d’audit : chaque changement de statut, qui l’a fait et quand.
-            </p>
+            <h2 className={`mb-1 ${SECTION_TITLE}`}>{t('me.task.history.title')}</h2>
+            <p className="mb-4 text-xs text-text-dim">{t('me.task.history.help')}</p>
 
             {history.length === 0 ? (
-              <EmptyState detail="Aucun changement enregistré sur cette étape." muted />
+              <EmptyState detail={t('me.task.history.empty')} muted />
             ) : (
               <ol className="space-y-3 border-l border-border pl-4">
                 {history.map((entry, index) => (
                   <li key={`${entry.at}-${index}`} className="relative">
                     <span className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-red-brand" aria-hidden />
                     <p className="text-sm text-text">
-                      {entry.from ? `${STATUS_LABELS[entry.from] ?? entry.from} → ` : ''}
-                      <span className="font-medium">{STATUS_LABELS[entry.to] ?? entry.to}</span>
+                      {entry.from
+                        ? `${t(STATUS_LABEL_KEYS[entry.from] ?? '', { defaultValue: entry.from })} → `
+                        : ''}
+                      <span className="font-medium">
+                        {t(STATUS_LABEL_KEYS[entry.to] ?? '', { defaultValue: entry.to })}
+                      </span>
                     </p>
                     <p className="text-xs text-text-dim">
-                      {entry.actorLabel ?? 'Système'} · {new Date(entry.at).toLocaleString('fr-FR')}
+                      {entry.actorLabel ?? t('me.task.history.system')} ·{' '}
+                      {new Date(entry.at).toLocaleString(locale)}
                     </p>
                   </li>
                 ))}

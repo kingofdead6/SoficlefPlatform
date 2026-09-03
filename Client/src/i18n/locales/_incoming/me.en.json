@@ -1,0 +1,761 @@
+{
+  "assistant": {
+    "agents": {
+      "available": "Available",
+      "unavailable": "Outside your permissions"
+    },
+    "empty": {
+      "detail": "Your account has read access to none of the resources these agents query.",
+      "title": "No agent available"
+    },
+    "generic": {
+      "agentsTitle": "The five agents",
+      "intro": "Five agents, each limited to the resources it declares it reads. Every answer is built from data you can already consult, and cites its sources.",
+      "rule": "An unbreakable rule, whichever agent you ask: an answer always cites its source, or admits it found nothing. An agent reads with the permissions of the person asking — it can never surface data that person could not open themselves. The sources shown always come from the retrieval step, never from text written by the model.",
+      "title": "Assistant"
+    },
+    "loading": "Loading the assistant…",
+    "loadFailed": "Could not load the assistant."
+  },
+  "me": {
+    "assistant": {
+      "agentsTitle": "The platform's agents",
+      "noJourney": "No onboarding journey is linked to your account.",
+      "placeholders": {
+        "competencies": "E.g. which competencies are expected in my position?",
+        "default": "Ask your question…",
+        "documents": "E.g. where is the leave procedure?",
+        "onboarding": "E.g. which steps do I still have to complete?",
+        "orientation": "E.g. who handles employment contracts?",
+        "training": "E.g. which modules do I still have to pass?"
+      },
+      "rights": "An agent never sees more than you do: it queries the same data, with your own permissions, and an answer always cites its source or admits it found nothing.",
+      "status": {
+        "openSurveys": "Surveys to complete",
+        "overdue": "Overdue steps",
+        "progress": "Journey progress",
+        "title": "Where I stand",
+        "trainingOutstanding": "Modules to pass"
+      },
+      "subtitle": "A question about who does what, about your journey, your training, the procedures or the competencies expected of you? The assistant searches the data you are allowed to consult, and cites what it found.",
+      "suggestions": {
+        "competencies1": "Which competencies does my position require?",
+        "competencies2": "What are my competency gaps?",
+        "documents1": "Where can I find the internal regulations?",
+        "documents2": "What is the procedure for leave?",
+        "documents3": "Where is the IT charter?",
+        "onboarding1": "Which steps of my journey are still outstanding?",
+        "onboarding2": "What is overdue?",
+        "onboarding3": "What should I do this week?",
+        "orientation1": "Who is responsible for quality?",
+        "orientation2": "Who do I contact about my badge?",
+        "orientation3": "Who manages human resources?",
+        "training1": "Which modules are mandatory?",
+        "training2": "How far along am I with my training?",
+        "training3": "What is the pass mark?"
+      },
+      "title": "Assistant"
+    },
+    "dashboard": {
+      "askQuestion": "Ask a question",
+      "contacts": {
+        "allContacts": "All key contacts",
+        "hr": "HR contact",
+        "manager": "My manager",
+        "none": "Not recorded yet.",
+        "seeTeam": "See my team",
+        "extension": "Ext. {{extension}}"
+      },
+      "countdown": {
+        "afterBadge": "D+{{count}}",
+        "afterDetail_one": "{{count}} day since you started.",
+        "afterDetail_other": "{{count}} days since you started.",
+        "beforeBadge": "D-{{count}}",
+        "beforeDetail_one": "You start in {{count}} day.",
+        "beforeDetail_other": "You start in {{count}} days.",
+        "dayOneBadge": "Day one",
+        "dayOneDetail": "Today is your first day.",
+        "label": "Countdown",
+        "none": "No start date is recorded on your account."
+      },
+      "greeting": "Hello, {{name}}",
+      "loadFailed": "Could not load your dashboard.",
+      "loading": "Loading your dashboard…",
+      "myJourney": "My journey",
+      "nextTasks": {
+        "emptyDetail": "No step is waiting on you right now.",
+        "emptyTitle": "Nothing pending",
+        "overdue": "Overdue",
+        "title": "Next steps"
+      },
+      "openSurveys": "Surveys to complete",
+      "phaseLabel": "Current phase",
+      "phases": {
+        "COMPLETED": {
+          "detail": "Every step of your onboarding journey is done.",
+          "label": "Journey complete"
+        },
+        "DAY_ONE": {
+          "detail": "Welcome, badge, workstation: your first day.",
+          "label": "Day one"
+        },
+        "PRE_ONBOARDING": {
+          "detail": "The administrative steps to prepare before your first day.",
+          "label": "Before you arrive"
+        },
+        "PROBATION": {
+          "detail": "Settling in, training and review points with your manager.",
+          "label": "Probation period"
+        }
+      },
+      "progress": {
+        "done_one": "{{done}} of {{total}} step completed",
+        "done_other": "{{done}} of {{total}} steps completed",
+        "overdue_one": "{{count}} overdue step",
+        "overdue_other": "{{count}} overdue steps",
+        "seeFullJourney": "See the full journey"
+      },
+      "subtitleUnassigned": "Position being assigned — {{detail}}",
+      "subtitleWithPosition": "{{position}} — {{detail}}",
+      "trainingOutstanding": "Modules to pass"
+    },
+    "documents": {
+      "acknowledgeButton": "I have read and accept this",
+      "acknowledged": "Read and accepted",
+      "acknowledgedAt": "Confirmed on {{date}}",
+      "acknowledgeFailed": "Your confirmation could not be recorded.",
+      "acknowledgeOk": "“{{title}}”: reading confirmed.",
+      "close": "Close",
+      "emptyDetail": "The document library is empty for now.",
+      "emptyTitle": "No document published",
+      "families": {
+        "it": {
+          "detail": "How company equipment, accounts and data are to be used.",
+          "label": "IT charter"
+        },
+        "others": {
+          "detail": "Published documents that fall into none of the categories above.",
+          "label": "Other documents"
+        },
+        "procedures": {
+          "detail": "Leave, expense claims, quality management system procedures.",
+          "label": "HR and quality procedures"
+        },
+        "rules": {
+          "detail": "The rules that apply to every employee.",
+          "label": "Internal regulations"
+        },
+        "welcome": {
+          "detail": "What to know on arrival: the company, its sites, how things are done.",
+          "label": "Welcome guide"
+        }
+      },
+      "figures": {
+        "acknowledged": "Readings confirmed",
+        "pendingOnYou": "Waiting on you",
+        "published": "Documents published"
+      },
+      "iframeFallback": "If the document does not display here (a format the browser cannot render), use “Open in a tab”.",
+      "loadFailed": "Could not load the document library.",
+      "loading": "Loading documents…",
+      "noFile": "No file is attached to this document yet, so it cannot be read or acknowledged.",
+      "openInTab": "Open in a tab",
+      "pending": "Not available yet",
+      "read": "Read",
+      "subtitle": "The reference documents to read when you arrive. Confirming that you have read one records the date and time; HR follow this from their library.",
+      "title": "My documents",
+      "toRead": "To read"
+    },
+    "eyebrow": "My space",
+    "files": {
+      "emptyDetail": "No supporting document is required from you at the moment. HR add here whatever they need.",
+      "emptyTitle": "Nothing to provide",
+      "figures": {
+        "accepted": "Accepted",
+        "pendingOnYou": "Waiting on you",
+        "requested": "Requested",
+        "underReview": "Under review"
+      },
+      "loadError": "Loading error.",
+      "loadFailed": "Could not load your supporting documents.",
+      "loading": "Loading your supporting documents…",
+      "note": "Note: {{note}}",
+      "notePlaceholder": "Note for HR (optional)",
+      "pickFile": "Choose a file before sending it.",
+      "reviewedAt": " · reviewed on {{date}}",
+      "sending": "Sending…",
+      "status": {
+        "ACCEPTED": {
+          "label": "Accepted",
+          "lead": "Checked and accepted by HR."
+        },
+        "REJECTED": {
+          "label": "To redo",
+          "lead": "HR need a new version of this document."
+        },
+        "REQUESTED": {
+          "label": "To provide",
+          "lead": "HR are waiting for this document."
+        },
+        "SUBMITTED": {
+          "label": "Sent",
+          "lead": "Received. Awaiting HR review — nothing more to do on your side."
+        }
+      },
+      "submit": "Send",
+      "submitFailed": "The upload failed.",
+      "submitOk": "“{{label}}” sent to HR.",
+      "submittedAt": "Sent on {{date}}",
+      "subtitle": "The supporting documents HR have requested: proof of identity, diplomas, bank details, medical certificate.",
+      "title": "My supporting documents",
+      "viewFile": "View the file you sent"
+    },
+    "journey": {
+      "allPhases": "All phases",
+      "backToDashboard": "Dashboard",
+      "blocked": {
+        "askHelp": "Ask for help",
+        "noOwner": "This step is blocked. No department is recorded as responsible for it: raise it with your manager.",
+        "withOwner": "This step is blocked. Department responsible: {{department}} — {{detail}}"
+      },
+      "dueDate": "Due: {{date}}",
+      "dueSoon": "Due soon",
+      "emptyDetail": "No onboarding journey is linked to your account yet. HR create one when you are assigned to a position.",
+      "emptyPhase": "No step in this phase.",
+      "emptyTitle": "No journey recorded",
+      "figures": {
+        "blocked": "Blocked",
+        "completed": "Completed",
+        "overdue": "Overdue",
+        "phases": "Phases"
+      },
+      "loadFailed": "Could not load your onboarding journey.",
+      "loading": "Loading your journey…",
+      "markDone": "Mark as done",
+      "openTask": "Open the step →",
+      "optional": "Optional",
+      "overdue": "Overdue",
+      "statusChanged": "“{{title}}”: {{status}}.",
+      "statusFailed": "The step could not be updated.",
+      "subtitle": "The roadmap of your onboarding, step by step.",
+      "title": "My onboarding journey",
+      "titleShort": "My journey",
+      "unphased": {
+        "detail": "These steps have no phase declared in the onboarding template.",
+        "label": "Steps not attached to a phase"
+      },
+      "validatedByManager": "Validated by your manager"
+    },
+    "organigram": {
+      "badgeYou": "You",
+      "emptyDetail": "No position is linked to your account yet, so there is no starting point from which to draw your org chart. HR enable it when you are assigned.",
+      "emptyTitle": "Org chart unavailable",
+      "loadFailed": "Could not load the org chart.",
+      "loading": "Loading the org chart…",
+      "noSearchMatch": "No position matches this search.",
+      "scopeNote": "You only see a window around your own position: how far up and down it reaches is a platform setting, applied server-side.",
+      "searchPlaceholder": "Search a position, a person, a unit…",
+      "sheet": {
+        "close": "Close",
+        "department": "Department / unit",
+        "email": "Email",
+        "eyebrow": "Job description · view only",
+        "footnote": "This sheet shows what the org chart holds about this position. The full detail of a role (duties, tasks, required competencies) belongs to the job description repository, which HR hold.",
+        "itsYou": "This is you",
+        "noReports": "None",
+        "noSuperior": "No superior position visible",
+        "noUnit": "No unit",
+        "occupancy": "Occupancy",
+        "occupied": "Position filled",
+        "phone": "Extension",
+        "reports": "Direct reports",
+        "reportsTo": "Reports to",
+        "vacant": "vacant"
+      },
+      "subtitle": "Your place in the organisation: your reporting line upwards, colleagues at your level, and the positions reporting to yours.",
+      "tiles": {
+        "myManager": "My manager",
+        "myPosition": "My position",
+        "peers": "Colleagues at my level",
+        "reports": "Positions reporting to mine",
+        "unassigned": "Unassigned"
+      },
+      "title": "Org chart",
+      "visibleCount": "{{visible}} / {{total}} positions visible"
+    },
+    "position": {
+      "competencies": {
+        "columns": {
+          "acquired": "Assessed",
+          "competency": "Competency",
+          "family": "Family",
+          "required": "Required",
+          "status": "Status"
+        },
+        "empty": "No competency is declared for this position.",
+        "figures": {
+          "conforme": "Meeting the level",
+          "critique": "Critical",
+          "toDevelop": "To develop"
+        },
+        "help": "The level the position expects, against your assessed level. Assessments are entered by your manager.",
+        "noMatrix": "No competency framework is attached to this position at the moment.",
+        "title": "Required competencies"
+      },
+      "dossier": {
+        "body": "The detailed job description — duties, standing tasks, responsibilities, training and experience requirements — is a versioned document held by human resources. Your account gives no direct read access to it; ask your HR contact for it.",
+        "link": "My HR contact →",
+        "title": "The full dossier"
+      },
+      "emptyDetail": "No position is associated with your account yet. HR handle the assignment, and this sheet fills in at that point.",
+      "emptyTitle": "No position assigned",
+      "equipment": {
+        "emptyDetail": "The platform keeps no inventory of assigned equipment: there is no equipment table, and inventing a list here would be false. What was issued to you appears in the steps of your journey that the IT department owns.",
+        "emptyTitle": "No equipment register",
+        "link": "See the steps of my journey →",
+        "title": "Assigned equipment"
+      },
+      "fullOrgChart": "Full org chart",
+      "gapStatus": {
+        "a-developper": "To develop",
+        "conforme": "Meets the level",
+        "critique": "Critical",
+        "non-evalue": "Not assessed"
+      },
+      "loadFailed": "Could not load your job description.",
+      "loading": "Loading your job description…",
+      "mission": {
+        "empty": "No mission statement is written for this position in the platform. The full job description dossier (duties, standing tasks, responsibilities) is held by human resources.",
+        "title": "Mission"
+      },
+      "noUnit": "No unit recorded",
+      "reportingLine": {
+        "noReports": "None",
+        "noSuperior": "No superior position visible",
+        "reports": "Direct reports ({{count}})",
+        "superior": "Superior",
+        "title": "Reporting line",
+        "vacant": "vacant"
+      },
+      "snippet": {
+        "empty": "Your position does not yet appear in the org chart.",
+        "help": "Your branch: the position you report to, positions at the same level, and those reporting to you.",
+        "title": "My place in the organisation"
+      },
+      "tiles": {
+        "code": "Position code",
+        "reportsTo": "Reports to",
+        "title": "Job title",
+        "unit": "Unit"
+      },
+      "title": "My job description"
+    },
+    "surveys": {
+      "answered": "Answered",
+      "cancel": "Cancel",
+      "commentLabel": "Comment (optional)",
+      "commentPlaceholder": "What went well, what could be improved…",
+      "due": "Due: {{date}}",
+      "emptyDetail": "The review points are created at the same time as your onboarding journey.",
+      "emptyTitle": "No survey scheduled",
+      "figures": {
+        "answered": "Answered",
+        "milestones": "Review points",
+        "open": "Open",
+        "overdue": "Overdue"
+      },
+      "indicators": {
+        "MANAGER_RELATIONSHIP": {
+          "help": "Conversations, feedback, review points.",
+          "label": "Relationship with your manager"
+        },
+        "ROLE_CLARITY": {
+          "help": "Do you know what is expected of you and how it is measured?",
+          "label": "Clarity of your role"
+        },
+        "SUPPORT_LEVEL": {
+          "help": "How available the people helping you find your feet have been.",
+          "label": "Support"
+        },
+        "WELCOME_QUALITY": {
+          "help": "Your arrival, your first day, how ready your workstation was.",
+          "label": "Quality of the welcome"
+        },
+        "WORKING_CONDITIONS": {
+          "help": "Premises, equipment, safety, organisation.",
+          "label": "Working conditions"
+        }
+      },
+      "indicatorsFilled": "{{answered}} / {{total}} indicators answered",
+      "loadFailed": "Could not load your surveys.",
+      "loading": "Loading your surveys…",
+      "notOpen": "Not open yet",
+      "notOpenYet": "This survey opens on its due date: it measures how you feel at that precise point of the journey.",
+      "open": "Open",
+      "overdue": "Overdue",
+      "pickOne": "Answer at least one indicator before sending.",
+      "respond": "Answer",
+      "respondedOn": " · answered on {{date}}",
+      "roundTitle": "Review point D+{{days}}",
+      "scale": {
+        "1": "Very dissatisfied",
+        "2": "Dissatisfied",
+        "3": "Neutral",
+        "4": "Satisfied",
+        "5": "Very satisfied"
+      },
+      "score": "{{score}} / 5",
+      "sending": "Sending…",
+      "submit": "Send my answers",
+      "submitFailed": "Your answers could not be sent.",
+      "submitOk": "Thank you. Your answers to the D+{{days}} survey have been recorded.",
+      "subtitle": "Four review points — D+7, D+30, D+60 and D+90 — to say how your onboarding is going. Your individual answers are not shown by name in the HR dashboards.",
+      "title": "My satisfaction surveys",
+      "yourComment": "Your comment"
+    },
+    "task": {
+      "acknowledge": {
+        "agreeLabel": "I have read this text and confirm it.",
+        "disclaimer": "This is not a qualified electronic signature: the platform has no certificate authority, no signing key and no certified timestamping. What is kept is a",
+        "disclaimerEmphasis": " read receipt",
+        "disclaimerEnd": ": your account identifier, the exact text you agreed to, the date and time, and a SHA-256 fingerprint of the whole, which makes any later change to that text detectable.",
+        "hash": "Fingerprint: {{hash}}",
+        "recorded": "Confirmation recorded",
+        "recordedAt": "On {{date}}",
+        "saving": "Saving…",
+        "submit": "Record my confirmation",
+        "title": "Reading confirmation"
+      },
+      "brief": "What is asked of you",
+      "comments": {
+        "empty": "No message yet.",
+        "help": "Stuck or unsure? Write here: your manager and HR see this thread from your onboarding file.",
+        "placeholder": "E.g. I have not received the form to sign, who should I ask?",
+        "postFailed": "The message could not be sent.",
+        "posted": "Message sent.",
+        "send": "Send",
+        "sending": "Sending…",
+        "title": "Discussion on this step",
+        "yourMessage": "Your message"
+      },
+      "eyebrow": "My journey",
+      "eyebrowWithPhase": "My journey · {{phase}}",
+      "fields": {
+        "completedAt": "Completed on",
+        "dueDate": "Due date",
+        "noDueDate": "None",
+        "noOwner": "Not recorded on this step",
+        "owner": "Department responsible"
+      },
+      "files": {
+        "chooseOne": "Choose the document…",
+        "empty": "No document is expected from you.",
+        "help": "Supporting documents are not attached to a specific step in the platform: they make up your HR file. You can send one here, and it will appear in",
+        "linkLabel": "My supporting documents",
+        "pickBoth": "Choose the document concerned, then a file.",
+        "redo": " (to redo)",
+        "sending": "Sending…",
+        "submit": "Send the document",
+        "submitFailed": "The upload failed.",
+        "submitted": "Document sent to HR for review.",
+        "title": "Documents to provide"
+      },
+      "history": {
+        "empty": "No change recorded on this step.",
+        "help": "Reconstructed from the audit log: every status change, who made it and when.",
+        "system": "System",
+        "title": "History"
+      },
+      "loading": "Loading the step…",
+      "loadFailed": "Could not load this step.",
+      "next": "Next →",
+      "noteLabel": "Note",
+      "notFound": "This step does not exist in your journey.",
+      "previous": "← Previous",
+      "saveFailed": "Saving failed.",
+      "signatureSaved": "Your reading confirmation has been recorded.",
+      "statusChanged": "Step marked “{{status}}”.",
+      "statusFailed": "The step could not be updated.",
+      "toJourney": "Back to the journey",
+      "validatedNote": "This step has been validated by your manager: it can no longer be changed from your space."
+    },
+    "team": {
+      "avatarLabel": "Profile photo",
+      "avatarSaved": "Profile photo saved. It appears on your org chart card.",
+      "avatarUploadFailed": "The photo could not be uploaded.",
+      "avatarUploading": "Uploading the photo…",
+      "contacts": {
+        "empty": "No contact is published in the directory at the moment.",
+        "help": "The company's published directory, grouped by department. The number shown is the internal extension.",
+        "title": "Key contacts"
+      },
+      "extension": "Ext. {{extension}}",
+      "loadFailed": "Could not load your team.",
+      "loading": "Loading your team…",
+      "manager": {
+        "empty": "No manager is recorded on your account. HR fill this link in at the time of assignment.",
+        "noPosition": "Position not recorded",
+        "title": "My manager"
+      },
+      "me": {
+        "noPosition": "No position assigned",
+        "title": "Me"
+      },
+      "orgChart": "Org chart",
+      "peers": {
+        "empty": "No colleague at your level appears: either your position has no superior position declared, or you are alone at that level.",
+        "help": "The people holding a position that reports to the same superior position as yours.",
+        "title": "My colleagues"
+      },
+      "services": {
+        "hr": "Human resources",
+        "hse": "Health, safety and environment",
+        "it": "IT",
+        "others": "Other contacts",
+        "quality": "Quality"
+      },
+      "subtitle": "Your manager, the colleagues who share your reporting line, and the departments to contact depending on the subject.",
+      "title": "My team"
+    },
+    "training": {
+      "catalogue": {
+        "emptyDetail": "The training catalogue is empty for now.",
+        "emptyTitle": "No module published",
+        "figures": {
+          "journey": "Journey",
+          "journeyComplete": "Complete",
+          "journeyInProgress": "In progress",
+          "mandatoryPassed": "Mandatory modules passed",
+          "offered": "Modules offered"
+        },
+        "groups": {
+          "mandatory": {
+            "detail": "To be passed in order to complete your onboarding journey.",
+            "label": "Mandatory modules"
+          },
+          "optional": {
+            "detail": "Short modules, to take whenever you like.",
+            "label": "Optional micro-learning"
+          }
+        },
+        "loadFailed": "Could not load your training.",
+        "loading": "Loading your training…",
+        "subtitle": "The modules to take during your onboarding. Each module ends with a quiz; the module is passed above the mark it sets.",
+        "title": "My training"
+      },
+      "certificates": {
+        "disclaimerEmphasis": "neither electronically signed nor verifiable",
+        "disclaimerEnd": " by a third party: the platform has no certificate authority. The reference that counts is the attempt identifier shown on each certificate, which HR can look up in the platform.",
+        "disclaimerStart": "The certificates produced here are printable documents generated by your browser. They are ",
+        "emptyDetail": "A certificate is issued the first time you pass a module. Pass a module to obtain one.",
+        "emptyTitle": "No certificate yet",
+        "figures": {
+          "lastIssued": "Last issued",
+          "mandatory": "Of which mandatory modules",
+          "total": "Certificates"
+        },
+        "issuedOn": "Issued on {{date}} · pass mark {{threshold}} %",
+        "loadFailed": "Could not load your certificates.",
+        "loading": "Loading your certificates…",
+        "mandatory": "Mandatory",
+        "passedAt": "Passed at {{score}} %",
+        "print": {
+          "attemptRef": "Attempt reference",
+          "heading": "Training certificate",
+          "holderLine": "has passed the following training module:",
+          "issuedBy": "Issued by the Soficlef onboarding platform.",
+          "issuedOn": "Date of issue",
+          "kind": "Type",
+          "mandatory": "Mandatory",
+          "module": "Module",
+          "note": "This document is a certificate printed from the platform. It is neither electronically signed nor verifiable by a third party: the platform has no certificate authority. The attempt reference above is what the human resources department can look up in the platform's records.",
+          "optional": "Optional",
+          "score": "Score obtained",
+          "scoreValue": "{{score}} % — pass mark {{threshold}} %",
+          "title": "Certificate — {{module}}",
+          "txtFileName": "certificate-{{code}}.txt",
+          "txtHeading": "TRAINING CERTIFICATE",
+          "txtHolder": "Holder",
+          "txtIssuedOn": "Date of issue",
+          "txtKind": "Type",
+          "txtModule": "Module",
+          "txtNote1": "This document is neither electronically signed nor verifiable by a third party.",
+          "txtNote2": "The reference above is what the HR department can look up.",
+          "txtPlatform": "Soficlef onboarding platform",
+          "txtRef": "Reference",
+          "txtScore": "Score obtained",
+          "txtScoreValue": "{{score}} % (pass mark {{threshold}} %)"
+        },
+        "printButton": "Print / save",
+        "reference": "Reference: {{id}}",
+        "reviewModule": "Review the module",
+        "subtitle": "The modules you have passed, with the date each was issued.",
+        "textCopy": "Text copy",
+        "title": "My certificates",
+        "toModules": "Back to the modules"
+      },
+      "eyebrow": "My training",
+      "module": {
+        "allModules": "All modules",
+        "answeredCount": "{{answered}} / {{total}} question(s) answered · pass mark {{threshold}} %",
+        "answerAll": "Answer every question ({{count}} remaining).",
+        "alreadyCertified": "This module was already passed: the existing certificate keeps its original date.",
+        "bestResult": "Your best result on this module:",
+        "bestResultThreshold": "(pass mark {{threshold}} %).",
+        "certificateSaved": "Certificate recorded in your name.",
+        "correctCount": "{{correct}} correct answer(s) out of {{total}} · pass mark {{threshold}} %",
+        "failed": "Pass mark not reached",
+        "grading": "Marking…",
+        "loading": "Loading the module…",
+        "loadFailed": "Could not load this module.",
+        "myCertificates": "My certificates",
+        "noQuizDetail": "This module has no questions yet: there is therefore nothing to pass and no certificate to issue.",
+        "noQuizTitle": "No quiz",
+        "notFound": "Module not found.",
+        "passed": "Module passed",
+        "placeholderDetail": "This module is marked as provisional in the catalogue: HR have not written its content yet.",
+        "placeholderTitle": "Provisional content",
+        "rereadContent": "Reread the content",
+        "retake": "Retake the quiz",
+        "retry": "Try again",
+        "startQuiz": "Go to the quiz",
+        "steps": {
+          "lesson": "Content",
+          "quiz": "Quiz",
+          "result": "Result"
+        },
+        "submitFailed": "The quiz could not be submitted.",
+        "submitQuiz": "Submit my answers",
+        "toModules": "Back to the modules",
+        "viewCertificate": "View my certificate"
+      },
+      "moduleCard": {
+        "bestScore": "Best result: {{score}} %",
+        "mandatory": "Mandatory",
+        "notAttempted": "Not attempted yet",
+        "passedSuffix": " · module passed",
+        "questions_one": "{{count}} question",
+        "questions_other": "{{count}} questions",
+        "retry": "Try again",
+        "review": "Review the module",
+        "start": "Start",
+        "threshold": "Pass mark {{score}} %"
+      }
+    },
+    "vocabulary": {
+      "owners": {
+        "EMPLOYEE": {
+          "detail": "this step is yours: nothing is pending on any department.",
+          "label": "You"
+        },
+        "HR": {
+          "detail": "contract, administrative file, supporting documents.",
+          "label": "Human resources"
+        },
+        "HSE": {
+          "detail": "protective equipment, safety instructions.",
+          "label": "Health, safety and environment"
+        },
+        "IT": {
+          "detail": "account, equipment, application access.",
+          "label": "IT"
+        },
+        "MANAGER": {
+          "detail": "objectives, review points, validation of steps.",
+          "label": "Your manager"
+        },
+        "QUALITY": {
+          "detail": "procedures, management system documents.",
+          "label": "Quality"
+        }
+      },
+      "phases": {
+        "DAY_ONE": {
+          "detail": "Your welcome day: badge, workstation, meeting the team.",
+          "label": "Day one"
+        },
+        "PRE_ONBOARDING": {
+          "detail": "What is prepared before your first day: administrative file, contract, access.",
+          "label": "Before you arrive"
+        },
+        "PROBATION": {
+          "detail": "Settling into the role: training, review points and appraisals.",
+          "label": "Probation period"
+        }
+      },
+      "status": {
+        "BLOCKED": "Blocked",
+        "DONE": "Done",
+        "IN_PROGRESS": "In progress",
+        "TODO": "To do",
+        "VALIDATED": "Validated"
+      }
+    },
+    "welcome": {
+      "contacts": {
+        "hr": "HR: {{name}} — ext. {{extension}}",
+        "manager": "Manager: {{name}} ({{email}})",
+        "title": "Contacts"
+      },
+      "dayNumber": "Day {{count}} of your onboarding.",
+      "greeting": "Welcome, {{name}}",
+      "loadFailed": "Could not load your welcome space.",
+      "nextTasks": {
+        "due": " — due {{date}}",
+        "empty": "No step pending.",
+        "title": "Next steps"
+      },
+      "notStarted": "Your onboarding journey has not started yet.",
+      "progress": {
+        "steps": "{{done}}/{{total}} steps completed",
+        "title": "My progress"
+      }
+    }
+  },
+  "notifications": {
+    "empty": "No notifications.",
+    "loadFailed": "Could not load the notifications.",
+    "markAllRead": "Mark all as read",
+    "markRead": "Mark as read",
+    "open": "Open →",
+    "title": "Notifications",
+    "unread_one": "{{count}} unread",
+    "unread_other": "{{count}} unread",
+    "allRead": "Everything is read."
+  },
+  "onboarding": {
+    "checklist": {
+      "columns": {
+        "employee": "Employee",
+        "progress": "Progress",
+        "startDate": "Start",
+        "template": "Template"
+      },
+      "empty": "No journey.",
+      "loadFailed": "Could not load the journeys.",
+      "subtitle": "The onboarding journeys visible within your perimeter.",
+      "title": "Onboarding checklist"
+    },
+    "dashboard": {
+      "empty": "No indicator is available for your profile.",
+      "loadFailed": "Could not load the dashboard.",
+      "subtitle": "The indicators visible within your perimeter.",
+      "tiles": {
+        "averageOnboardingDays": "Average onboarding time",
+        "averagePercent": "Average progress",
+        "completionRate": "Completion rate",
+        "confirmationRate": "Confirmation rate",
+        "criticalGaps": "Critical gaps",
+        "jobDescriptionCoverage": "Job description coverage",
+        "journeys": "Journeys in progress",
+        "overdueTasks": "Overdue tasks",
+        "satisfaction": "Satisfaction",
+        "trainingRate": "Training rate",
+        "turnover": "6-month turnover",
+        "unitsWithoutHead": "Units without a head"
+      },
+      "title": "Steering",
+      "daysSuffix": "{{count}} d"
+    }
+  }
+}

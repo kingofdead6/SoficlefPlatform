@@ -1,0 +1,194 @@
+{
+  "common": {
+    "states": {
+      "unavailableForNow": "Unavailable at the moment."
+    }
+  },
+  "auth": {
+    "login": {
+      "backToSite": "Back to the site",
+      "emailLabel": "Work email",
+      "emailPlaceholder": "firstname.lastname@soficlef.local",
+      "highlight1": "Your onboarding journey, step by step",
+      "highlight2": "Your documents, training and supporting files",
+      "highlight3": "Your place in the org chart",
+      "hidePassword": "Hide",
+      "invalidCredentials": "Invalid credentials.",
+      "lede": "Access your journey and your documents.",
+      "noAccessNote": "No access yet? Your account is created by IT, then assigned by HR.",
+      "panelTitle": "Your employee space",
+      "passwordLabel": "Password",
+      "showPassword": "Show",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "title": "Sign in",
+      "tooManyAttempts": "Too many attempts. Please wait a few minutes before trying again."
+    },
+    "pending": {
+      "body": "Your account has not been assigned to a position yet. HR will place you shortly.",
+      "title": "Account pending"
+    }
+  },
+  "public": {
+    "assistant": {
+      "askButton": "Ask",
+      "asking": "Searching…",
+      "askFailed": "The search failed. Please try again in a moment.",
+      "defaultEmptyDetail": "Ask a question, or pick one of the suggestions above.",
+      "defaultPlaceholder": "Ask your question…",
+      "degraded": {
+        "error": "The model could not be reached — here are the search results.",
+        "modelLoading": "The model is starting up (about 20s) — here are the search results in the meantime.",
+        "rateLimited": "The model's quota has been reached — here are the search results.",
+        "timeout": "The model did not respond in time — here are the search results."
+      },
+      "noAnswer": "I found nothing matching in the data you are allowed to see. Rather than give an approximate answer, the assistant prefers to assert nothing: rephrase the question, or go straight to the relevant section.",
+      "providerNone": "No language model is connected: the assistant answers by searching the data visible to you, and cites what it finds.",
+      "providerNote": "Answers written by {{model}} ({{provider}}), drawn solely from data you can already access.",
+      "providerNoteFallbackModel": "a language model",
+      "questionLabel": "Your question",
+      "sources": "Sources",
+      "tooManyQuestions": "Too many questions in a short time. Please try again in a moment.",
+      "ungroundedBadge": "General knowledge — outside SOFICLEF data",
+      "ungroundedNote": "No internal information matched this question. This answer comes from the model's general knowledge: check it with HR before relying on it."
+    },
+    "company": {
+      "ctaLede": "Divisions, production units and functional cells — the full org chart.",
+      "ctaTitle": "How we are organised",
+      "eyebrow": "The company",
+      "heroLede": "From manufacturing lock bodies to nationwide distribution, SOFICLEF designs and produces from Boumerdès the components that secure doors, safes and buildings.",
+      "heroTitle": "Thirty years of Algerian <0>industrial locksmithing</0>",
+      "identity": {
+        "certification": "Certification",
+        "eyebrow": "Company profile",
+        "foundedCity": "City of incorporation",
+        "foundedYear": "Year of incorporation",
+        "generalManager": "General management",
+        "headquarters": "Head office",
+        "legalForm": "Legal form",
+        "legalName": "Registered name",
+        "status": "Status",
+        "title": "The facts, unpackaged"
+      },
+      "loadFailed": "Company information is unavailable at the moment.",
+      "milestones": {
+        "eyebrow": "Milestones",
+        "m1994Body": "SOFICLEF is founded as a limited company, built on opening and locking solutions.",
+        "m1994Title": "Founded in Algiers",
+        "m2017Body": "The quality management system is certified ISO 9001:2015 in September.",
+        "m2017Title": "ISO 9001 certification",
+        "mTodayBody": "Authorised Economic Operator status recognises the reliability of the logistics and customs chain.",
+        "mTodayTitle": "Authorised Economic Operator",
+        "title": "A few dates",
+        "today": "Today"
+      },
+      "mission": "Mission",
+      "tradesTitle": "Produce, distribute, deliver",
+      "vision": "Vision"
+    },
+    "footer": {
+      "discover": "Discover",
+      "employeeArea": "Employee space",
+      "headquarters": "Head office",
+      "headquartersAddress": "Si Mustapha\nBoumerdès, Algeria",
+      "quality": "Quality",
+      "qualityDetail": "ISO 9001:2015\nAuthorised Economic Operator",
+      "rights": "© {{year}} SOFICLEF SARL — All rights reserved.",
+      "tagline": "Opening and locking solutions, made in Algeria since 1994."
+    },
+    "home": {
+      "capabilities": {
+        "journeyBody": "From assignment to the end of the probation period, every step has a due date and an owner. Delays show up before the deadline, not after it.",
+        "journeyTitle": "A journey that is followed",
+        "skillsBody": "A matrix per position, compared against the employee's actual level. The gaps feed the training plan rather than a binder.",
+        "skillsTitle": "Skills that are assessed",
+        "structureBody": "Every position reports to a manager, every manager to a division. The org chart is not an annual document: it is the source that assignments and reviews read from.",
+        "structureLink": "View the org chart",
+        "structureTitle": "A structure you can read"
+      },
+      "ctaLede": "Your employee space brings together your journey, your documents, your training and your org chart.",
+      "ctaLink": "Go to my space",
+      "ctaTitle": "Joining SOFICLEF?",
+      "cursorDiscover": "Discover",
+      "cursorView": "View",
+      "eyebrow": "SOFICLEF SARL · since 1994",
+      "heroCtaCompany": "Discover the company",
+      "heroCtaOrg": "Our organisation",
+      "heroLedeFallback": "Solutions combining design, reliability and comfort — engineered, manufactured and distributed from Boumerdès.",
+      "heroTitle": "Protecting life and property,<0> part by part.</0>",
+      "platform": {
+        "eyebrow": "The onboarding platform",
+        "lede": "SOFICLEF supports every employee from assignment through to the end of their probation period. The journey is the same for everyone; what it contains depends on the position.",
+        "title": "Onboarding that is followed through, not just started."
+      },
+      "stats": {
+        "certifiedSince": "Certified since 2017",
+        "foundedIn": "Founded in {{city}}",
+        "trustedOperator": "Authorised Economic Operator",
+        "trustedOperatorAcronym": "AEO",
+        "warehouse": "Logistics warehouse"
+      },
+      "tradesEyebrow": "What we do",
+      "tradesTitle": "Three divisions, one standard of reliability.",
+      "valuesEyebrow": "What we stand for",
+      "valuesTitle": "Our values",
+      "visionEyebrow": "Our vision",
+      "visionFallback": "To become the national leader in innovative opening and locking solutions.",
+      "visionQuote": "“{{vision}}”",
+      "visionRole": "General Manager"
+    },
+    "links": {
+      "theCompany": "The company",
+      "ourStrategy": "Our strategy",
+      "viewOrgChart": "View the org chart"
+    },
+    "marks": {
+      "key": "SOFICLEF key, graphic mark",
+      "lockKey": "Lock and key, SOFICLEF graphic mark",
+      "takeover": "SOFICLEF in a word"
+    },
+    "org": {
+      "chartEyebrow": "Overview",
+      "chartLede": "Click an entity to read its remit. The diagram scrolls horizontally on the widest levels.",
+      "chartTitle": "The structure, from the top to the shop floor",
+      "ctaLede": "Internally, every position on this chart carries a job description, a manager and an onboarding journey.",
+      "ctaTitle": "This structure is lived day to day",
+      "detailEyebrow": "The detail",
+      "detailTitle": "What each entity does",
+      "eyebrow": "Organisation",
+      "heroLede": "Operational divisions, production units and functional cells, each with a defined remit. It is this same structure that assignments and onboarding journeys read from internally.",
+      "heroTitle": "The <0>SOFICLEF</0> org chart",
+      "loadFailed": "The org chart is unavailable at the moment.",
+      "loading": "Loading the org chart…",
+      "notPublished": "The structure has not been published yet.",
+      "types": {
+        "celluleHelp": "The cross-cutting support functions.",
+        "celluleLabel": "Functional cells",
+        "directionHelp": "The top of the structure.",
+        "directionLabel": "Executive management",
+        "structureHelp": "The major operational groupings.",
+        "structureLabel": "Divisions",
+        "uniteProductionHelp": "The workshops, attached to a division.",
+        "uniteProductionLabel": "Production units"
+      }
+    },
+    "strategy": {
+      "ctaLede": "These objectives cascade into the company's divisions, units and cells.",
+      "ctaTitle": "A strategy carried by a structure",
+      "eyebrowFallback": "Strategic plan",
+      "heroTitle": "Where we are going, and <0>how we get there</0>",
+      "loadFailed": "The strategy is unavailable at the moment.",
+      "loading": "Loading the strategy…",
+      "marketsEyebrow": "Our markets",
+      "marketsLede": "For each market served: an approach, a market share target and a revenue target.",
+      "marketsTitle": "One objective per market",
+      "marketShare": "Market share",
+      "projectsEyebrow": "Flagship projects",
+      "projectsTitle": "Work in progress",
+      "revenue": "Revenue"
+    },
+    "takeover": {
+      "body": "Since 1994 we have designed and manufactured in Algeria the locks, handles and safes that protect life and property — from the lock body to nationwide distribution."
+    }
+  }
+}

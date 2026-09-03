@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { adminApi } from '../../../api/admin.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -7,6 +8,7 @@ import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, sectionVariants, initialOrNone } from '../../../lib/motion/variants.js';
 import Toggle from '../../../components/ui/Toggle.jsx';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const field =
@@ -28,6 +30,7 @@ const field =
  * screen, so the split is stated rather than smoothed over.
  */
 export default function SecurityPage() {
+  const { t, i18n } = useTranslation();
   const [report, setReport] = useState(null);
   const [policy, setPolicy] = useState(null);
   const [stored, setStored] = useState(false);
@@ -46,7 +49,7 @@ export default function SecurityPage() {
       setStored(Boolean(policyRes.stored));
       setIpText((policyRes.data.ipAllowlist ?? []).join('\n'));
     } catch {
-      setError('Impossible de charger la configuration de sécurité.');
+      setError(t('admin.security.loadError'));
     } finally {
       setLoading(false);
     }
@@ -64,29 +67,29 @@ export default function SecurityPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 1600);
     } catch {
-      setError("L'enregistrement de la politique a échoué.");
+      setError(t('admin.security.recordedPolicy.saveFailed'));
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement de la configuration…" />;
+  if (loading) return <PageLoading label={t('admin.security.loading')} />;
   if (error && !report) return <PageError message={error} />;
   if (!report || !policy) return null;
 
   const tiles = [
-    { label: 'Sessions ouvertes', value: report.activeSessions },
-    { label: 'Sessions révoquées', value: report.revokedSessions },
-    { label: 'Échecs de connexion (24 h)', value: report.failedLogins24h },
-    { label: 'Durée de session', value: report.sessionTtlHours, suffix: ' h' },
+    { label: t('admin.security.tiles.activeSessions'), value: report.activeSessions },
+    { label: t('admin.security.tiles.revokedSessions'), value: report.revokedSessions },
+    { label: t('admin.security.tiles.failedLogins24h'), value: report.failedLogins24h },
+    { label: t('admin.security.tiles.sessionDuration'), value: report.sessionTtlHours, suffix: ' h' },
   ];
 
   return (
     <div>
       <PageHeader
-        eyebrow="Administration"
-        title="Sécurité"
-        subtitle="Ce que le service applique réellement, et la politique enregistrée à côté."
+        eyebrow={t('admin.security.eyebrow')}
+        title={t('admin.security.title')}
+        subtitle={t('admin.security.subtitle')}
       />
 
       <motion.div
@@ -111,47 +114,42 @@ export default function SecurityPage() {
         animate="visible"
         className="mb-10"
       >
-        <h2 className="mb-1 font-display text-xl text-text">En vigueur</h2>
-        <p className="mb-4 text-sm text-text-dim">
-          Valeurs lues dans la configuration validée au démarrage. Elles se modifient au
-          déploiement, pas depuis cet écran.
-        </p>
+        <h2 className="mb-1 font-display text-xl text-text">{t('admin.security.inEffect.title')}</h2>
+        <p className="mb-4 text-sm text-text-dim">{t('admin.security.inEffect.subtitle')}</p>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className={`${CARD} p-4`}>
-            <p className="text-sm font-medium text-text">Mots de passe</p>
+            <p className="text-sm font-medium text-text">{t('admin.security.inEffect.passwords')}</p>
             <p className="mt-1 text-sm text-text-dim">
-              Longueur minimale : {report.passwordMinLength} caractères. Hachés avec Argon2id,
-              jamais stockés ni journalisés sous une autre forme.
+              {t('admin.security.inEffect.passwordsDetail', { length: report.passwordMinLength })}
             </p>
             <p className="mt-2 font-mono text-[11px] text-text-dim">
-              Argon2id · mémoire {report.argon2?.memoryKib} Kio · {report.argon2?.iterations} itération(s) ·
-              parallélisme {report.argon2?.parallelism}
+              {t('admin.security.inEffect.argon2Detail', {
+                memory: report.argon2?.memoryKib,
+                iterations: report.argon2?.iterations,
+                parallelism: report.argon2?.parallelism,
+              })}
             </p>
           </div>
 
           <div className={`${CARD} p-4`}>
-            <p className="text-sm font-medium text-text">Sessions</p>
+            <p className="text-sm font-medium text-text">{t('admin.security.inEffect.sessions')}</p>
             <p className="mt-1 text-sm text-text-dim">
-              Durée de {report.sessionTtlHours} heures, prolongée au plus une fois par fenêtre de{' '}
-              {report.sessionRenewWindowMinutes} minutes. Révocation immédiate à la requête suivante.
+              {t('admin.security.inEffect.sessionsDetail', {
+                hours: report.sessionTtlHours,
+                minutes: report.sessionRenewWindowMinutes,
+              })}
             </p>
           </div>
 
           <div className={`${CARD} p-4`}>
-            <p className="text-sm font-medium text-text">Chiffrement</p>
-            <p className="mt-1 text-sm text-text-dim">
-              Échanges chiffrés en transit (TLS). Le chiffrement au repos dépend de l'hébergeur
-              et n'est pas vérifiable depuis l'application.
-            </p>
+            <p className="text-sm font-medium text-text">{t('admin.security.inEffect.encryption')}</p>
+            <p className="mt-1 text-sm text-text-dim">{t('admin.security.inEffect.encryptionDetail')}</p>
           </div>
 
           <div className={`${CARD} p-4`}>
-            <p className="text-sm font-medium text-text">Protection contre le rejeu</p>
-            <p className="mt-1 text-sm text-text-dim">
-              Chaque mutation exige un jeton CSRF, et les tentatives de connexion sont limitées
-              en fréquence. Les refus d'accès sont journalisés.
-            </p>
+            <p className="text-sm font-medium text-text">{t('admin.security.inEffect.replayProtection')}</p>
+            <p className="mt-1 text-sm text-text-dim">{t('admin.security.inEffect.replayProtectionDetail')}</p>
           </div>
         </div>
       </motion.section>
@@ -162,19 +160,21 @@ export default function SecurityPage() {
         animate="visible"
         transition={{ delay: reduce ? 0 : 0.08 }}
       >
-        <h2 className="mb-1 font-display text-xl text-text">Politique enregistrée</h2>
+        <h2 className="mb-1 font-display text-xl text-text">{t('admin.security.recordedPolicy.title')}</h2>
         <p className="mb-4 max-w-2xl text-sm text-text-dim">
-          Cette politique est enregistrée et journalisée, mais <strong>aucun composant ne la
-          lit encore</strong> : elle exprime une intention, pas une contrainte appliquée. Les
-          valeurs réellement en vigueur restent celles du bloc ci-dessus.
-          {!stored && ' Aucune politique n’a encore été enregistrée — les valeurs affichées sont les valeurs par défaut.'}
+          <Trans i18nKey="admin.security.recordedPolicy.subtitle">
+            Cette politique est enregistrée et journalisée, mais <strong>aucun composant ne la
+            lit encore</strong> : elle exprime une intention, pas une contrainte appliquée. Les
+            valeurs réellement en vigueur restent celles du bloc ci-dessus.
+          </Trans>
+          {!stored && t('admin.security.recordedPolicy.neverSavedNote')}
         </p>
 
         <div className={`${CARD} max-w-2xl space-y-5 p-5`}>
           <label className="flex items-center justify-between gap-4">
             <span>
-              <span className="block text-sm font-medium text-text">Longueur minimale du mot de passe</span>
-              <span className="block text-xs text-text-dim">Entre 8 et 128 caractères.</span>
+              <span className="block text-sm font-medium text-text">{t('admin.security.recordedPolicy.minLength')}</span>
+              <span className="block text-xs text-text-dim">{t('admin.security.recordedPolicy.minLengthHint')}</span>
             </span>
             <input
               type="number"
@@ -195,23 +195,21 @@ export default function SecurityPage() {
               accessible name instead. */}
           <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
             <span>
-              <span className="block text-sm font-medium text-text">Authentification multifacteur exigée</span>
-              <span className="block text-xs text-text-dim">
-                Non implémentée : prévue via Entra ID plutôt que réimplémentée ici.
-              </span>
+              <span className="block text-sm font-medium text-text">{t('admin.security.recordedPolicy.mfaRequired')}</span>
+              <span className="block text-xs text-text-dim">{t('admin.security.recordedPolicy.mfaRequiredHint')}</span>
             </span>
             <Toggle
               checked={policy.mfaRequired}
               disabled={saving}
               onChange={(next) => savePolicy({ mfaRequired: next })}
-              label="Authentification multifacteur exigée"
+              label={t('admin.security.recordedPolicy.mfaRequired')}
             />
           </div>
 
           <label className="flex items-center justify-between gap-4 border-t border-border pt-4">
             <span>
-              <span className="block text-sm font-medium text-text">Durée de session souhaitée</span>
-              <span className="block text-xs text-text-dim">En heures. La durée appliquée reste celle du déploiement.</span>
+              <span className="block text-sm font-medium text-text">{t('admin.security.recordedPolicy.sessionDuration')}</span>
+              <span className="block text-xs text-text-dim">{t('admin.security.recordedPolicy.sessionDurationHint')}</span>
             </span>
             <input
               type="number"
@@ -228,11 +226,8 @@ export default function SecurityPage() {
           </label>
 
           <div className="border-t border-border pt-4">
-            <p className="text-sm font-medium text-text">Restrictions par adresse IP</p>
-            <p className="mb-2 text-xs text-text-dim">
-              Une entrée par ligne. Enregistrée seulement : le filtrage se pose au niveau du
-              réseau ou du reverse proxy, pas dans l'application.
-            </p>
+            <p className="text-sm font-medium text-text">{t('admin.security.recordedPolicy.ipAllowlist')}</p>
+            <p className="mb-2 text-xs text-text-dim">{t('admin.security.recordedPolicy.ipAllowlistHint')}</p>
             <textarea
               rows={4}
               value={ipText}
@@ -244,7 +239,7 @@ export default function SecurityPage() {
                   savePolicy({ ipAllowlist: list });
                 }
               }}
-              placeholder="10.0.0.0/8"
+              placeholder={t('admin.security.recordedPolicy.ipAllowlistPlaceholder')}
               className={`${field} w-full font-mono text-xs`}
             />
           </div>
@@ -252,11 +247,11 @@ export default function SecurityPage() {
           <div className="flex items-center justify-between border-t border-border pt-4">
             <span className="text-xs text-text-dim">
               {policy.updatedAt
-                ? `Dernière modification : ${new Date(policy.updatedAt).toLocaleString('fr-FR')}`
-                : 'Jamais modifiée.'}
+                ? t('admin.security.recordedPolicy.lastModified', { date: new Date(policy.updatedAt).toLocaleString(localeOf(i18n)) })
+                : t('admin.security.recordedPolicy.neverModified')}
             </span>
             <span className={`text-xs text-status-green transition-opacity ${saved ? 'opacity-100' : 'opacity-0'}`}>
-              Enregistré.
+              {t('admin.security.recordedPolicy.saved')}
             </span>
           </div>
         </div>

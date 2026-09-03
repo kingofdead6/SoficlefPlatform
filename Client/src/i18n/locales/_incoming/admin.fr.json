@@ -1,0 +1,267 @@
+{
+  "accountRequests": {
+    "columns": {
+      "candidate": "Candidat",
+      "waiting": "Attente"
+    },
+    "empty": "Aucune demande.",
+    "fields": {
+      "candidateName": "Nom du candidat",
+      "note": "Note (facultatif)",
+      "plannedHireDate": "Date d'embauche prévue",
+      "plannedPosition": "Poste prévu",
+      "urgency": "Urgence"
+    },
+    "formFieldError": "Vérifiez les champs du formulaire.",
+    "intro": "Demander à SI la création d'un compte pour un futur collaborateur. Les RH ne créent pas de compte elles-mêmes : ceci enregistre une demande que SI traite.",
+    "loadFailed": "Impossible de charger les demandes.",
+    "newRequest": "Nouvelle demande",
+    "openRequests": "Demandes en cours",
+    "saveFailed": "La demande n'a pas pu être enregistrée.",
+    "status": {
+      "created": "Compte créé",
+      "open": "Ouverte",
+      "rejected": "Rejetée"
+    },
+    "submit": "Envoyer la demande",
+    "title": "Demandes de compte",
+    "urgency": {
+      "normal": "Normale",
+      "urgent": "Urgente"
+    },
+    "waitingDays_one": "{{count}} j",
+    "waitingDays_other": "{{count}} j"
+  },
+  "company": {
+    "activities": "Activités",
+    "certification": "Certification : {{value}}",
+    "founded": "Fondée en {{year}} à {{city}}",
+    "generalManager": "Direction générale : {{value}}",
+    "headquarters": "Siège : {{value}}",
+    "mission": "Mission",
+    "status": "Statut : {{value}}",
+    "title": "Entreprise",
+    "unavailable": "Les informations sur l'entreprise ne sont pas encore disponibles.",
+    "values": "Nos valeurs",
+    "vision": "Vision"
+  },
+  "competencies": {
+    "columns": {
+      "actual": "Acquis",
+      "competency": "Compétence",
+      "family": "Famille",
+      "required": "Requis"
+    },
+    "competencyCount_one": "{{count}} compétence",
+    "competencyCount_other": "{{count}} compétences",
+    "gap": {
+      "aDevelopper": "À développer",
+      "conforme": "Conforme",
+      "critique": "Critique",
+      "nonEvalue": "Non évalué"
+    },
+    "loadPositionsFailed": "Impossible de charger les postes.",
+    "subtitle": "Matrice compétences par poste et analyse des écarts.",
+    "summary": {
+      "conforming": "Conformes",
+      "conformityRate": "Taux de conformité",
+      "critical": "Critiques",
+      "toDevelop": "À développer"
+    },
+    "title": "Compétences"
+  },
+  "contacts": {
+    "columns": {
+      "extension": "Poste",
+      "initials": "Sigle",
+      "priority": "Priorité",
+      "role": "Fonction"
+    },
+    "title": "Interlocuteurs",
+    "unavailable": "L'annuaire des interlocuteurs n'est pas encore disponible."
+  },
+  "documents": {
+    "acknowledgeAction": "J'ai lu et j'accepte",
+    "acknowledgeFailed": "Échec de l'acceptation.",
+    "acknowledgedOn": "Accepté le {{date}}",
+    "badges": {
+      "available": "Disponible",
+      "pending": "En attente"
+    },
+    "openFile": "Ouvrir le fichier",
+    "sections": {
+      "available": "Documents disponibles",
+      "pending": "Documents en attente"
+    },
+    "title": "Documents",
+    "unavailable": "La bibliothèque de documents n'est pas encore disponible."
+  },
+  "hse": {
+    "circulationPlan": "Plan de circulation",
+    "contact": "Contact HSE : {{value}}",
+    "ppeRules": "Équipements de protection obligatoires",
+    "riskArea": "Zone à risque",
+    "trafficRules": "Règles de circulation",
+    "unavailable": "Les consignes HSE ne sont pas encore disponibles.",
+    "zones": "Zones"
+  },
+  "jobDescription": {
+    "actionFailed": "L'action a échoué.",
+    "actionLog": "Journal des actions",
+    "actions": {
+      "approve": "Approuver",
+      "archive": "Archiver",
+      "reopen": "Rouvrir en brouillon",
+      "requestChanges": "Demander des modifications",
+      "submit": "Soumettre pour revue"
+    },
+    "backToList": "← Retour aux fiches de poste",
+    "codeLabel": "Code {{code}}",
+    "columns": {
+      "code": "Code",
+      "jobTitle": "Intitulé",
+      "version": "Version"
+    },
+    "commentPlaceholder": "Commentaire (facultatif)",
+    "createDraft": "Créer un brouillon",
+    "createDraftFailed": "La création de la nouvelle version a échoué.",
+    "createVersionNote": "Créer une nouvelle version (la version validée reste inchangée) :",
+    "currentVersion": "Version courante — v{{number}}",
+    "empty": "Aucune fiche de poste.",
+    "initialVersion": "Version initiale",
+    "listSubtitle": "Le référentiel des postes et leur statut de validation.",
+    "listTitle": "Fiches de poste",
+    "loadFailed": "Impossible de charger les fiches de poste.",
+    "noActions": "Aucune action enregistrée.",
+    "notFound": "Fiche de poste introuvable.",
+    "reasonPlaceholder": "Motif de la nouvelle version",
+    "status": {
+      "archived": "Archivée",
+      "changesRequested": "Modifications demandées",
+      "draft": "Brouillon",
+      "inReview": "En revue",
+      "validated": "Validée"
+    },
+    "systemActor": "Système",
+    "versionHistory": "Historique des versions"
+  },
+  "kaizen": {
+    "actionPlan": "Plan d'actions",
+    "columns": {
+      "action": "Action",
+      "domain": "Domaine",
+      "observed": "Constat",
+      "target": "Cible"
+    },
+    "gaps": "Écarts constatés",
+    "internalLead": "Pilote interne : {{value}}",
+    "missionJournal": "Journal de mission",
+    "missionNumber": "Mission {{number}}",
+    "missions": "Missions",
+    "priorityActions": "Actions prioritaires — 30 premiers jours",
+    "results": "Résultats",
+    "statusUpdateFailed": "Échec de la mise à jour.",
+    "title": "Projet Kaizen",
+    "unavailable": "Le programme Kaizen n'est pas encore disponible."
+  },
+  "management": {
+    "orgChart": "Organigramme",
+    "priority30Days": "Priorité 30 jours : {{value}}",
+    "recommendedActions": "Actions recommandées",
+    "title": "Équipe encadrement",
+    "unavailable": "L'équipe d'encadrement n'est pas encore disponible.",
+    "unitManagers": "Responsables de structure"
+  },
+  "organization": {
+    "columns": {
+      "code": "Code"
+    },
+    "loadFailed": "Impossible de charger l’organisation.",
+    "noPositions": "Aucun poste visible.",
+    "noUnits": "Aucune structure visible.",
+    "orgChart": "Organigramme",
+    "subtitle": "Structures et organigramme visibles dans votre périmètre.",
+    "title": "Organisation",
+    "units": "Structures"
+  },
+  "qms": {
+    "certificationBody": "Organisme certificateur : {{value}}",
+    "certificationScope": "Périmètre : {{value}}",
+    "certifiedSince": "Certifié depuis {{value}}",
+    "ownedByYou": "Piloté par vous",
+    "ownedProcess": "Processus piloté — {{code}}",
+    "processMap": "Cartographie des processus : {{value}}",
+    "processMapHeading": "Cartographie des processus",
+    "responsibilities": "Responsabilités",
+    "title": "SMQ · ISO 9001",
+    "unavailable": "Les informations SMQ ne sont pas encore disponibles."
+  },
+  "recruitment": {
+    "internalMobility": "Mobilité interne",
+    "openPositions": "Postes ouverts",
+    "recommendedAction": "Action recommandée",
+    "title": "Recrutements en cours",
+    "unavailable": "Aucun recrutement n'est disponible pour le moment."
+  },
+  "remarks": {
+    "confirmDelete": "Supprimer cette remarque ?",
+    "deleteFailed": "Échec de la suppression.",
+    "empty": "Aucune remarque enregistrée.",
+    "exportTxt": "Exporter (.txt)",
+    "formLabel": "Adresser une observation aux RH / à la direction",
+    "placeholder": "Votre remarque…",
+    "sendFailed": "Échec de l'envoi.",
+    "title": "Remarques"
+  },
+  "strategy": {
+    "columns": {
+      "market": "Marché",
+      "marketShareTarget": "PDM cible",
+      "revenueTarget": "CA cible",
+      "strategy": "Stratégie"
+    },
+    "contributions": "Contribution DPR aux objectifs",
+    "marketTargets": "Objectifs de marché 2024–2026",
+    "projects": "Projets stratégiques",
+    "target": "Cible : {{value}}",
+    "title": "Plan stratégique",
+    "unavailable": "Le plan stratégique n'est pas encore disponible."
+  },
+  "surveys": {
+    "columns": {
+      "average": "Moyenne",
+      "indicator": "Indicateur",
+      "milestone": "Jalon",
+      "responses": "Réponses"
+    },
+    "dayOffset": "J+{{days}}",
+    "indicators": {
+      "managerRelationship": "Relation avec le manager",
+      "roleClarity": "Clarté du rôle",
+      "supportLevel": "Accompagnement",
+      "welcomeQuality": "Qualité de l'accueil",
+      "workingConditions": "Conditions de travail"
+    },
+    "loadFailed": "Impossible de charger les enquêtes de satisfaction.",
+    "stats": {
+      "responseRate": "Taux de réponse",
+      "roundsIssued": "Enquêtes envoyées",
+      "roundsOverdue": "En retard",
+      "score": "Score"
+    },
+    "subtitle": "Résultats agrégés — aucune réponse individuelle n'est affichée ici.",
+    "title": "Enquêtes de satisfaction"
+  },
+  "training": {
+    "coverage": {
+      "fullyTrained": "Formation complète",
+      "people": "Personnes",
+      "rate": "Taux"
+    },
+    "loadFailed": "Impossible de charger la formation.",
+    "mandatory": "Obligatoire",
+    "openModule": "Ouvrir le module →",
+    "subtitle": "Catalogue des modules et couverture de la formation obligatoire.",
+    "title": "Formation"
+  }
+}

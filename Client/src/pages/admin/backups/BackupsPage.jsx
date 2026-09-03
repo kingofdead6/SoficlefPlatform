@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { adminApi } from '../../../api/admin.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, sectionVariants, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const field =
@@ -16,7 +18,7 @@ function formatSize(bytes) {
   if (bytes === null || bytes === undefined) return '—';
   const value = Number(bytes);
   if (!Number.isFinite(value)) return String(bytes);
-  const units = ['o', 'Ko', 'Mo', 'Go', 'To'];
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let index = 0;
   let size = value;
   while (size >= 1024 && index < units.length - 1) {
@@ -39,6 +41,7 @@ function formatSize(bytes) {
  * Restore is deliberately absent: an action that cannot run must not have a button.
  */
 export default function BackupsPage() {
+  const { t, i18n } = useTranslation();
   const [report, setReport] = useState(null);
   const [schedules, setSchedules] = useState([]);
   const [runs, setRuns] = useState([]);
@@ -65,7 +68,7 @@ export default function BackupsPage() {
         emptyReasonFr: runsRes.emptyReasonFr ?? null,
       });
     } catch {
-      setError('Impossible de charger les sauvegardes.');
+      setError(t('admin.backups.loadError'));
     } finally {
       setLoading(false);
     }
@@ -73,6 +76,7 @@ export default function BackupsPage() {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function createSchedule(event) {
@@ -85,7 +89,7 @@ export default function BackupsPage() {
       setShowForm(false);
       await load();
     } catch {
-      setError("La création de la planification a échoué.");
+      setError(t('admin.backups.schedules.createFailed'));
     } finally {
       setCreating(false);
     }
@@ -96,48 +100,43 @@ export default function BackupsPage() {
       await adminApi.updateBackupSchedule(schedule.id, { isActive: !schedule.isActive });
       await load();
     } catch {
-      setError('La mise à jour a échoué.');
+      setError(t('admin.backups.schedules.updateFailed'));
     }
   }
 
   async function remove(schedule) {
-    if (!window.confirm(`Supprimer la planification « ${schedule.labelFr} » ?`)) return;
+    if (!window.confirm(t('admin.backups.schedules.confirmDelete', { label: schedule.labelFr }))) return;
     try {
       await adminApi.deleteBackupSchedule(schedule.id);
       await load();
     } catch {
-      setError('La suppression a échoué.');
+      setError(t('admin.backups.schedules.deleteFailed'));
     }
   }
 
-  if (loading) return <PageLoading label="Chargement des sauvegardes…" />;
+  if (loading) return <PageLoading label={t('admin.backups.loading')} />;
   if (error && !report) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Administration"
-        title="Sauvegardes"
-        subtitle="Planifications de sauvegarde et historique d'exécution."
+        eyebrow={t('admin.backups.eyebrow')}
+        title={t('admin.backups.title')}
+        subtitle={t('admin.backups.subtitle')}
         actions={
           <button
             type="button"
             onClick={() => setShowForm((open) => !open)}
             className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
           >
-            {showForm ? 'Annuler' : 'Nouvelle planification'}
+            {showForm ? t('admin.backups.cancel') : t('admin.backups.newSchedule')}
           </button>
         }
       />
 
       <div className="mb-8 rounded-app border border-red-brand/40 bg-red-brand/5 p-4 text-sm text-text-dim">
-        <p className="font-medium text-text">Aucun exécuteur de sauvegarde n'est raccordé.</p>
-        <p className="mt-1">
-          Les planifications ci-dessous sont enregistrées et journalisées, mais rien dans cette
-          application ne les déclenche : aucune sauvegarde ne part, et aucune restauration
-          n'est possible depuis cet écran. La sauvegarde effective relève aujourd'hui de
-          l'hébergeur de la base.
-        </p>
+        <p className="font-medium text-text">{t('admin.backups.noExecutor.title')}</p>
+        <p className="mt-1">{t('admin.backups.noExecutor.body')}</p>
       </div>
 
       {report && (
@@ -171,27 +170,27 @@ export default function BackupsPage() {
           >
             <div className={`${CARD} grid gap-3 p-5 sm:grid-cols-2`}>
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-text">Libellé</span>
+                <span className="mb-1 block text-sm font-medium text-text">{t('admin.backups.form.label')}</span>
                 <input
                   required
                   value={form.labelFr}
                   onChange={(e) => setForm((prev) => ({ ...prev, labelFr: e.target.value }))}
-                  placeholder="Sauvegarde quotidienne"
+                  placeholder={t('admin.backups.form.labelPlaceholder')}
                   className={`${field} w-full`}
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-text">Fréquence</span>
+                <span className="mb-1 block text-sm font-medium text-text">{t('admin.backups.form.frequency')}</span>
                 <input
                   required
                   value={form.cronFr}
                   onChange={(e) => setForm((prev) => ({ ...prev, cronFr: e.target.value }))}
-                  placeholder="Tous les jours à 02 h 00"
+                  placeholder={t('admin.backups.form.frequencyPlaceholder')}
                   className={`${field} w-full`}
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-text">Rétention (jours)</span>
+                <span className="mb-1 block text-sm font-medium text-text">{t('admin.backups.form.retentionDays')}</span>
                 <input
                   type="number"
                   min={1}
@@ -207,7 +206,7 @@ export default function BackupsPage() {
                   disabled={creating}
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
                 >
-                  {creating ? 'Enregistrement…' : 'Créer'}
+                  {creating ? t('admin.backups.form.creating') : t('admin.backups.form.create')}
                 </button>
               </div>
             </div>
@@ -221,18 +220,18 @@ export default function BackupsPage() {
         animate="visible"
         className="mb-10"
       >
-        <h2 className="mb-3 font-display text-xl text-text">Planifications ({schedules.length})</h2>
+        <h2 className="mb-3 font-display text-xl text-text">{t('admin.backups.schedules.title', { count: schedules.length })}</h2>
         {schedules.length === 0 ? (
-          <EmptyState detail="Aucune planification enregistrée." />
+          <EmptyState detail={t('admin.backups.schedules.empty')} />
         ) : (
           <div className={`overflow-hidden ${CARD}`}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Libellé</th>
-                  <th className="px-4 py-3 font-medium">Fréquence</th>
-                  <th className="px-4 py-3 font-medium">Rétention</th>
-                  <th className="px-4 py-3 font-medium">État</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.backups.schedules.label')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.backups.schedules.frequency')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.backups.schedules.retention')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.backups.schedules.state')}</th>
                   <th className="px-4 py-3 font-medium" />
                 </tr>
               </thead>
@@ -245,7 +244,9 @@ export default function BackupsPage() {
                   >
                     <td className="px-4 py-3 text-text">{schedule.labelFr}</td>
                     <td className="px-4 py-3 text-text-dim">{schedule.cronFr}</td>
-                    <td className="px-4 py-3 text-text-dim">{schedule.retentionDays} j</td>
+                    <td className="px-4 py-3 text-text-dim">
+                      {t('admin.backups.schedules.retentionDays', { count: schedule.retentionDays })}
+                    </td>
                     <td className="px-4 py-3">
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -254,7 +255,7 @@ export default function BackupsPage() {
                             : 'bg-surface-2 text-text-dim'
                         }`}
                       >
-                        {schedule.isActive ? 'Active' : 'Inactive'}
+                        {schedule.isActive ? t('admin.backups.schedules.active') : t('admin.backups.schedules.inactive')}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -263,14 +264,14 @@ export default function BackupsPage() {
                         onClick={() => toggle(schedule)}
                         className="mr-3 text-xs font-medium text-red-brand hover:underline"
                       >
-                        {schedule.isActive ? 'Désactiver' : 'Activer'}
+                        {schedule.isActive ? t('admin.backups.schedules.deactivate') : t('admin.backups.schedules.activate')}
                       </button>
                       <button
                         type="button"
                         onClick={() => remove(schedule)}
                         className="text-xs font-medium text-status-red hover:underline"
                       >
-                        Supprimer
+                        {t('admin.backups.schedules.delete')}
                       </button>
                     </td>
                   </motion.tr>
@@ -287,14 +288,11 @@ export default function BackupsPage() {
         animate="visible"
         transition={{ delay: reduce ? 0 : 0.08 }}
       >
-        <h2 className="mb-3 font-display text-xl text-text">Historique</h2>
+        <h2 className="mb-3 font-display text-xl text-text">{t('admin.backups.history.title')}</h2>
         {runs.length === 0 ? (
           <EmptyState
-            title="Historique vide"
-            detail={
-              runsMeta.emptyReasonFr ??
-              "Aucun processus de sauvegarde ne tourne : cet historique est vide parce que rien ne l'alimente."
-            }
+            title={t('admin.backups.history.empty')}
+            detail={runsMeta.emptyReasonFr ?? t('admin.backups.history.emptyDetail')}
             muted
           />
         ) : (
@@ -302,11 +300,11 @@ export default function BackupsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Planification</th>
-                  <th className="px-4 py-3 font-medium">Démarrée</th>
-                  <th className="px-4 py-3 font-medium">Terminée</th>
-                  <th className="px-4 py-3 font-medium">Taille</th>
-                  <th className="px-4 py-3 font-medium">Résultat</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.backups.history.schedule')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.backups.history.started')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.backups.history.finished')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.backups.history.size')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.backups.history.result')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -314,15 +312,15 @@ export default function BackupsPage() {
                   <tr key={run.id} className="border-b border-border last:border-0">
                     <td className="px-4 py-3 text-text">{run.schedule?.labelFr ?? '—'}</td>
                     <td className="px-4 py-3 text-text-dim">
-                      {new Date(run.startedAt).toLocaleString('fr-FR')}
+                      {new Date(run.startedAt).toLocaleString(localeOf(i18n))}
                     </td>
                     <td className="px-4 py-3 text-text-dim">
-                      {run.finishedAt ? new Date(run.finishedAt).toLocaleString('fr-FR') : '—'}
+                      {run.finishedAt ? new Date(run.finishedAt).toLocaleString(localeOf(i18n)) : '—'}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-text-dim">{formatSize(run.sizeBytes)}</td>
                     <td className="px-4 py-3">
                       <span className={run.ok ? 'text-status-green' : 'text-status-red'}>
-                        {run.ok ? 'Succès' : 'Échec'}
+                        {run.ok ? t('admin.backups.history.success') : t('admin.backups.history.failure')}
                       </span>
                     </td>
                   </tr>

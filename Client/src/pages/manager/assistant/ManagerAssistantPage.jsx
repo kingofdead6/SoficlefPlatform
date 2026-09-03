@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { assistantApi } from '../../../api/assistant.js';
 import { onboardingApi } from '../../../api/onboarding.js';
@@ -28,37 +29,39 @@ import { cn } from '../../../lib/cn.js';
  * "Qu'est-ce qui bloque ?" list below and the recruit's own page.
  */
 
-const SUGGESTIONS = {
+/** Suggestion chips, three per agent at most — resolved through i18n at render time. */
+const SUGGESTION_KEYS = {
   orientation: [
-    'Qui gère les ressources humaines ?',
-    'À qui m’adresser pour la sécurité ?',
-    'Qui est responsable de la qualité ?',
+    'manager.assistant.suggestions.orientation.1',
+    'manager.assistant.suggestions.orientation.2',
+    'manager.assistant.suggestions.orientation.3',
   ],
   onboarding: [
-    'Quelles étapes de mon parcours restent à faire ?',
-    'Qu’est-ce qui est en retard chez moi ?',
+    'manager.assistant.suggestions.onboarding.1',
+    'manager.assistant.suggestions.onboarding.2',
   ],
   documents: [
-    'Où trouver la procédure d’entretien ?',
-    'Quel document décrit la période d’essai ?',
+    'manager.assistant.suggestions.documents.1',
+    'manager.assistant.suggestions.documents.2',
   ],
   competencies: [
-    'Quelles compétences sont attendues pour un directeur de production ?',
-    'Quelles compétences de management sont requises ?',
+    'manager.assistant.suggestions.competencies.1',
+    'manager.assistant.suggestions.competencies.2',
   ],
 };
 
-const PLACEHOLDERS = {
-  orientation: 'Ex. : qui s’occupe des contrats de travail ?',
-  onboarding: 'Ex. : quelles étapes me restent à faire ?',
-  documents: 'Ex. : où est la procédure d’évaluation ?',
-  competencies: 'Ex. : quelles compétences pour ce poste ?',
+const PLACEHOLDER_KEYS = {
+  orientation: 'manager.assistant.placeholders.orientation',
+  onboarding: 'manager.assistant.placeholders.onboarding',
+  documents: 'manager.assistant.placeholders.documents',
+  competencies: 'manager.assistant.placeholders.competencies',
 };
 
 /** The agents this page offers, in the order a manager reaches for them. */
 const PAGE_AGENTS = ['orientation', 'onboarding', 'documents', 'competencies'];
 
 export default function ManagerAssistantPage() {
+  const { t } = useTranslation();
   const [recruits, setRecruits] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -82,12 +85,12 @@ export default function ManagerAssistantPage() {
         setProvider(agentsRes.provider ?? null);
         setModelName(agentsRes.modelName ?? null);
       } catch {
-        setError("Impossible de charger l'assistant.");
+        setError(t('manager.assistant.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const usable = useMemo(
     () =>
@@ -99,7 +102,7 @@ export default function ManagerAssistantPage() {
 
   const active = usable.find((agent) => agent.id === activeId) ?? usable[0] ?? null;
 
-  if (loading) return <PageLoading label="Chargement de l'assistant…" />;
+  if (loading) return <PageLoading label={t('manager.assistant.loading')} />;
   if (error) return <PageError message={error} />;
 
   const reminders = alerts.filter((a) => a.kind === 'evaluation');
@@ -108,17 +111,17 @@ export default function ManagerAssistantPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Manager"
-        title="Assistant manager"
-        subtitle="Posez une question : l’assistant cherche dans les données que vous êtes autorisé à consulter et cite ses sources. Les rappels et les blocages, plus bas, sont des faits calculés depuis vos recrues."
+        eyebrow={t('manager.eyebrow')}
+        title={t('manager.assistant.title')}
+        subtitle={t('manager.assistant.subtitle')}
       />
 
       <div className="space-y-8">
         <motion.section variants={sectionVariants} initial={initialOrNone(reduce)} animate="visible">
           {usable.length === 0 ? (
             <EmptyState
-              title="Aucun agent disponible"
-              detail="Votre compte ne dispose des droits de lecture d’aucune des ressources que ces agents interrogent."
+              title={t('manager.assistant.noAgentsTitle')}
+              detail={t('manager.assistant.noAgentsDetail')}
               muted
             />
           ) : (
@@ -149,17 +152,17 @@ export default function ManagerAssistantPage() {
                   purposeFr={active.purposeFr}
                   provider={provider}
                   modelName={modelName}
-                  suggestions={SUGGESTIONS[active.id] ?? []}
-                  placeholder={PLACEHOLDERS[active.id] ?? 'Posez votre question…'}
+                  suggestions={(SUGGESTION_KEYS[active.id] ?? []).map((key) => t(key))}
+                  placeholder={
+                    PLACEHOLDER_KEYS[active.id]
+                      ? t(PLACEHOLDER_KEYS[active.id])
+                      : t('manager.assistant.placeholders.fallback')
+                  }
                 />
               )}
 
               {active?.id === 'onboarding' && (
-                <p className="mt-3 text-xs text-text-dim">
-                  Cet agent répond sur <strong>votre propre</strong> parcours. Pour l’avancement
-                  d’une recrue, utilisez la liste des blocages ci-dessous ou sa fiche : le choix du
-                  sujet y est explicite et contrôlé.
-                </p>
+                <p className="mt-3 text-xs text-text-dim">{t('manager.assistant.ownJourneyNotice')}</p>
               )}
             </>
           )}
@@ -171,7 +174,7 @@ export default function ManagerAssistantPage() {
           animate="visible"
           transition={{ delay: reduce ? 0 : 0.08 }}
         >
-          <h2 className="mb-3 font-display text-lg text-text">Rappels — entretiens à venir</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('manager.assistant.remindersTitle')}</h2>
           <motion.div variants={staggerContainer(0.06)} initial={initialOrNone(reduce)} animate="visible" className="space-y-2">
             {reminders.map((alert) => (
               <motion.div key={alert.id} variants={staggerItem}>
@@ -185,7 +188,7 @@ export default function ManagerAssistantPage() {
               </motion.div>
             ))}
           </motion.div>
-          {reminders.length === 0 && <EmptyState detail="Aucun rappel." muted />}
+          {reminders.length === 0 && <EmptyState detail={t('manager.assistant.noReminders')} muted />}
         </motion.section>
 
         <motion.section
@@ -194,7 +197,7 @@ export default function ManagerAssistantPage() {
           animate="visible"
           transition={{ delay: reduce ? 0 : 0.16 }}
         >
-          <h2 className="mb-3 font-display text-lg text-text">Qu'est-ce qui bloque ?</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('manager.assistant.blockersTitle')}</h2>
           <motion.div variants={staggerContainer(0.06)} initial={initialOrNone(reduce)} animate="visible" className="space-y-2">
             {blockers.map((alert) => (
               <motion.div key={alert.id} variants={staggerItem}>
@@ -208,7 +211,7 @@ export default function ManagerAssistantPage() {
               </motion.div>
             ))}
           </motion.div>
-          {blockers.length === 0 && <EmptyState detail="Aucun blocage détecté." muted />}
+          {blockers.length === 0 && <EmptyState detail={t('manager.assistant.noBlockers')} muted />}
         </motion.section>
 
         <motion.section
@@ -217,10 +220,10 @@ export default function ManagerAssistantPage() {
           animate="visible"
           transition={{ delay: reduce ? 0 : 0.24 }}
         >
-          <h2 className="mb-3 font-display text-lg text-text">Préparer un entretien</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('manager.assistant.prepareTitle')}</h2>
           <EmptyState
-            title="Rédaction non assistée"
-            detail="L’assistant ne rédige pas de feedback à votre place : il répond à partir de données existantes et cite ses sources, il n’en compose pas de nouvelles. Utilisez la fiche d’entretien pour préparer vos points."
+            title={t('manager.assistant.noDraftingTitle')}
+            detail={t('manager.assistant.noDraftingDetail')}
             muted
           />
           {recruits.length > 0 && (

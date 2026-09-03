@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { assistantApi } from '../../api/assistant.js';
 import { EmptyState } from '../manager/PageStates.jsx';
@@ -22,13 +23,16 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
  *     from retrieval rather than from the model's text.
  */
 
-/** Why an answer came back plainer than usual. The reader deserves the difference. */
-const DEGRADED_FR = {
-  timeout: 'Le modèle n’a pas répondu à temps — voici les résultats de la recherche.',
-  rate_limited: 'Le quota du modèle est atteint — voici les résultats de la recherche.',
-  model_loading:
-    'Le modèle est en cours de démarrage (comptez ~20 s) — voici les résultats de la recherche en attendant.',
-  error: 'Le modèle n’a pas pu être joint — voici les résultats de la recherche.',
+/**
+ * Why an answer came back plainer than usual. The reader deserves the difference. Keyed by
+ * the server's `reason` value; `not_configured` deliberately maps to nothing, because that
+ * case is already explained by ProviderNote below.
+ */
+const DEGRADED_KEYS = {
+  timeout: 'public.assistant.degraded.timeout',
+  rate_limited: 'public.assistant.degraded.rateLimited',
+  model_loading: 'public.assistant.degraded.modelLoading',
+  error: 'public.assistant.degraded.error',
   not_configured: null,
 };
 
@@ -39,9 +43,16 @@ export default function AssistantChat({
   provider,
   modelName,
   suggestions = [],
-  placeholder = 'Posez votre question…',
-  emptyDetailFr = 'Posez une question, ou choisissez l’une des suggestions ci-dessus.',
+  placeholder,
+  /*
+   * Kept as `emptyDetailFr` rather than renamed: pages outside this slice still pass it by
+   * that name, and it carries whatever text the caller supplies. Defaults are resolved in
+   * the body, not in the signature — a default here would be frozen at module load and
+   * would not follow a language change.
+   */
+  emptyDetailFr,
 }) {
+  const { t } = useTranslation();
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
   const [exchanges, setExchanges] = useState([]);
@@ -67,8 +78,8 @@ export default function AssistantChat({
     } catch (error) {
       setAskError(
         error?.status === 429
-          ? 'Trop de questions en peu de temps. Réessayez dans un instant.'
-          : 'La recherche a échoué. Réessayez dans un instant.',
+          ? t('public.assistant.tooManyQuestions')
+          : t('public.assistant.askFailed'),
       );
     } finally {
       setAsking(false);
@@ -86,14 +97,14 @@ export default function AssistantChat({
 
       <form onSubmit={ask} className={`${CARD} p-4`}>
         <label className="block text-sm text-text-muted">
-          Votre question
+          {t('public.assistant.questionLabel')}
           <input
             ref={inputRef}
             type="text"
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
             maxLength={300}
-            placeholder={placeholder}
+            placeholder={placeholder ?? t('public.assistant.defaultPlaceholder')}
             className="mt-1 w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand"
           />
         </label>
@@ -103,7 +114,7 @@ export default function AssistantChat({
             disabled={asking || question.trim().length < 2}
             className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
           >
-            {asking ? 'Recherche…' : 'Demander'}
+            {asking ? t('public.assistant.asking') : t('public.assistant.askButton')}
           </button>
           <ProviderNote provider={provider} modelName={modelName} />
         </div>
@@ -162,7 +173,7 @@ export default function AssistantChat({
                       {exchange.grounded === false && (
                         <p className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-status-amber/40 bg-status-amber/10 px-2.5 py-1 text-[11px] font-medium text-status-amber">
                           <span aria-hidden>◇</span>
-                          Connaissances générales — hors données SOFICLEF
+                          {t('public.assistant.ungroundedBadge')}
                         </p>
                       )}
 
@@ -170,20 +181,20 @@ export default function AssistantChat({
 
                       {exchange.grounded === false && (
                         <p className="mt-2 text-xs text-text-dim">
-                          Aucune information interne ne correspondait à cette question. Cette
-                          réponse vient des connaissances générales du modèle : vérifiez-la auprès
-                          des RH avant de vous en servir.
+                          {t('public.assistant.ungroundedNote')}
                         </p>
                       )}
 
-                      {exchange.reason && DEGRADED_FR[exchange.reason] && (
-                        <p className="mt-2 text-xs text-text-dim">{DEGRADED_FR[exchange.reason]}</p>
+                      {exchange.reason && DEGRADED_KEYS[exchange.reason] && (
+                        <p className="mt-2 text-xs text-text-dim">
+                          {t(DEGRADED_KEYS[exchange.reason])}
+                        </p>
                       )}
 
                       {exchange.sources?.length > 0 && (
                         <div className="mt-3 border-t border-border pt-3">
                           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-                            Sources
+                            {t('public.assistant.sources')}
                           </p>
                           <ul className="flex flex-wrap gap-2">
                             {exchange.sources.map((source) => (
@@ -201,12 +212,7 @@ export default function AssistantChat({
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-text-dim">
-                      Je n’ai rien trouvé qui corresponde dans les données que vous êtes autorisé à
-                      consulter. Plutôt qu’une réponse approximative, l’assistant préfère ne rien
-                      affirmer : reformulez la question, ou consultez directement la rubrique
-                      concernée.
-                    </p>
+                    <p className="text-sm text-text-dim">{t('public.assistant.noAnswer')}</p>
                   )}
                 </div>
               </motion.li>
@@ -217,7 +223,7 @@ export default function AssistantChat({
 
       {exchanges.length === 0 && (
         <div className="mt-6">
-          <EmptyState detail={emptyDetailFr} muted />
+          <EmptyState detail={emptyDetailFr ?? t('public.assistant.defaultEmptyDetail')} muted />
         </div>
       )}
     </section>

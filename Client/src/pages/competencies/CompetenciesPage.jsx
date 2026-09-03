@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { competenciesApi } from '../../api/competencies.js';
 
 /** The competency matrix / gap-analysis view for a chosen position. */
 export default function CompetenciesPage() {
+  const { t } = useTranslation();
   const [positions, setPositions] = useState([]);
   const [positionId, setPositionId] = useState(null);
   const [matrix, setMatrix] = useState(null);
@@ -17,12 +19,12 @@ export default function CompetenciesPage() {
         setPositions(data);
         if (data.length > 0) setPositionId(data[0].positionId);
       } catch {
-        setError('Impossible de charger les postes.');
+        setError(t('competencies.loadPositionsFailed'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!positionId) return;
@@ -36,16 +38,16 @@ export default function CompetenciesPage() {
     })();
   }, [positionId]);
 
-  if (loading) return <div className="p-6 text-text-dim">Chargement…</div>;
+  if (loading) return <div className="p-6 text-text-dim">{t('common.states.loading')}</div>;
   if (error) return <div className="p-6 text-status-red">{error}</div>;
 
   return (
     <div>
-      <h1 className="mb-1 font-display text-2xl text-red-deep">Compétences</h1>
-      <p className="mb-6 text-text-dim">Matrice compétences par poste et analyse des écarts.</p>
+      <h1 className="mb-1 font-display text-2xl text-red-deep">{t('competencies.title')}</h1>
+      <p className="mb-6 text-text-dim">{t('competencies.subtitle')}</p>
 
       <label className="mb-6 block max-w-sm text-sm">
-        <span className="mb-1 block text-text-muted">Poste</span>
+        <span className="mb-1 block text-text-muted">{t('common.labels.position')}</span>
         <select
           value={positionId ?? ''}
           onChange={(e) => setPositionId(e.target.value)}
@@ -53,7 +55,7 @@ export default function CompetenciesPage() {
         >
           {positions.map((position) => (
             <option key={position.positionId} value={position.positionId}>
-              {position.positionTitleFr} ({position.competencyCount} compétences)
+              {position.positionTitleFr} ({t('competencies.competencyCount', { count: position.competencyCount })})
             </option>
           ))}
         </select>
@@ -62,21 +64,24 @@ export default function CompetenciesPage() {
       {matrix && (
         <>
           <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatTile label="Conformes" value={matrix.summary.conforme} />
-            <StatTile label="À développer" value={matrix.summary.aDevelopper} />
-            <StatTile label="Critiques" value={matrix.summary.critique} />
-            <StatTile label="Taux de conformité" value={matrix.summary.conformityRate === null ? '—' : `${matrix.summary.conformityRate}%`} />
+            <StatTile label={t('competencies.summary.conforming')} value={matrix.summary.conforme} />
+            <StatTile label={t('competencies.summary.toDevelop')} value={matrix.summary.aDevelopper} />
+            <StatTile label={t('competencies.summary.critical')} value={matrix.summary.critique} />
+            <StatTile
+              label={t('competencies.summary.conformityRate')}
+              value={matrix.summary.conformityRate === null ? '—' : `${matrix.summary.conformityRate}%`}
+            />
           </div>
 
           <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-2 font-medium">Compétence</th>
-                  <th className="px-4 py-2 font-medium">Famille</th>
-                  <th className="px-4 py-2 font-medium">Requis</th>
-                  <th className="px-4 py-2 font-medium">Acquis</th>
-                  <th className="px-4 py-2 font-medium">Statut</th>
+                  <th className="px-4 py-2 font-medium">{t('competencies.columns.competency')}</th>
+                  <th className="px-4 py-2 font-medium">{t('competencies.columns.family')}</th>
+                  <th className="px-4 py-2 font-medium">{t('competencies.columns.required')}</th>
+                  <th className="px-4 py-2 font-medium">{t('competencies.columns.actual')}</th>
+                  <th className="px-4 py-2 font-medium">{t('common.labels.status')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -100,7 +105,13 @@ export default function CompetenciesPage() {
   );
 }
 
-const GAP_LABELS = { conforme: 'Conforme', 'a-developper': 'À développer', critique: 'Critique', 'non-evalue': 'Non évalué' };
+/** API gap statuses → catalogue keys. The status values themselves come from the server. */
+const GAP_LABEL_KEYS = {
+  conforme: 'competencies.gap.conforme',
+  'a-developper': 'competencies.gap.aDevelopper',
+  critique: 'competencies.gap.critique',
+  'non-evalue': 'competencies.gap.nonEvalue',
+};
 const GAP_STYLES = {
   conforme: 'bg-status-green/10 text-status-green',
   'a-developper': 'bg-status-amber/10 text-status-amber',
@@ -109,7 +120,13 @@ const GAP_STYLES = {
 };
 
 function GapBadge({ status }) {
-  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${GAP_STYLES[status]}`}>{GAP_LABELS[status]}</span>;
+  const { t } = useTranslation();
+  const labelKey = GAP_LABEL_KEYS[status];
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${GAP_STYLES[status]}`}>
+      {labelKey ? t(labelKey) : status}
+    </span>
+  );
 }
 
 function StatTile({ label, value }) {

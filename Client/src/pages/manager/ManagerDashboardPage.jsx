@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../api/onboarding.js';
+import { localeOf } from '../../lib/formatDate.js';
 import PageHeader from '../../components/manager/PageHeader.jsx';
 import ProgressRing from '../../components/manager/ProgressRing.jsx';
 import CountUp from '../../components/manager/CountUp.jsx';
@@ -21,10 +23,11 @@ const SEVERITY_STYLE = {
   blue: 'border-red-brand/40 bg-red-brand/10 text-red-deep',
 };
 
-const TASK_STATUS_LABELS = {
-  TODO: 'À faire',
-  IN_PROGRESS: 'En cours',
-  BLOCKED: 'Bloquée',
+/** Display labels only — the keys stay the protocol values the API sends. */
+const TASK_STATUS_KEYS = {
+  TODO: 'manager.taskStatus.todo',
+  IN_PROGRESS: 'manager.taskStatus.inProgress',
+  BLOCKED: 'manager.taskStatus.blocked',
 };
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
@@ -37,6 +40,7 @@ const SECTION_TITLE = 'font-display text-xl text-text';
  * handles card/list stagger and hover micro-interactions.
  */
 export default function ManagerDashboardPage() {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -49,12 +53,12 @@ export default function ManagerDashboardPage() {
         const { data } = await onboardingApi.managerDashboard();
         setData(data);
       } catch {
-        setError('Impossible de charger le tableau de bord.');
+        setError(t('manager.dashboard.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   useGsapContext(
     scopeRef,
@@ -87,7 +91,7 @@ export default function ManagerDashboardPage() {
     };
   }, [data]);
 
-  if (loading) return <PageLoading label="Chargement du tableau de bord…" />;
+  if (loading) return <PageLoading label={t('manager.dashboard.loading')} />;
   if (error) return <PageError message={error} />;
 
   const { recruits, alerts, ownTasks } = data;
@@ -103,22 +107,22 @@ export default function ManagerDashboardPage() {
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Manager"
-        title="Tableau de bord"
-        subtitle="Vue d'ensemble de vos recrues en intégration, de vos alertes et de vos tâches en attente."
+        eyebrow={t('manager.eyebrow')}
+        title={t('manager.dashboard.title')}
+        subtitle={t('manager.dashboard.subtitle')}
         actions={
           <>
             <Link
               to="/app/manager/calendar"
               className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              Calendrier
+              {t('manager.dashboard.calendar')}
             </Link>
             <Link
               to="/app/manager/recruits"
               className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              Toutes les recrues
+              {t('manager.dashboard.allRecruits')}
             </Link>
           </>
         }
@@ -126,17 +130,17 @@ export default function ManagerDashboardPage() {
 
       {/* Band 1 — summary strip */}
       <div data-gsap="band" className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <SummaryTile label="Recrues actives" value={summary.active} />
-        <SummaryTile label="Avancement moyen" value={summary.averagePercent} suffix="%" />
-        <SummaryTile label="Demandent attention" value={summary.attention} tone={summary.attention > 0 ? 'red' : undefined} />
-        <SummaryTile label="Tâches en attente" value={summary.ownTasks} />
+        <SummaryTile label={t('manager.dashboard.activeRecruits')} value={summary.active} />
+        <SummaryTile label={t('manager.dashboard.averageProgress')} value={summary.averagePercent} suffix="%" />
+        <SummaryTile label={t('manager.dashboard.needAttention')} value={summary.attention} tone={summary.attention > 0 ? 'red' : undefined} />
+        <SummaryTile label={t('manager.dashboard.pendingTasks')} value={summary.ownTasks} />
       </div>
 
       {/* Band 2 — recruits + alerts */}
       <div data-gsap="band" className="mb-10 grid gap-8 lg:grid-cols-3">
         <section className="flex flex-col lg:col-span-2">
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className={SECTION_TITLE}>Recrues en cours</h2>
+            <h2 className={SECTION_TITLE}>{t('manager.dashboard.recruitsInProgress')}</h2>
             <span className="text-sm text-text-dim">{recruits.length}</span>
           </div>
           <motion.div
@@ -162,14 +166,14 @@ export default function ManagerDashboardPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
                         <span className="truncate font-medium text-text">{recruit.displayName}</span>
-                        <span className="shrink-0 text-xs text-text-dim">J+{recruit.dayNumber}</span>
+                        <span className="shrink-0 text-xs text-text-dim">{t('manager.dayPlus', { count: recruit.dayNumber })}</span>
                       </div>
-                      <p className="truncate text-xs text-text-dim">{recruit.positionFr ?? 'Poste non renseigné'}</p>
+                      <p className="truncate text-xs text-text-dim">{recruit.positionFr ?? t('manager.noPosition')}</p>
                       {(recruit.blocked > 0 || recruit.overdue > 0) && (
                         <span className="mt-1 inline-block text-xs font-medium text-status-red">
-                          {recruit.blocked > 0 ? `${recruit.blocked} bloquée(s)` : ''}
+                          {recruit.blocked > 0 ? t('manager.blockedCount', { count: recruit.blocked }) : ''}
                           {recruit.blocked > 0 && recruit.overdue > 0 ? ' · ' : ''}
-                          {recruit.overdue > 0 ? `${recruit.overdue} en retard` : ''}
+                          {recruit.overdue > 0 ? t('manager.overdueCount', { count: recruit.overdue }) : ''}
                         </span>
                       )}
                     </div>
@@ -179,7 +183,7 @@ export default function ManagerDashboardPage() {
             ))}
             {recruits.length === 0 && (
               <div className="col-span-full flex flex-1 items-center justify-center rounded-app border border-dashed border-border py-12 text-sm text-text-dim">
-                Aucune recrue en intégration.
+                {t('manager.dashboard.noRecruits')}
               </div>
             )}
           </motion.div>
@@ -187,7 +191,7 @@ export default function ManagerDashboardPage() {
 
         <section className="flex flex-col">
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className={SECTION_TITLE}>Alertes</h2>
+            <h2 className={SECTION_TITLE}>{t('manager.dashboard.alerts')}</h2>
             <span className="text-sm text-text-dim">{alerts.length}</span>
           </div>
           <motion.div
@@ -209,7 +213,7 @@ export default function ManagerDashboardPage() {
             ))}
             {alerts.length === 0 && (
               <p className="rounded-app border border-dashed border-border py-6 text-center text-sm text-text-dim">
-                Aucune alerte.
+                {t('manager.dashboard.noAlerts')}
               </p>
             )}
           </motion.div>
@@ -219,15 +223,15 @@ export default function ManagerDashboardPage() {
       {/* Band 3 — progression table + pending tasks */}
       <div data-gsap="band" className="grid gap-8 lg:grid-cols-3">
         <section className="lg:col-span-2">
-          <h2 className={`mb-4 ${SECTION_TITLE}`}>Progression détaillée</h2>
+          <h2 className={`mb-4 ${SECTION_TITLE}`}>{t('manager.dashboard.detailedProgress')}</h2>
           <div className={`overflow-hidden ${CARD}`}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Collaborateur</th>
-                  <th className="px-4 py-3 font-medium">Jour</th>
-                  <th className="px-4 py-3 font-medium">Étapes</th>
-                  <th className="w-[34%] px-4 py-3 font-medium">Avancement</th>
+                  <th className="px-4 py-3 font-medium">{t('common.labels.employee')}</th>
+                  <th className="px-4 py-3 font-medium">{t('manager.dashboard.dayColumn')}</th>
+                  <th className="px-4 py-3 font-medium">{t('manager.dashboard.stepsColumn')}</th>
+                  <th className="w-[34%] px-4 py-3 font-medium">{t('manager.dashboard.progressColumn')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -238,7 +242,7 @@ export default function ManagerDashboardPage() {
                         {recruit.displayName}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-text-dim">J+{recruit.dayNumber}</td>
+                    <td className="px-4 py-3 text-text-dim">{t('manager.dayPlus', { count: recruit.dayNumber })}</td>
                     <td className="px-4 py-3 text-text-dim">
                       {recruit.done}/{recruit.total}
                     </td>
@@ -266,14 +270,14 @@ export default function ManagerDashboardPage() {
               </tbody>
             </table>
             {recruits.length === 0 && (
-              <p className="py-10 text-center text-sm text-text-dim">Aucune recrue à afficher.</p>
+              <p className="py-10 text-center text-sm text-text-dim">{t('manager.dashboard.noRecruitsToShow')}</p>
             )}
           </div>
         </section>
 
         <section className="flex flex-col">
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className={SECTION_TITLE}>Mes tâches</h2>
+            <h2 className={SECTION_TITLE}>{t('manager.dashboard.myTasks')}</h2>
             <span className="text-sm text-text-dim">{ownTasks.length}</span>
           </div>
           <motion.div
@@ -291,19 +295,23 @@ export default function ManagerDashboardPage() {
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium text-text">{task.titleFr}</span>
                     <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">
-                      {TASK_STATUS_LABELS[task.status]}
+                      {TASK_STATUS_KEYS[task.status] ? t(TASK_STATUS_KEYS[task.status]) : task.status}
                     </span>
                   </div>
                   <p className="mt-0.5 text-xs text-text-dim">
-                    {task.instance.user.displayName}
-                    {task.dueDate ? ` — échéance ${new Date(task.dueDate).toLocaleDateString('fr-FR')}` : ''}
+                    {task.dueDate
+                      ? t('manager.dashboard.taskDue', {
+                          name: task.instance.user.displayName,
+                          date: new Date(task.dueDate).toLocaleDateString(localeOf(i18n)),
+                        })
+                      : task.instance.user.displayName}
                   </p>
                 </Link>
               </motion.div>
             ))}
             {ownTasks.length === 0 && (
               <p className="rounded-app border border-dashed border-border py-6 text-center text-sm text-text-dim">
-                Aucune tâche en attente.
+                {t('manager.dashboard.noPendingTasks')}
               </p>
             )}
           </motion.div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { publicApi } from '../../api/public.js';
 import {
@@ -15,6 +16,7 @@ import {
 const SECTION = 'mx-auto max-w-6xl px-6';
 
 export default function Strategie() {
+  const { t } = useTranslation();
   const [strategy, setStrategy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -33,12 +35,15 @@ export default function Strategie() {
       <section data-flock className="relative flex min-h-[60svh] flex-col justify-center overflow-hidden border-b border-border">
         <MeshBackdrop />
         <div className={`${SECTION} relative pb-16 pt-28 lg:pb-20 lg:pt-28`}>
-          <Eyebrow>{strategy?.planFr ?? 'Plan stratégique'}</Eyebrow>
+          {/* planFr is database content; only the fallback is ours to translate. */}
+          <Eyebrow>{strategy?.planFr ?? t('public.strategy.eyebrowFallback')}</Eyebrow>
           <h1
             className="max-w-3xl font-display text-4xl leading-[1.1] text-text sm:text-5xl"
             style={{ textWrap: 'balance' }}
           >
-            Où nous allons, et <span className="text-red-deep">comment nous y allons</span>
+            <Trans i18nKey="public.strategy.heroTitle">
+              <span className="text-red-deep" />
+            </Trans>
           </h1>
           {strategy?.globalObjectiveFr && (
             <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-text-muted">
@@ -50,14 +55,14 @@ export default function Strategie() {
 
       {loading && (
         <div className={`${SECTION} py-16`}>
-          <p className="text-center text-sm text-text-dim">Chargement de la stratégie…</p>
+          <p className="text-center text-sm text-text-dim">{t('public.strategy.loading')}</p>
         </div>
       )}
 
       {failed && (
         <div className={`${SECTION} py-16`}>
           <p className="rounded-app border border-dashed border-border p-8 text-center text-sm text-text-dim">
-            La stratégie n’est pas disponible pour le moment.
+            {t('public.strategy.loadFailed')}
           </p>
         </div>
       )}
@@ -66,13 +71,12 @@ export default function Strategie() {
       {strategy?.markets?.length > 0 && (
         <section className={`${SECTION} py-16`}>
           <Reveal>
-            <Eyebrow>Nos marchés</Eyebrow>
+            <Eyebrow>{t('public.strategy.marketsEyebrow')}</Eyebrow>
             <h2 className="font-display text-3xl leading-tight text-text sm:text-4xl">
-              Un objectif par marché
+              {t('public.strategy.marketsTitle')}
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-text-muted">
-              Pour chaque marché servi, une approche, une cible de part de marché et une cible de
-              chiffre d’affaires.
+              {t('public.strategy.marketsLede')}
             </p>
             <DrawRule className="mt-6 max-w-2xl" />
           </Reveal>
@@ -89,7 +93,7 @@ export default function Strategie() {
                   <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-border pt-4">
                     <div>
                       <dt className="text-[11px] uppercase tracking-[0.1em] text-text-dim">
-                        Part de marché
+                        {t('public.strategy.marketShare')}
                       </dt>
                       <dd className="mt-1 font-display text-lg text-text">
                         {market.marketShareTargetFr}
@@ -97,7 +101,7 @@ export default function Strategie() {
                     </div>
                     <div>
                       <dt className="text-[11px] uppercase tracking-[0.1em] text-text-dim">
-                        Chiffre d’affaires
+                        {t('public.strategy.revenue')}
                       </dt>
                       <dd className="mt-1 font-display text-lg text-text">
                         {market.revenueTargetFr}
@@ -119,9 +123,9 @@ export default function Strategie() {
           </div>
           <div className={`${SECTION} relative py-16`}>
             <Reveal>
-              <Eyebrow>Projets structurants</Eyebrow>
+              <Eyebrow>{t('public.strategy.projectsEyebrow')}</Eyebrow>
               <h2 className="font-display text-3xl leading-tight text-text sm:text-4xl">
-                Les chantiers en cours
+                {t('public.strategy.projectsTitle')}
               </h2>
             </Reveal>
 
@@ -146,23 +150,21 @@ export default function Strategie() {
       <section className="border-t border-border">
         <div className={`${SECTION} flex flex-wrap items-center justify-between gap-6 py-14`}>
           <div>
-            <h2 className="font-display text-2xl text-text">Une stratégie portée par une structure</h2>
-            <p className="mt-2 max-w-xl text-sm text-text-muted">
-              Ces objectifs se déclinent dans les structures, unités et cellules de l’entreprise.
-            </p>
+            <h2 className="font-display text-2xl text-text">{t('public.strategy.ctaTitle')}</h2>
+            <p className="mt-2 max-w-xl text-sm text-text-muted">{t('public.strategy.ctaLede')}</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
               to="/organigramme"
               className="rounded-app bg-red-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-light"
             >
-              Voir l’organigramme
+              {t('public.links.viewOrgChart')}
             </Link>
             <Link
               to="/entreprise"
               className="rounded-app border border-border px-5 py-2.5 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
             >
-              L’entreprise
+              {t('public.links.theCompany')}
             </Link>
           </div>
         </div>

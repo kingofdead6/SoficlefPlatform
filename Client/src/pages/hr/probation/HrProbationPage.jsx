@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../../api/onboarding.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -17,9 +18,9 @@ const field =
  * of a stray click.
  */
 const OUTCOMES = [
-  { id: 'CONFIRMED', labelFr: 'Confirmer', helpFr: 'La période d’essai est validée.', tone: 'green' },
-  { id: 'EXTENDED', labelFr: 'Prolonger', helpFr: 'La période d’essai est prolongée.', tone: 'amber' },
-  { id: 'TERMINATED', labelFr: 'Mettre fin', helpFr: 'La période d’essai prend fin.', tone: 'red' },
+  { id: 'CONFIRMED', tone: 'green' },
+  { id: 'EXTENDED', tone: 'amber' },
+  { id: 'TERMINATED', tone: 'red' },
 ];
 
 const OUTCOME_LABELS = {
@@ -37,10 +38,10 @@ const TONE_STYLE = {
 const TONE_OF_OUTCOME = { CONFIRMED: 'green', EXTENDED: 'amber', TERMINATED: 'red' };
 
 const CRITERIA = [
-  { key: 'scoreSkills', labelFr: 'Compétences' },
-  { key: 'scoreAutonomy', labelFr: 'Autonomie' },
-  { key: 'scoreIntegration', labelFr: 'Intégration' },
-  { key: 'scoreBehaviour', labelFr: 'Comportement' },
+  { key: 'scoreSkills' },
+  { key: 'scoreAutonomy' },
+  { key: 'scoreIntegration' },
+  { key: 'scoreBehaviour' },
 ];
 
 /** Percentage bar with the two decision boundaries drawn on it, so a borderline case reads. */
@@ -352,6 +353,7 @@ function ProbationCard({ entry, onDecided }) {
  * those apart on screen is what keeps them apart in practice.
  */
 export default function HrProbationPage() {
+  const { t } = useTranslation();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -380,24 +382,21 @@ export default function HrProbationPage() {
     return by;
   }, [entries]);
 
-  if (loading) return <PageLoading label="Chargement des périodes d’essai…" />;
+  if (loading) return <PageLoading label={t('hr.probation.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Périodes d’essai"
-        subtitle="Les évaluations transmises par les responsables, et la décision qui reste à prendre."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.probation.title')}
+        subtitle={t('hr.probation.subtitle')}
       />
 
       <div className="mb-8 rounded-app border border-border bg-surface-2 p-4 text-sm text-text-dim">
-        <p className="font-medium text-text">La suggestion ne décide pas.</p>
+        <p className="font-medium text-text">{t('hr.probation.noticeTitle')}</p>
         <p className="mt-1">
-          Le pourcentage est calculé à partir des quatre notes du responsable : au-dessus de 60 %
-          la confirmation est suggérée, entre 30 et 60 % la prolongation, en dessous de 30 % la fin
-          de période d’essai. Vous pouvez vous en écarter — dans ce cas, le motif est requis et
-          conservé avec la décision.
+          {t('hr.probation.noticeDetail')}
         </p>
       </div>
 
@@ -409,7 +408,7 @@ export default function HrProbationPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            À trancher
+            {t('hr.probation.pending')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={entries.length} />
@@ -418,7 +417,7 @@ export default function HrProbationPage() {
         {OUTCOMES.map((outcome) => (
           <motion.div key={outcome.id} variants={staggerItem} className={`${CARD} p-5`}>
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-              {outcome.labelFr} suggéré
+              {t(`hr.probation.outcomes.${outcome.id}.label`)} {t('hr.probation.suggested')}
             </p>
             <p
               className={`font-display text-3xl ${
@@ -437,8 +436,8 @@ export default function HrProbationPage() {
 
       {entries.length === 0 ? (
         <EmptyState
-          title="Rien à valider"
-          detail="Aucune évaluation n’a été transmise. Une période d’essai apparaît ici dès que le responsable du collaborateur a transmis son évaluation."
+          title={t('hr.probation.emptyTitle')}
+          detail={t('hr.probation.emptyDetail')}
         />
       ) : (
         <motion.div

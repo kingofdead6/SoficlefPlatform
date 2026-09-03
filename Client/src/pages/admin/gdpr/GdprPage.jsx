@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { adminApi } from '../../../api/admin.js';
 import { usersApi } from '../../../api/users.js';
@@ -7,13 +8,12 @@ import PageHeader from '../../../components/manager/PageHeader.jsx';
 import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, sectionVariants, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const field =
   'rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
-const KIND_LABELS = { ERASURE: 'Effacement', EXPORT: 'Export', CONSENT: 'Consentement' };
-const STATUS_LABELS = { OPEN: 'Ouverte', DONE: 'Traitée', REJECTED: 'Rejetée' };
 const STATUS_STYLE = {
   OPEN: 'bg-status-amber/10 text-status-amber',
   DONE: 'bg-status-green/10 text-status-green',
@@ -36,6 +36,7 @@ const STATUS_STYLE = {
  * button labelled "effacer" that only flips a status would be the dangerous version.
  */
 export default function GdprPage() {
+  const { t, i18n } = useTranslation();
   const [report, setReport] = useState(null);
   const [requests, setRequests] = useState([]);
   const [meta, setMeta] = useState({ kinds: [], statuses: [], erasureAutomated: false });
@@ -59,7 +60,7 @@ export default function GdprPage() {
         erasureAutomated: Boolean(requestsRes.erasureAutomated),
       });
     } catch {
-      setError('Impossible de charger le registre RGPD.');
+      setError(t('admin.gdpr.loadError'));
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export default function GdprPage() {
       setShowForm(false);
       await load();
     } catch {
-      setError("L'enregistrement de la demande a échoué.");
+      setError(t('admin.gdpr.form.createFailed'));
     } finally {
       setSaving(false);
     }
@@ -105,11 +106,11 @@ export default function GdprPage() {
       await adminApi.updateGdprRequest(request.id, { status });
       await load();
     } catch {
-      setError('La mise à jour de la demande a échoué.');
+      setError(t('admin.gdpr.form.updateFailed'));
     }
   }
 
-  if (loading) return <PageLoading label="Chargement du registre…" />;
+  if (loading) return <PageLoading label={t('admin.gdpr.loading')} />;
   if (error && !report) return <PageError message={error} />;
 
   const openCount = requests.filter((row) => row.status === 'OPEN').length;
@@ -117,29 +118,24 @@ export default function GdprPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Administration"
-        title="RGPD"
-        subtitle="Registre des demandes, et inventaire des données détenues par la plateforme."
+        eyebrow={t('admin.gdpr.eyebrow')}
+        title={t('admin.gdpr.title')}
+        subtitle={t('admin.gdpr.subtitle')}
         actions={
           <button
             type="button"
             onClick={() => setShowForm((open) => !open)}
             className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
           >
-            {showForm ? 'Annuler' : 'Enregistrer une demande'}
+            {showForm ? t('admin.gdpr.cancel') : t('admin.gdpr.newRequest')}
           </button>
         }
       />
 
       {!meta.erasureAutomated && (
         <div className="mb-8 rounded-app border border-red-brand/40 bg-red-brand/5 p-4 text-sm text-text-dim">
-          <p className="font-medium text-text">Le traitement n'est pas automatisé.</p>
-          <p className="mt-1">
-            Ce registre trace les demandes et leur suite. Clôturer une demande enregistre
-            qu'une personne a fait le travail ailleurs — aucun effacement ni export n'est
-            déclenché depuis cet écran. Plusieurs catégories ci-dessous ne peuvent d'ailleurs
-            pas être simplement supprimées.
-          </p>
+          <p className="font-medium text-text">{t('admin.gdpr.notAutomated.title')}</p>
+          <p className="mt-1">{t('admin.gdpr.notAutomated.body')}</p>
         </div>
       )}
 
@@ -150,11 +146,11 @@ export default function GdprPage() {
         className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         {[
-          { label: 'Demandes ouvertes', value: openCount, tone: openCount > 0 ? 'amber' : undefined },
-          { label: 'Total des demandes', value: requests.length },
-          { label: 'Catégories de données', value: report?.categories?.length ?? 0 },
+          { label: t('admin.gdpr.tiles.openRequests'), value: openCount, tone: openCount > 0 ? 'amber' : undefined },
+          { label: t('admin.gdpr.tiles.totalRequests'), value: requests.length },
+          { label: t('admin.gdpr.tiles.categories'), value: report?.categories?.length ?? 0 },
           {
-            label: 'Comptes concernés',
+            label: t('admin.gdpr.tiles.accountsConcerned'),
             value: report?.categories?.[0]?.count ?? 0,
           },
         ].map((tile) => (
@@ -179,7 +175,7 @@ export default function GdprPage() {
           >
             <div className={`${CARD} grid gap-3 p-5 sm:grid-cols-3`}>
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-text">Type</span>
+                <span className="mb-1 block text-sm font-medium text-text">{t('admin.gdpr.form.type')}</span>
                 <select
                   value={form.kind}
                   onChange={(e) => setForm((prev) => ({ ...prev, kind: e.target.value }))}
@@ -187,20 +183,20 @@ export default function GdprPage() {
                 >
                   {meta.kinds.map((kind) => (
                     <option key={kind} value={kind}>
-                      {KIND_LABELS[kind] ?? kind}
+                      {t(`admin.gdpr.kinds.${kind}`, kind)}
                     </option>
                   ))}
                 </select>
               </label>
 
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-text">Personne concernée</span>
+                <span className="mb-1 block text-sm font-medium text-text">{t('admin.gdpr.form.subject')}</span>
                 <select
                   value={form.subjectUserId}
                   onChange={(e) => setForm((prev) => ({ ...prev, subjectUserId: e.target.value }))}
                   className={`${field} w-full`}
                 >
-                  <option value="">Non rattachée à un compte</option>
+                  <option value="">{t('admin.gdpr.form.subjectNone')}</option>
                   {users.map((user) => (
                     <option key={user.id} value={user.id}>
                       {user.displayName}
@@ -210,12 +206,12 @@ export default function GdprPage() {
               </label>
 
               <label className="block sm:col-span-3">
-                <span className="mb-1 block text-sm font-medium text-text">Note</span>
+                <span className="mb-1 block text-sm font-medium text-text">{t('admin.gdpr.form.note')}</span>
                 <textarea
                   rows={2}
                   value={form.noteFr}
                   onChange={(e) => setForm((prev) => ({ ...prev, noteFr: e.target.value }))}
-                  placeholder="Origine de la demande, pièces reçues, suite donnée…"
+                  placeholder={t('admin.gdpr.form.notePlaceholder')}
                   className={`${field} w-full`}
                 />
               </label>
@@ -226,7 +222,7 @@ export default function GdprPage() {
                   disabled={saving}
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
                 >
-                  {saving ? 'Enregistrement…' : 'Enregistrer'}
+                  {saving ? t('admin.gdpr.form.saving') : t('admin.gdpr.form.save')}
                 </button>
               </div>
             </div>
@@ -241,29 +237,29 @@ export default function GdprPage() {
         className="mb-10"
       >
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-xl text-text">Registre des demandes ({visible.length})</h2>
+          <h2 className="font-display text-xl text-text">{t('admin.gdpr.register.title', { count: visible.length })}</h2>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={field}>
-            <option value="">Tous les états</option>
+            <option value="">{t('admin.gdpr.register.allStatuses')}</option>
             {meta.statuses.map((status) => (
               <option key={status} value={status}>
-                {STATUS_LABELS[status] ?? status}
+                {t(`admin.gdpr.statuses.${status}`, status)}
               </option>
             ))}
           </select>
         </div>
 
         {visible.length === 0 ? (
-          <EmptyState detail="Aucune demande enregistrée." />
+          <EmptyState detail={t('admin.gdpr.register.empty')} />
         ) : (
           <div className={`overflow-hidden ${CARD}`}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Personne</th>
-                  <th className="px-4 py-3 font-medium">Reçue le</th>
-                  <th className="px-4 py-3 font-medium">Note</th>
-                  <th className="px-4 py-3 font-medium">État</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.gdpr.register.type')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.gdpr.register.person')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.gdpr.register.receivedOn')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.gdpr.register.note')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.gdpr.register.status')}</th>
                   <th className="px-4 py-3 font-medium" />
                 </tr>
               </thead>
@@ -274,12 +270,12 @@ export default function GdprPage() {
                     variants={staggerItem}
                     className="border-b border-border last:border-0 hover:bg-surface-2/60"
                   >
-                    <td className="px-4 py-3 text-text">{KIND_LABELS[request.kind] ?? request.kind}</td>
+                    <td className="px-4 py-3 text-text">{t(`admin.gdpr.kinds.${request.kind}`, request.kind)}</td>
                     <td className="px-4 py-3 text-text-dim">
-                      {request.subject?.displayName ?? 'Non rattachée'}
+                      {request.subject?.displayName ?? t('admin.gdpr.register.personUnattached')}
                     </td>
                     <td className="px-4 py-3 text-text-dim">
-                      {new Date(request.requestedAt).toLocaleDateString('fr-FR')}
+                      {new Date(request.requestedAt).toLocaleDateString(localeOf(i18n))}
                     </td>
                     <td className="max-w-[280px] truncate px-4 py-3 text-text-dim">{request.noteFr ?? '—'}</td>
                     <td className="px-4 py-3">
@@ -288,7 +284,7 @@ export default function GdprPage() {
                           STATUS_STYLE[request.status] ?? 'bg-surface-2 text-text-dim'
                         }`}
                       >
-                        {STATUS_LABELS[request.status] ?? request.status}
+                        {t(`admin.gdpr.statuses.${request.status}`, request.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -299,14 +295,14 @@ export default function GdprPage() {
                             onClick={() => setStatus(request, 'DONE')}
                             className="mr-3 text-xs font-medium text-red-brand hover:underline"
                           >
-                            Clôturer
+                            {t('admin.gdpr.register.close')}
                           </button>
                           <button
                             type="button"
                             onClick={() => setStatus(request, 'REJECTED')}
                             className="text-xs font-medium text-text-dim hover:underline"
                           >
-                            Rejeter
+                            {t('admin.gdpr.register.reject')}
                           </button>
                         </>
                       )}
@@ -325,11 +321,8 @@ export default function GdprPage() {
         animate="visible"
         transition={{ delay: reduce ? 0 : 0.08 }}
       >
-        <h2 className="mb-1 font-display text-xl text-text">Données détenues</h2>
-        <p className="mb-4 max-w-2xl text-sm text-text-dim">
-          Ce que la plateforme conserve, et ce qu'un effacement impliquerait réellement pour
-          chaque catégorie.
-        </p>
+        <h2 className="mb-1 font-display text-xl text-text">{t('admin.gdpr.dataHeld.title')}</h2>
+        <p className="mb-4 max-w-2xl text-sm text-text-dim">{t('admin.gdpr.dataHeld.subtitle')}</p>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {(report?.categories ?? []).map((category) => (
@@ -340,13 +333,13 @@ export default function GdprPage() {
               </div>
               <p className="text-sm text-text-dim">{category.holdsFr}</p>
               <p className="mt-2 border-t border-border pt-2 text-xs text-text-dim">
-                <span className="font-medium text-text-muted">Effacement : </span>
+                <span className="font-medium text-text-muted">{t('admin.gdpr.dataHeld.erasureLabel')} </span>
                 {category.erasureFr}
               </p>
             </div>
           ))}
           {(report?.categories ?? []).length === 0 && (
-            <EmptyState detail="Inventaire indisponible." muted />
+            <EmptyState detail={t('admin.gdpr.dataHeld.unavailable')} muted />
           )}
         </div>
       </motion.section>

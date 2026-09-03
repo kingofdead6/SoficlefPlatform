@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { dashboardApi } from '../../../api/dashboard.js';
 import { surveysApi } from '../../../api/surveys.js';
@@ -37,6 +38,7 @@ const SECTIONS = [
  * not writing prose about it.
  */
 export default function HrReportBuilderPage() {
+  const { t } = useTranslation();
   const [kpis, setKpis] = useState(null);
   const [satisfaction, setSatisfaction] = useState(null);
   const [directory, setDirectory] = useState([]);
@@ -156,7 +158,7 @@ export default function HrReportBuilderPage() {
     URL.revokeObjectURL(url);
   }
 
-  if (loading) return <PageLoading label="Chargement des données…" />;
+  if (loading) return <PageLoading label={t('hr.pages.report.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
@@ -166,9 +168,9 @@ export default function HrReportBuilderPage() {
       </Link>
 
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Générateur de rapports"
-        subtitle="Composer un rapport à partir des indicateurs que la plateforme calcule réellement, et l’exporter."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.pages.report.title')}
+        subtitle={t('hr.pages.report.subtitle')}
         actions={
           <button
             type="button"

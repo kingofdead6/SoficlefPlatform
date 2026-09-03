@@ -1,19 +1,24 @@
 /**
- * The French vocabulary of an onboarding task, shared by the roadmap (JourneyPage) and the
- * task detail page (TaskDetailPage) so the two never disagree about what "BLOQUÉE" is
- * called or which colour it wears.
+ * The vocabulary of an onboarding task, shared by the roadmap (JourneyPage) and the task
+ * detail page (TaskDetailPage) so the two never disagree about what "BLOQUÉE" is called or
+ * which colour it wears.
  *
  * The keys mirror the server's Prisma enums exactly — OnboardingTaskStatus, OnboardingPhase
  * and TaskOwnerDepartment — so an enum value added server-side shows up here as a missing
  * key rather than as a silently mislabelled row.
+ *
+ * What this module exports is *translation keys*, not French strings: the words themselves
+ * live in the catalogues and are resolved at the call site with `t()`. A module cannot call
+ * a hook, so a French literal here would be a string no language switch could reach.
  */
 
-export const STATUS_LABELS = {
-  TODO: 'À faire',
-  IN_PROGRESS: 'En cours',
-  BLOCKED: 'Bloquée',
-  DONE: 'Terminée',
-  VALIDATED: 'Validée',
+/** Status → the catalogue key holding its label. */
+export const STATUS_LABEL_KEYS = {
+  TODO: 'me.vocabulary.status.TODO',
+  IN_PROGRESS: 'me.vocabulary.status.IN_PROGRESS',
+  BLOCKED: 'me.vocabulary.status.BLOCKED',
+  DONE: 'me.vocabulary.status.DONE',
+  VALIDATED: 'me.vocabulary.status.VALIDATED',
 };
 
 export const STATUS_STYLES = {
@@ -28,30 +33,39 @@ export const STATUS_STYLES = {
 export const TASK_PHASES = [
   {
     id: 'PRE_ONBOARDING',
-    labelFr: 'Avant l’arrivée',
-    detailFr: 'Ce qui se prépare avant votre premier jour : dossier administratif, contrat, accès.',
+    labelKey: 'me.vocabulary.phases.PRE_ONBOARDING.label',
+    detailKey: 'me.vocabulary.phases.PRE_ONBOARDING.detail',
   },
   {
     id: 'DAY_ONE',
-    labelFr: 'Jour J',
-    detailFr: 'La journée d’accueil : badge, poste de travail, présentation de l’équipe.',
+    labelKey: 'me.vocabulary.phases.DAY_ONE.label',
+    detailKey: 'me.vocabulary.phases.DAY_ONE.detail',
   },
   {
     id: 'PROBATION',
-    labelFr: 'Période d’essai',
-    detailFr: 'La prise de poste : formations, points d’étape et évaluations.',
+    labelKey: 'me.vocabulary.phases.PROBATION.label',
+    detailKey: 'me.vocabulary.phases.PROBATION.detail',
   },
 ];
 
 /**
- * Who owns a step when it is blocked. The `detailFr` says what that department can unblock,
- * because "RH" alone does not tell a new arrival whether to write, call or wait.
+ * Who owns a step when it is blocked. The `detailKey` says what that department can unblock,
+ * because "HR" alone does not tell a new arrival whether to write, call or wait.
  */
 export const OWNER_DEPARTMENTS = {
-  HR: { labelFr: 'Ressources humaines', detailFr: 'contrat, dossier administratif, justificatifs.' },
-  IT: { labelFr: 'Informatique', detailFr: 'compte, matériel, accès aux applications.' },
-  HSE: { labelFr: 'Hygiène, sécurité et environnement', detailFr: 'équipements de protection, consignes de sécurité.' },
-  QUALITY: { labelFr: 'Qualité', detailFr: 'procédures, documents du système de management.' },
-  MANAGER: { labelFr: 'Votre manager', detailFr: 'objectifs, points d’étape, validation des étapes.' },
-  EMPLOYEE: { labelFr: 'Vous', detailFr: 'cette étape vous revient : rien ne vous attend côté services.' },
+  HR: { labelKey: 'me.vocabulary.owners.HR.label', detailKey: 'me.vocabulary.owners.HR.detail' },
+  IT: { labelKey: 'me.vocabulary.owners.IT.label', detailKey: 'me.vocabulary.owners.IT.detail' },
+  HSE: { labelKey: 'me.vocabulary.owners.HSE.label', detailKey: 'me.vocabulary.owners.HSE.detail' },
+  QUALITY: {
+    labelKey: 'me.vocabulary.owners.QUALITY.label',
+    detailKey: 'me.vocabulary.owners.QUALITY.detail',
+  },
+  MANAGER: {
+    labelKey: 'me.vocabulary.owners.MANAGER.label',
+    detailKey: 'me.vocabulary.owners.MANAGER.detail',
+  },
+  EMPLOYEE: {
+    labelKey: 'me.vocabulary.owners.EMPLOYEE.label',
+    detailKey: 'me.vocabulary.owners.EMPLOYEE.detail',
+  },
 };

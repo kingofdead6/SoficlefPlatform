@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../../api/onboarding.js';
 import { ApiError } from '../../../api/client.js';
 import { PageLoading, PageError } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CRITERIA = [
-  { key: 'scoreSkills', label: 'Compétences techniques' },
-  { key: 'scoreAutonomy', label: 'Autonomie' },
-  { key: 'scoreIntegration', label: 'Intégration' },
-  { key: 'scoreBehaviour', label: 'Comportement' },
+  { key: 'scoreSkills', labelKey: 'manager.evaluationDetail.criteria.skills' },
+  { key: 'scoreAutonomy', labelKey: 'manager.evaluationDetail.criteria.autonomy' },
+  { key: 'scoreIntegration', labelKey: 'manager.evaluationDetail.criteria.integration' },
+  { key: 'scoreBehaviour', labelKey: 'manager.evaluationDetail.criteria.behaviour' },
 ];
 
 export default function EvaluationDetailPage() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [evaluation, setEvaluation] = useState(null);
@@ -46,12 +49,16 @@ export default function EvaluationDetailPage() {
           recommendation: data.recommendation ?? 'CONFIRM',
         }));
       } catch (err) {
-        setError(err instanceof ApiError && err.status === 404 ? 'Évaluation introuvable.' : 'Erreur de chargement.');
+        setError(
+          err instanceof ApiError && err.status === 404
+            ? t('manager.evaluationDetail.notFound')
+            : t('manager.evaluationDetail.loadError'),
+        );
       } finally {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, t]);
 
   async function save(submitMode) {
     setSaving(true);
@@ -60,13 +67,17 @@ export default function EvaluationDetailPage() {
       await onboardingApi.saveEvaluation({ evaluationId: id, ...form, submit: submitMode });
       navigate('/app/manager/evaluations');
     } catch (err) {
-      setError(err instanceof ApiError && err.status === 409 ? err.body?.message ?? 'Conflit.' : "L'enregistrement a échoué.");
+      setError(
+        err instanceof ApiError && err.status === 409
+          ? (err.body?.message ?? t('manager.evaluationDetail.conflict'))
+          : t('common.states.saveFailed'),
+      );
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <PageLoading label="Chargement de l'évaluation…" />;
+  if (loading) return <PageLoading label={t('manager.evaluationDetail.loading')} />;
   if (error && !evaluation) return <PageError message={error} />;
   if (!evaluation) return null;
 
@@ -75,7 +86,7 @@ export default function EvaluationDetailPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <Link to="/app/manager/evaluations" className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← Retour aux évaluations
+        ← {t('manager.evaluationDetail.backToEvaluations')}
       </Link>
 
       <motion.div
@@ -85,7 +96,12 @@ export default function EvaluationDetailPage() {
         className="mb-6 border-b border-border pb-6"
       >
         <h1 className="mb-1 font-display text-3xl text-red-deep">{evaluation.subject.displayName}</h1>
-        <p className="text-text-dim">{evaluation.milestone} — échéance {new Date(evaluation.dueDate).toLocaleDateString('fr-FR')}</p>
+        <p className="text-text-dim">
+          {t('manager.evaluationDetail.milestoneDue', {
+            milestone: evaluation.milestone,
+            date: new Date(evaluation.dueDate).toLocaleDateString(localeOf(i18n)),
+          })}
+        </p>
       </motion.div>
 
       <AnimatePresence>
@@ -96,7 +112,7 @@ export default function EvaluationDetailPage() {
             exit={{ opacity: 0, height: 0 }}
             className="mb-4 overflow-hidden rounded-app border border-status-green/30 bg-status-green/5 px-3 py-2 text-sm text-status-green"
           >
-            Cette évaluation a déjà été transmise aux RH.
+            {t('manager.evaluationDetail.alreadySubmitted')}
           </motion.p>
         )}
       </AnimatePresence>
@@ -107,9 +123,9 @@ export default function EvaluationDetailPage() {
         animate="visible"
         className="space-y-5 rounded-app border border-border bg-surface p-6 shadow-app"
       >
-        {CRITERIA.map(({ key, label }) => (
+        {CRITERIA.map(({ key, labelKey }) => (
           <motion.div key={key} variants={staggerItem}>
-            <label className="mb-2 block text-sm text-text-muted">{label}</label>
+            <label className="mb-2 block text-sm text-text-muted">{t(labelKey)}</label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((value) => {
                 const active = form[key] === value;
@@ -136,7 +152,7 @@ export default function EvaluationDetailPage() {
         ))}
 
         <motion.label variants={staggerItem} className="block text-sm text-text-muted">
-          Commentaire
+          {t('manager.evaluationDetail.comment')}
           <textarea
             disabled={readOnly}
             value={form.commentFr}
@@ -147,16 +163,16 @@ export default function EvaluationDetailPage() {
         </motion.label>
 
         <motion.label variants={staggerItem} className="block text-sm text-text-muted">
-          Recommandation
+          {t('manager.evaluationDetail.recommendation')}
           <select
             disabled={readOnly}
             value={form.recommendation}
             onChange={(e) => setForm((prev) => ({ ...prev, recommendation: e.target.value }))}
             className="mt-1 w-full rounded-app border border-border px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand disabled:opacity-50"
           >
-            <option value="CONFIRM">Confirmer</option>
-            <option value="EXTEND">Prolonger la période d'essai</option>
-            <option value="TERMINATE">Mettre fin</option>
+            <option value="CONFIRM">{t('manager.evaluationDetail.recommend.confirm')}</option>
+            <option value="EXTEND">{t('manager.evaluationDetail.recommend.extend')}</option>
+            <option value="TERMINATE">{t('manager.evaluationDetail.recommend.terminate')}</option>
           </select>
         </motion.label>
 
@@ -183,7 +199,7 @@ export default function EvaluationDetailPage() {
               whileTap={reduce || saving ? undefined : { scale: 0.98 }}
               className="rounded-app border border-border px-4 py-2 text-sm font-medium text-text-dim transition-colors hover:border-red-brand hover:text-red-brand disabled:opacity-60"
             >
-              Enregistrer le brouillon
+              {t('manager.evaluationDetail.saveDraft')}
             </motion.button>
             <motion.button
               type="button"
@@ -193,7 +209,7 @@ export default function EvaluationDetailPage() {
               whileTap={reduce || saving ? undefined : { scale: 0.98 }}
               className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
             >
-              {saving ? 'Envoi…' : 'Transmettre aux RH'}
+              {saving ? t('common.states.sending') : t('manager.evaluationDetail.submitToHr')}
             </motion.button>
           </motion.div>
         )}

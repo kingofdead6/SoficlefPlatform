@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { usersApi } from '../../../api/users.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -42,6 +43,7 @@ const EMPTY_FILTERS = { search: '', unitCode: '', managerId: '', lifecycleState:
  * that already returns the right rows.
  */
 export default function HrEmployeesPage() {
+  const { t } = useTranslation();
   const [employees, setEmployees] = useState([]);
   const [facets, setFacets] = useState({ units: [], managers: [] });
   const [filters, setFilters] = useState(EMPTY_FILTERS);
@@ -145,7 +147,7 @@ export default function HrEmployeesPage() {
     URL.revokeObjectURL(url);
   }
 
-  if (loading) return <PageLoading label="Chargement du répertoire…" />;
+  if (loading) return <PageLoading label={t('hr.pages.employees.loading')} />;
   if (error && employees.length === 0) return <PageError message={error} />;
 
   const filtersActive = Object.values(filters).some((value) => value !== '');
@@ -153,9 +155,9 @@ export default function HrEmployeesPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Collaborateurs"
-        subtitle="Le répertoire complet de votre périmètre : recherche, filtres et export."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.pages.employees.title')}
+        subtitle={t('hr.pages.employees.subtitle')}
         actions={
           <>
             <Link

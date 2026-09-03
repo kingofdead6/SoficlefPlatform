@@ -1,21 +1,28 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { onboardingApi } from '../../../api/onboarding.js';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { sectionVariants, staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 
-const EVAL_STATUS_LABELS = { DUE: 'À faire', DRAFT: 'Brouillon', SUBMITTED: 'Transmise' };
-const MANAGER_TASK_STATUS_LABELS = {
-  TODO: 'À faire',
-  IN_PROGRESS: 'En cours',
-  BLOCKED: 'Bloquée',
-  DONE: 'Terminée',
-  VALIDATED: 'Validée',
+const EVAL_STATUS_KEYS = {
+  DUE: 'manager.evalStatus.due',
+  DRAFT: 'manager.evalStatus.draft',
+  SUBMITTED: 'manager.evalStatus.submitted',
+};
+const MANAGER_TASK_STATUS_KEYS = {
+  TODO: 'manager.taskStatus.todo',
+  IN_PROGRESS: 'manager.taskStatus.inProgress',
+  BLOCKED: 'manager.taskStatus.blocked',
+  DONE: 'manager.taskStatus.done',
+  VALIDATED: 'manager.taskStatus.validated',
 };
 
 export default function RecruitDetailPage() {
+  const { t, i18n } = useTranslation();
   const { userId } = useParams();
   const [recruit, setRecruit] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +35,7 @@ export default function RecruitDetailPage() {
       const { data } = await onboardingApi.managerRecruit(userId);
       setRecruit(data);
     } catch {
-      setError('Recrue introuvable.');
+      setError(t('manager.recruitNotFound'));
     } finally {
       setLoading(false);
     }
@@ -38,7 +45,7 @@ export default function RecruitDetailPage() {
     load();
   }, [userId]);
 
-  if (loading) return <PageLoading label="Chargement du dossier…" />;
+  if (loading) return <PageLoading label={t('manager.recruitDetail.loading')} />;
   if (error && !recruit) return <PageError message={error} />;
   if (!recruit) return null;
 
@@ -48,7 +55,7 @@ export default function RecruitDetailPage() {
   return (
     <div>
       <Link to="/app/manager/recruits" className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← Retour aux recrues
+        ← {t('manager.recruitDetail.backToRecruits')}
       </Link>
       <motion.div
         initial={reduce ? false : { opacity: 0, y: -8 }}
@@ -59,7 +66,7 @@ export default function RecruitDetailPage() {
         <div>
           <h1 className="mb-1 font-display text-3xl text-red-deep">{recruit.displayName}</h1>
           <p className="text-text-dim">
-            {position?.titleFr ?? 'Poste non renseigné'} — {position?.organizationUnit?.nameFr ?? ''}
+            {position?.titleFr ?? t('manager.noPosition')} — {position?.organizationUnit?.nameFr ?? ''}
           </p>
         </div>
         <div className="flex gap-2">
@@ -67,13 +74,13 @@ export default function RecruitDetailPage() {
             to={`/app/manager/interviews/${userId}`}
             className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition hover:bg-surface-2"
           >
-            Préparer un entretien
+            {t('manager.recruitDetail.prepareInterview')}
           </Link>
           <Link
             to={`/app/manager/recruits/${userId}/tasks/new`}
             className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition hover:bg-red-light"
           >
-            Assigner une tâche
+            {t('manager.assignTask.title')}
           </Link>
         </div>
       </motion.div>
@@ -86,16 +93,19 @@ export default function RecruitDetailPage() {
             animate="visible"
             className="rounded-app border border-border bg-surface p-5 shadow-app"
           >
-            <h2 className="mb-3 font-display text-lg text-text">Évaluations</h2>
+            <h2 className="mb-3 font-display text-lg text-text">{t('manager.evaluations.title')}</h2>
             <motion.ul variants={staggerContainer(0.05)} initial={initialOrNone(reduce)} animate="visible" className="space-y-2">
               {instance.evaluations.map((evaluation) => (
                 <motion.li key={evaluation.id} variants={staggerItem} className="flex items-center justify-between text-sm">
                   <span className="text-text-dim">
-                    {evaluation.milestone} — échéance {new Date(evaluation.dueDate).toLocaleDateString('fr-FR')}
+                    {t('manager.evaluationDetail.milestoneDue', {
+                      milestone: evaluation.milestone,
+                      date: new Date(evaluation.dueDate).toLocaleDateString(localeOf(i18n)),
+                    })}
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">
-                      {EVAL_STATUS_LABELS[evaluation.status]}
+                      {EVAL_STATUS_KEYS[evaluation.status] ? t(EVAL_STATUS_KEYS[evaluation.status]) : evaluation.status}
                     </span>
                     {evaluation.status !== 'SUBMITTED' && (
                       <Link

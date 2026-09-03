@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { localeOf } from '../../../lib/formatDate.js';
 
 import { assignmentsApi } from '../../../api/organization.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -24,6 +26,7 @@ const STALE_DAYS = 3;
  * property of the data at the moment it is read), so this page only presents it.
  */
 export default function HrUnassignedPage() {
+  const { t, i18n } = useTranslation();
   const [accounts, setAccounts] = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,12 +43,12 @@ export default function HrUnassignedPage() {
         setAccounts(pendingRes.data);
         setRequests(requestsRes.data);
       } catch {
-        setError('Impossible de charger la file d’affectation.');
+        setError(t('hr.pages.unassigned.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   // Oldest first — the whole reason this queue exists.
   const queue = useMemo(
@@ -56,21 +59,21 @@ export default function HrUnassignedPage() {
   const stale = queue.filter((account) => account.waitingDays >= STALE_DAYS);
   const openRequests = requests.filter((request) => request.status === 'OPEN');
 
-  if (loading) return <PageLoading label="Chargement de la file d’affectation…" />;
+  if (loading) return <PageLoading label={t('hr.pages.unassigned.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Comptes non affectés"
-        subtitle="Les comptes créés par le SI qui attendent une affectation, du plus ancien au plus récent."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.pages.unassigned.title')}
+        subtitle={t('hr.pages.unassigned.subtitle')}
         actions={
           <Link
             to="/app/hr/employees/request"
             className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
           >
-            Demander un compte
+            {t('hr.pages.unassigned.requestAccount')}
           </Link>
         }
       />
@@ -83,7 +86,7 @@ export default function HrUnassignedPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            En attente
+            {t('hr.pages.unassigned.stats.pending')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={queue.length} />
@@ -91,7 +94,7 @@ export default function HrUnassignedPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Au-delà de {STALE_DAYS} jours
+            {t('hr.pages.unassigned.stats.stale', { days: STALE_DAYS })}
           </p>
           <p className={`font-display text-3xl ${stale.length > 0 ? 'text-status-red' : 'text-red-deep'}`}>
             <CountUp value={stale.length} />
@@ -99,20 +102,20 @@ export default function HrUnassignedPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Attente la plus longue
+            {t('hr.pages.unassigned.stats.longest')}
           </p>
           <p className="font-display text-3xl text-red-deep">
-            <CountUp value={queue[0]?.waitingDays ?? 0} suffix=" j" />
+            <CountUp value={queue[0]?.waitingDays ?? 0} suffix={` ${t('hr.pages.unassigned.dayShort')}`} />
           </p>
         </motion.div>
       </motion.div>
 
       <section className="mb-10">
-        <h2 className="mb-4 font-display text-xl text-text">File d’affectation</h2>
+        <h2 className="mb-4 font-display text-xl text-text">{t('hr.pages.unassigned.queueTitle')}</h2>
         {queue.length === 0 ? (
           <EmptyState
-            title="File vide"
-            detail="Aucun compte créé par le SI n’attend d’affectation."
+            title={t('hr.pages.unassigned.queueEmptyTitle')}
+            detail={t('hr.pages.unassigned.queueEmptyDetail')}
             muted
           />
         ) : (
@@ -120,10 +123,10 @@ export default function HrUnassignedPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Collaborateur</th>
-                  <th className="px-4 py-3 font-medium">Adresse e-mail</th>
-                  <th className="px-4 py-3 font-medium">Compte créé le</th>
-                  <th className="px-4 py-3 font-medium">Attente</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.pages.unassigned.table.employee')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.pages.unassigned.table.email')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.pages.unassigned.table.created')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.pages.unassigned.table.waiting')}</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -141,7 +144,7 @@ export default function HrUnassignedPage() {
                     <td className="px-4 py-3 font-medium text-text">{account.displayName}</td>
                     <td className="px-4 py-3 text-text-dim">{account.email}</td>
                     <td className="px-4 py-3 text-text-dim">
-                      {new Date(account.createdAt).toLocaleDateString('fr-FR')}
+                      {new Date(account.createdAt).toLocaleDateString(localeOf(i18n))}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -151,7 +154,7 @@ export default function HrUnassignedPage() {
                             : 'bg-surface-2 text-text-dim'
                         }`}
                       >
-                        {account.waitingDays} jour{account.waitingDays > 1 ? 's' : ''}
+                        {t('hr.pages.unassigned.days', { count: account.waitingDays })}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-end">
@@ -159,7 +162,7 @@ export default function HrUnassignedPage() {
                         to={`/app/hr/employees/${account.id}/assign`}
                         className="rounded-app bg-red-brand px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-light"
                       >
-                        Affecter
+                        {t('hr.pages.unassigned.assign')}
                       </Link>
                     </td>
                   </motion.tr>
@@ -172,10 +175,10 @@ export default function HrUnassignedPage() {
 
       <section>
         <h2 className="mb-4 font-display text-xl text-text">
-          Demandes de compte en cours auprès du SI
+          {t('hr.pages.unassigned.requestsTitle')}
         </h2>
         {openRequests.length === 0 ? (
-          <EmptyState detail="Aucune demande de compte ouverte." muted />
+          <EmptyState detail={t('hr.pages.unassigned.requestsEmpty')} muted />
         ) : (
           <motion.div
             variants={staggerContainer(0.05)}
@@ -189,15 +192,15 @@ export default function HrUnassignedPage() {
                   <p className="font-medium text-text">{request.candidateNameFr}</p>
                   {request.urgency === 'URGENT' && (
                     <span className="shrink-0 rounded-full bg-status-red/10 px-2 py-0.5 text-xs font-medium text-status-red">
-                      Urgent
+                      {t('hr.pages.unassigned.urgent')}
                     </span>
                   )}
                 </div>
                 <p className="text-xs text-text-dim">{request.plannedPositionFr}</p>
                 <p className="mt-2 text-xs text-text-dim">
-                  Demandé il y a {request.waitingDays} jour{request.waitingDays > 1 ? 's' : ''}
+                  {t('hr.pages.unassigned.requestedDays', { count: request.waitingDays })}
                   {request.plannedHireDate
-                    ? ` — embauche prévue le ${new Date(request.plannedHireDate).toLocaleDateString('fr-FR')}`
+                    ? ` — ${t('hr.pages.unassigned.plannedHire', { date: new Date(request.plannedHireDate).toLocaleDateString(localeOf(i18n)) })}`
                     : ''}
                 </p>
               </motion.div>

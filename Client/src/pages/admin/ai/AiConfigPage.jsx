@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { adminApi } from '../../../api/admin.js';
 import { assistantApi } from '../../../api/assistant.js';
@@ -8,6 +9,7 @@ import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
 import Toggle from '../../../components/ui/Toggle.jsx';
+import { localeOf } from '../../../lib/formatDate.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 const FIELD =
@@ -31,6 +33,7 @@ const FIELD =
  *     permissions).
  */
 export default function AiConfigPage() {
+  const { t, i18n } = useTranslation();
   const [config, setConfig] = useState(null);
   const [meta, setMeta] = useState(null);
   const [status, setStatus] = useState(null);
@@ -70,11 +73,11 @@ export default function AiConfigPage() {
       setPrompts(configRes.data.promptTemplates ?? {});
       setError(null);
     } catch {
-      setError('Impossible de charger la configuration IA.');
+      setError(t('admin.ai.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -103,7 +106,7 @@ export default function AiConfigPage() {
       await load();
       setNotice({ tone: 'ok', text: successText });
     } catch (err) {
-      setNotice({ tone: 'warn', text: err.body?.message ?? 'L’enregistrement a échoué.' });
+      setNotice({ tone: 'warn', text: err.body?.message ?? t('admin.ai.saveFailed') });
     } finally {
       setSaving(false);
     }
@@ -118,23 +121,23 @@ export default function AiConfigPage() {
         model: form.model.trim() || null,
         monthlyQuota: form.monthlyQuota === '' ? null : Number(form.monthlyQuota),
       },
-      'Configuration du fournisseur enregistrée.',
+      t('admin.ai.providerSaved'),
     );
   }
 
   async function handleToggleAgent(agentId) {
     await patch(
       { agentsEnabled: { [agentId]: !enabled[agentId] } },
-      enabled[agentId] ? 'Agent désactivé.' : 'Agent activé.',
+      enabled[agentId] ? t('admin.ai.agentDisabled') : t('admin.ai.agentEnabled'),
     );
   }
 
   async function handleSavePrompt(agentId) {
-    await patch({ promptTemplates: { [agentId]: prompts[agentId] ?? '' } }, 'Modèle de prompt enregistré.');
+    await patch({ promptTemplates: { [agentId]: prompts[agentId] ?? '' } }, t('admin.ai.promptSaved'));
     setOpenPrompt(null);
   }
 
-  if (loading) return <PageLoading label="Chargement de la configuration IA…" />;
+  if (loading) return <PageLoading label={t('admin.ai.loading')} />;
   if (error) return <PageError message={error} />;
 
   const agentById = new Map(agents.map((agent) => [agent.id, agent]));
@@ -142,9 +145,9 @@ export default function AiConfigPage() {
   return (
     <div className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Administration"
-        title="Configuration IA"
-        subtitle="Fournisseur, modèle, quota, agents et modèles de prompts — enregistrés durablement, en attente d’un fournisseur à brancher."
+        eyebrow={t('admin.ai.eyebrow')}
+        title={t('admin.ai.title')}
+        subtitle={t('admin.ai.subtitle')}
       />
 
       <motion.div
@@ -153,10 +156,10 @@ export default function AiConfigPage() {
         animate="visible"
         className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
-        <Tile label="Agents déclarés" value={stats.declared} />
-        <Tile label="Agents activés" value={stats.enabled} />
-        <Tile label="Opérationnels sans LLM" value={stats.operational} />
-        <Tile label="Prompts renseignés" value={stats.prompts} />
+        <Tile label={t('admin.ai.tiles.declared')} value={stats.declared} />
+        <Tile label={t('admin.ai.tiles.enabled')} value={stats.enabled} />
+        <Tile label={t('admin.ai.tiles.operational')} value={stats.operational} />
+        <Tile label={t('admin.ai.tiles.prompts')} value={stats.prompts} />
       </motion.div>
 
       {/* The banner that must never be missed — driven by the live environment, not the form. */}
@@ -169,13 +172,13 @@ export default function AiConfigPage() {
       >
         <p className="text-sm font-medium text-text">
           {live.provider
-            ? `Fournisseur raccordé : ${live.provider}${live.modelName ? ` · ${live.modelName}` : ''}.`
-            : 'Aucun fournisseur de modèle de langage n’est raccordé.'}
+            ? live.modelName
+              ? `${t('admin.ai.banner.connectedWithModel', { provider: live.provider, model: live.modelName })}.`
+              : `${t('admin.ai.banner.connected', { provider: live.provider })}.`
+            : t('admin.ai.banner.none')}
         </p>
         <p className="mt-1 text-sm text-text-dim">
-          {live.provider
-            ? 'Ce modèle reformule les réponses de l’assistant. Il ne consulte jamais la base : la recherche est faite en amont, avec les droits de la personne qui pose la question, et les sources citées proviennent toujours de cette recherche — jamais du texte produit par le modèle. Si l’appel échoue, l’assistant retombe sur la réponse issue de la seule recherche.'
-            : 'Les cinq agents répondent malgré tout, par recherche dans les données de la plateforme avec les droits de la personne qui interroge. Renseigner HF_API_KEY dans l’environnement du serveur ajoute la reformulation ; cela n’active pas la fonctionnalité, qui marche déjà.'}
+          {live.provider ? t('admin.ai.banner.connectedNote') : t('admin.ai.banner.noneNote')}
         </p>
         <p className="mt-2 font-mono text-[11px] text-text-dim">
           {live.provider ? 'HF_API_KEY, HF_MODEL, HF_BASE_URL' : meta.envVar}
@@ -202,18 +205,18 @@ export default function AiConfigPage() {
 
       {/* Provider / model / quota */}
       <form onSubmit={handleSaveProvider} className={`${CARD} mb-8 space-y-4 p-6`}>
-        <h2 className="font-display text-lg text-text">Fournisseur, modèle et quota</h2>
+        <h2 className="font-display text-lg text-text">{t('admin.ai.form.title')}</h2>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Labelled label="Fournisseur" hint="Nom du prestataire retenu.">
+          <Labelled label={t('admin.ai.form.provider')} hint={t('admin.ai.form.providerHint')}>
             <input
               value={form.provider}
               onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
-              placeholder="Aucun fournisseur retenu"
+              placeholder={t('admin.ai.form.providerPlaceholder')}
               className={FIELD}
             />
           </Labelled>
-          <Labelled label="Adresse (endpoint)">
+          <Labelled label={t('admin.ai.form.endpoint')}>
             <input
               value={form.endpoint}
               onChange={(e) => setForm((f) => ({ ...f, endpoint: e.target.value }))}
@@ -221,14 +224,14 @@ export default function AiConfigPage() {
               className={FIELD}
             />
           </Labelled>
-          <Labelled label="Modèle">
+          <Labelled label={t('admin.ai.form.model')}>
             <input
               value={form.model}
               onChange={(e) => setForm((f) => ({ ...f, model: e.target.value }))}
               className={FIELD}
             />
           </Labelled>
-          <Labelled label="Quota mensuel" hint="En requêtes. Vide = pas de plafond fixé.">
+          <Labelled label={t('admin.ai.form.monthlyQuota')} hint={t('admin.ai.form.monthlyQuotaHint')}>
             <input
               type="number"
               min={0}
@@ -242,27 +245,22 @@ export default function AiConfigPage() {
         <div className="flex items-center justify-between gap-4">
           <p className="text-xs text-text-dim">
             {config.updatedAt
-              ? `Dernière modification : ${new Date(config.updatedAt).toLocaleString('fr-FR')}.`
-              : 'Aucune configuration enregistrée pour l’instant.'}
+              ? t('admin.ai.form.lastModified', { date: new Date(config.updatedAt).toLocaleString(localeOf(i18n)) })
+              : t('admin.ai.form.neverSaved')}
           </p>
           <button type="submit" disabled={saving} className={PRIMARY_BUTTON}>
-            {saving ? 'Enregistrement…' : 'Enregistrer'}
+            {saving ? t('admin.ai.form.saving') : t('common.actions.save')}
           </button>
         </div>
       </form>
 
       {/* Agents */}
       <section className="mb-8">
-        <h2 className="mb-1 font-display text-xl text-text">Agents</h2>
-        <p className="mb-4 text-sm text-text-dim">
-          Un agent lit avec les droits de celui qui l’interroge : il ne peut jamais faire
-          remonter une ligne que la personne ne pourrait pas ouvrir elle-même. Activer un
-          agent enregistre l’intention ; les agents marqués « opérationnel » répondent déjà,
-          par recherche dans les données de la plateforme, sans aucun modèle de langage.
-        </p>
+        <h2 className="mb-1 font-display text-xl text-text">{t('admin.ai.agents.title')}</h2>
+        <p className="mb-4 text-sm text-text-dim">{t('admin.ai.agents.description')}</p>
 
         {meta.agents.length === 0 ? (
-          <EmptyState muted title="Aucun agent déclaré" detail="Le catalogue des agents est vide." />
+          <EmptyState muted title={t('admin.ai.agents.empty')} detail={t('admin.ai.agents.emptyDetail')} />
         ) : (
           <motion.div
             variants={staggerContainer(0.05)}
@@ -291,9 +289,9 @@ export default function AiConfigPage() {
                         >
                           {agent?.live
                             ? live.provider
-                              ? 'Opérationnel · reformulé'
-                              : 'Opérationnel sans LLM'
-                            : 'Sans étape de réponse'}
+                              ? t('admin.ai.agents.operationalReformulated')
+                              : t('admin.ai.agents.operationalNoLlm')
+                            : t('admin.ai.agents.noAnswerStep')}
                         </span>
                       </div>
                       {agent?.purposeFr && <p className="mt-1 text-sm text-text-dim">{agent.purposeFr}</p>}
@@ -317,14 +315,18 @@ export default function AiConfigPage() {
                         checked={on}
                         disabled={saving}
                         onChange={() => handleToggleAgent(agentId)}
-                        label={`Activer ${agent?.titleFr ?? agentId}`}
+                        label={t('admin.ai.agents.toggleLabel', { name: agent?.titleFr ?? agentId })}
                       />
                       <button
                         type="button"
                         onClick={() => setOpenPrompt(promptOpen ? null : agentId)}
                         className="text-xs text-red-brand hover:underline"
                       >
-                        {promptOpen ? 'Fermer' : promptValue ? 'Modifier le prompt' : 'Définir un prompt'}
+                        {promptOpen
+                          ? t('admin.ai.agents.closePrompt')
+                          : promptValue
+                            ? t('admin.ai.agents.editPrompt')
+                            : t('admin.ai.agents.definePrompt')}
                       </button>
                     </div>
                   </div>
@@ -340,18 +342,18 @@ export default function AiConfigPage() {
                       >
                         <div className="mt-4 border-t border-border pt-4">
                           <label className="mb-1 block text-sm font-medium text-text">
-                            Modèle de prompt
+                            {t('admin.ai.agents.promptLabel')}
                           </label>
                           <textarea
                             rows={4}
                             value={promptValue}
                             onChange={(e) => setPrompts((current) => ({ ...current, [agentId]: e.target.value }))}
-                            placeholder="Consigne donnée à l’agent. La règle qui vaut déjà, sans fournisseur : toute réponse cite sa source, ou reconnaît n’avoir rien trouvé."
+                            placeholder={t('admin.ai.agents.promptPlaceholder')}
                             className={FIELD}
                           />
                           <div className="mt-2 flex justify-end gap-2">
                             <button type="button" onClick={() => setOpenPrompt(null)} className={SECONDARY_BUTTON}>
-                              Annuler
+                              {t('common.actions.cancel')}
                             </button>
                             <button
                               type="button"
@@ -359,7 +361,7 @@ export default function AiConfigPage() {
                               onClick={() => handleSavePrompt(agentId)}
                               className={PRIMARY_BUTTON}
                             >
-                              Enregistrer le prompt
+                              {t('admin.ai.agents.savePrompt')}
                             </button>
                           </div>
                         </div>
@@ -374,15 +376,10 @@ export default function AiConfigPage() {
       </section>
 
       <p className="rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-        Les réglages de ce formulaire sont enregistrés mais ne pilotent pas encore l’assistant :
-        celui-ci lit sa configuration dans l’environnement du serveur (HF_API_KEY, HF_MODEL,
-        HF_BASE_URL), pas dans cette table. Les{' '}
-        {status?.agentsOperational ?? stats.operational} agent(s) marqué(s) « opérationnel »
-        répondent par recherche dans les données de la plateforme, avec les droits de la personne
-        qui pose la question
-        {live.provider
-          ? ', puis font reformuler cette réponse par le modèle raccordé.'
-          : ', sans aucun appel à un modèle de langage.'}
+        {t('admin.ai.footnote', {
+          count: status?.agentsOperational ?? stats.operational,
+          tail: live.provider ? t('admin.ai.footnoteTailConnected') : t('admin.ai.footnoteTailNone'),
+        })}
       </p>
     </div>
   );

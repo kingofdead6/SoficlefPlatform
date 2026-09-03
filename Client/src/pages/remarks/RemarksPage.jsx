@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { remarksApi } from '../../api/remarks.js';
 import { ApiError } from '../../api/client.js';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { can, hasRole } from '../../lib/permissions.js';
+import { formatDateTime } from '../../lib/formatDate.js';
 
 /**
  * The remarks journal (CDC v1 §3.7) — ported from the source app's SELF-scoped
@@ -12,6 +14,7 @@ import { can, hasRole } from '../../lib/permissions.js';
  * and get an export button.
  */
 export default function RemarksPage() {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [remarks, setRemarks] = useState([]);
   const [content, setContent] = useState('');
@@ -28,7 +31,7 @@ export default function RemarksPage() {
     remarksApi
       .list()
       .then((res) => setRemarks(res.data))
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Erreur de chargement.'))
+      .catch((err) => setError(err instanceof ApiError ? err.message : t('common.states.loadFailed')))
       .finally(() => setLoading(false));
   }
 
@@ -43,32 +46,32 @@ export default function RemarksPage() {
       setContent('');
       load();
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : "Échec de l'envoi.");
+      alert(err instanceof ApiError ? err.message : t('remarks.sendFailed'));
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleDelete(id) {
-    if (!confirm('Supprimer cette remarque ?')) return;
+    if (!confirm(t('remarks.confirmDelete'))) return;
     try {
       await remarksApi.remove(id);
       load();
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'Échec de la suppression.');
+      alert(err instanceof ApiError ? err.message : t('remarks.deleteFailed'));
     }
   }
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl text-red-deep">Remarques</h1>
+        <h1 className="font-display text-2xl text-red-deep">{t('remarks.title')}</h1>
         {mayExport && (
           <a
             href={remarksApi.exportUrl()}
             className="rounded-app border border-border bg-surface px-3 py-1.5 text-[12.5px] text-text-dim hover:text-text"
           >
-            Exporter (.txt)
+            {t('remarks.exportTxt')}
           </a>
         )}
       </div>
@@ -76,7 +79,7 @@ export default function RemarksPage() {
       {can(user, 'create', 'remark') && (
         <form onSubmit={handleSubmit} className="rounded-app border border-border bg-surface p-4 shadow-app">
           <label className="mb-2 block text-[12.5px] font-medium text-text-dim">
-            Adresser une observation aux RH / à la direction
+            {t('remarks.formLabel')}
           </label>
           <textarea
             value={content}
@@ -84,25 +87,25 @@ export default function RemarksPage() {
             rows={4}
             maxLength={5000}
             className="w-full rounded-app border border-border bg-surface p-3 text-[13px] text-text"
-            placeholder="Votre remarque…"
+            placeholder={t('remarks.placeholder')}
           />
           <button
             type="submit"
             disabled={submitting || !content.trim()}
             className="mt-2 rounded-app bg-red-brand px-4 py-1.5 text-[13px] text-white disabled:opacity-50"
           >
-            {submitting ? 'Envoi…' : 'Envoyer'}
+            {submitting ? t('common.states.sending') : t('common.actions.send')}
           </button>
         </form>
       )}
 
       {loading ? (
-        <div className="text-text-dim">Chargement…</div>
+        <div className="text-text-dim">{t('common.states.loading')}</div>
       ) : error ? (
         <div className="text-status-red">{error}</div>
       ) : remarks.length === 0 ? (
         <div className="rounded-app border border-border bg-surface p-6 text-text-dim shadow-app">
-          Aucune remarque enregistrée.
+          {t('remarks.empty')}
         </div>
       ) : (
         <ul className="space-y-3">
@@ -111,7 +114,7 @@ export default function RemarksPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[12px] text-text-dim">
-                    {remark.author?.displayName} · {new Date(remark.createdAt).toLocaleString('fr-FR')}
+                    {remark.author?.displayName} · {formatDateTime(remark.createdAt, i18n)}
                   </p>
                   <p className="mt-1 whitespace-pre-wrap text-[13.5px] text-text">{remark.contentFr}</p>
                 </div>
@@ -120,7 +123,7 @@ export default function RemarksPage() {
                     onClick={() => handleDelete(remark.id)}
                     className="shrink-0 text-[12px] text-status-red hover:underline"
                   >
-                    Supprimer
+                    {t('common.actions.delete')}
                   </button>
                 )}
               </div>

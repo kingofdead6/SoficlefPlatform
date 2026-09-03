@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { positionsApi } from '../../../api/organization.js';
 import { onboardingApi } from '../../../api/onboarding.js';
@@ -18,6 +19,7 @@ import { useGsapContext } from '../../../lib/motion/useGsapContext.js';
  * level, root first.
  */
 export default function ManagerOrganigramPage() {
+  const { t } = useTranslation();
   const [nodes, setNodes] = useState([]);
   const [recruits, setRecruits] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,12 +36,12 @@ export default function ManagerOrganigramPage() {
         setNodes(treeRes.data);
         setRecruits(recruitsRes.data);
       } catch {
-        setError("Impossible de charger l'organigramme.");
+        setError(t('manager.organigram.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const progressByUserId = useMemo(
     () => new Map(recruits.map((recruit) => [recruit.userId, recruit.percent])),
@@ -72,25 +74,25 @@ export default function ManagerOrganigramPage() {
     [loading, nodes],
   );
 
-  if (loading) return <PageLoading label="Chargement de l'organigramme…" />;
+  if (loading) return <PageLoading label={t('manager.organigram.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div ref={scopeRef}>
       <PageHeader
-        eyebrow="Manager"
-        title="Organigramme"
-        subtitle="Votre périmètre, du responsable de direction à vos équipes."
+        eyebrow={t('manager.eyebrow')}
+        title={t('manager.organigram.title')}
+        subtitle={t('manager.organigram.subtitle')}
       />
 
       <div className="overflow-x-auto rounded-app border border-border bg-surface p-6 shadow-app">
         <OrgChart
           nodes={nodes}
-          emptyLabel="Aucune structure visible."
+          emptyLabel={t('manager.organigram.empty')}
           toneOf={(node) => (node.isVacant ? 'vacant' : undefined)}
           badgeOf={(node) => {
             const percent = node.holder ? progressByUserId.get(node.holder.id) : undefined;
-            return percent === undefined ? undefined : `Intégration ${percent} %`;
+            return percent === undefined ? undefined : t('manager.organigram.onboardingBadge', { percent });
           }}
         />
       </div>

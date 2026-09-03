@@ -3,6 +3,8 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { animate, stagger } from 'animejs';
 
+import { useTranslation } from 'react-i18next';
+
 import { splitChars } from '../../lib/text.js';
 import LiquidVeil from './LiquidVeil.jsx';
 
@@ -27,6 +29,9 @@ const REVEAL_END = 0.8;
  * Everything is scrubbed rather than played — scrolling back rewinds it exactly.
  */
 export default function Takeover() {
+  // Named `translate` rather than the usual `t`: `handleProgress` below already uses `t`
+  // for its normalised progress value, and shadowing it there would be a silent trap.
+  const { t: translate, i18n } = useTranslation();
   const root = useRef(null);
   const textTimeline = useRef(null);
 
@@ -134,12 +139,16 @@ export default function Takeover() {
       ctx.revert();
       textTimeline.current = null;
     };
-  }, []);
+    /*
+     * Rebuilt on a language change: the description below is re-rendered with different
+     * text, and the ScrollTrigger's measurements were taken against the old copy.
+     */
+  }, [i18n.language]);
 
   return (
     <section
       ref={root}
-      aria-label="SOFICLEF en un mot"
+      aria-label={translate('public.marks.takeover')}
       /*
        * 400vh of scroll for one pinned viewport: the height is the timeline's duration.
        * Shorter and the pour is over before it registers; much longer and it drags.
@@ -201,9 +210,7 @@ export default function Takeover() {
                 data-sub
                 className="text-left text-[19px] font-medium leading-[1.5] tracking-[-0.01em] text-surface/85 sm:text-xl md:text-2xl md:leading-[1.55]"
               >
-                Depuis 1994, nous concevons et fabriquons en Algérie les serrures, poignées et
-                coffres qui protègent la vie et les biens — du corps de serrure à la distribution
-                nationale.
+                {translate('public.takeover.body')}
               </p>
             </div>
           </div>

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { contactsApi } from '../../api/contacts.js';
 import { ApiError } from '../../api/client.js';
 
 export default function ContactsPage() {
+  const { t } = useTranslation();
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,33 +14,33 @@ export default function ContactsPage() {
     contactsApi
       .list()
       .then((res) => setContacts(res.data))
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Erreur de chargement.'))
+      .catch((err) => setError(err instanceof ApiError ? err.message : t('common.states.loadFailed')))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
-  if (loading) return <div className="text-text-dim">Chargement…</div>;
+  if (loading) return <div className="text-text-dim">{t('common.states.loading')}</div>;
   if (error) return <div className="text-status-red">{error}</div>;
   if (contacts.length === 0) {
     return (
       <div className="rounded-app border border-border bg-surface p-6 text-text-dim shadow-app">
-        L'annuaire des interlocuteurs n'est pas encore disponible.
+        {t('contacts.unavailable')}
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl text-red-deep">Interlocuteurs</h1>
+      <h1 className="font-display text-2xl text-red-deep">{t('contacts.title')}</h1>
 
       <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
         <table className="w-full text-left text-[13px]">
           <thead className="bg-surface-2 text-text-dim">
             <tr>
-              <th className="px-4 py-2 font-medium">Poste</th>
-              <th className="px-4 py-2 font-medium">Sigle</th>
-              <th className="px-4 py-2 font-medium">Nom</th>
-              <th className="px-4 py-2 font-medium">Fonction</th>
-              <th className="px-4 py-2 text-right font-medium">Priorité</th>
+              <th className="px-4 py-2 font-medium">{t('contacts.columns.extension')}</th>
+              <th className="px-4 py-2 font-medium">{t('contacts.columns.initials')}</th>
+              <th className="px-4 py-2 font-medium">{t('common.labels.name')}</th>
+              <th className="px-4 py-2 font-medium">{t('contacts.columns.role')}</th>
+              <th className="px-4 py-2 text-right font-medium">{t('contacts.columns.priority')}</th>
             </tr>
           </thead>
           <tbody>

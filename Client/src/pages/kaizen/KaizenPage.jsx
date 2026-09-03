@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { kaizenApi } from '../../api/kaizen.js';
 import { ApiError } from '../../api/client.js';
@@ -9,6 +10,7 @@ import { ApiError } from '../../api/client.js';
  * `can(user, 'update', 'kaizen_action')`) gates the status dropdown on each action row.
  */
 export default function KaizenPage() {
+  const { t } = useTranslation();
   const [programme, setProgramme] = useState(null);
   const [mayEdit, setMayEdit] = useState(false);
   const [statuses, setStatuses] = useState([]);
@@ -24,9 +26,9 @@ export default function KaizenPage() {
         setStatuses(stat.data);
         setActiveMissionId(prog.data?.missions?.[0]?.id ?? null);
       })
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Erreur de chargement.'))
+      .catch((err) => setError(err instanceof ApiError ? err.message : t('common.states.loadFailed')))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   async function handleStatusChange(actionId, statusFr) {
     try {
@@ -41,16 +43,16 @@ export default function KaizenPage() {
         })),
       }));
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'Échec de la mise à jour.');
+      alert(err instanceof ApiError ? err.message : t('kaizen.statusUpdateFailed'));
     }
   }
 
-  if (loading) return <div className="text-text-dim">Chargement…</div>;
+  if (loading) return <div className="text-text-dim">{t('common.states.loading')}</div>;
   if (error) return <div className="text-status-red">{error}</div>;
   if (!programme) {
     return (
       <div className="rounded-app border border-border bg-surface p-6 text-text-dim shadow-app">
-        Le programme Kaizen n'est pas encore disponible.
+        {t('kaizen.unavailable')}
       </div>
     );
   }
@@ -59,16 +61,18 @@ export default function KaizenPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-2xl text-red-deep">Projet Kaizen</h1>
+      <h1 className="font-display text-2xl text-red-deep">{t('kaizen.title')}</h1>
 
       <div className="rounded-app border border-red-brand/30 bg-surface p-5 shadow-app">
-        <h2 className="font-display text-lg text-text">Pilote interne : {programme.internalLeadFr}</h2>
+        <h2 className="font-display text-lg text-text">
+          {t('kaizen.internalLead', { value: programme.internalLeadFr })}
+        </h2>
         <p className="mt-1 text-[13.5px] text-text">{programme.programmeFr}</p>
       </div>
 
       {programme.missions.length > 0 && (
         <section>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">Missions</h3>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">{t('kaizen.missions')}</h3>
           <div className="flex flex-wrap gap-2 border-b border-border pb-3">
             {programme.missions.map((mission) => (
               <button
@@ -80,7 +84,7 @@ export default function KaizenPage() {
                     : 'bg-surface-2 text-text-dim hover:text-text'
                 }`}
               >
-                {mission.icon ?? ''} Mission {mission.number}
+                {mission.icon ?? ''} {t('kaizen.missionNumber', { number: mission.number })}
               </button>
             ))}
           </div>
@@ -94,7 +98,7 @@ export default function KaizenPage() {
       {programme.priorityActionsJ30.length > 0 && (
         <section>
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-dim">
-            Actions prioritaires — 30 premiers jours
+            {t('kaizen.priorityActions')}
           </h3>
           <ol className="space-y-2">
             {programme.priorityActionsJ30.map((action) => (
@@ -111,20 +115,22 @@ export default function KaizenPage() {
 }
 
 function MissionPanel({ mission, mayEdit, statuses, onStatusChange }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-5 space-y-6">
       <div>
         <h3 className="font-display text-lg text-text">{mission.titleFr}</h3>
         <p className="mt-1 text-[12.5px] text-text-muted">
           {mission.periodFr}
-          {mission.referenceFr ? ` · ${mission.referenceFr}` : ''} · Pilote interne : {mission.internalLeadFr}
+          {mission.referenceFr ? ` · ${mission.referenceFr}` : ''} ·{' '}
+          {t('kaizen.internalLead', { value: mission.internalLeadFr })}
         </p>
         <p className="mt-3 text-[13.5px] text-text">{mission.contextFr}</p>
       </div>
 
       {mission.results.length > 0 && (
         <div>
-          <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-brand">Résultats</h4>
+          <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-brand">{t('kaizen.results')}</h4>
           <ul className="list-disc space-y-1.5 ps-5">
             {mission.results.map((result) => (
               <li key={result.id} className="text-[13px] text-text">
@@ -138,7 +144,7 @@ function MissionPanel({ mission, mayEdit, statuses, onStatusChange }) {
       {mission.journal.length > 0 && (
         <div>
           <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-brand">
-            Journal de mission
+            {t('kaizen.missionJournal')}
           </h4>
           <ul className="space-y-2">
             {mission.journal.map((entry) => (
@@ -154,13 +160,13 @@ function MissionPanel({ mission, mayEdit, statuses, onStatusChange }) {
 
       {mission.gaps.length > 0 && (
         <div>
-          <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-brand">Écarts constatés</h4>
+          <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-brand">{t('kaizen.gaps')}</h4>
           <table className="w-full text-left text-[13px]">
             <thead>
               <tr className="text-text-dim">
-                <th className="pb-2 font-medium">Domaine</th>
-                <th className="pb-2 font-medium">Constat</th>
-                <th className="pb-2 font-medium">Cible</th>
+                <th className="pb-2 font-medium">{t('kaizen.columns.domain')}</th>
+                <th className="pb-2 font-medium">{t('kaizen.columns.observed')}</th>
+                <th className="pb-2 font-medium">{t('kaizen.columns.target')}</th>
               </tr>
             </thead>
             <tbody>
@@ -178,14 +184,14 @@ function MissionPanel({ mission, mayEdit, statuses, onStatusChange }) {
 
       {mission.actions.length > 0 && (
         <div>
-          <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-brand">Plan d'actions</h4>
+          <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-red-brand">{t('kaizen.actionPlan')}</h4>
           <table className="w-full text-left text-[13px]">
             <thead>
               <tr className="text-text-dim">
-                <th className="pb-2 font-medium">Action</th>
-                <th className="pb-2 font-medium">Responsable</th>
-                <th className="pb-2 font-medium">Échéance</th>
-                <th className="pb-2 font-medium">Statut</th>
+                <th className="pb-2 font-medium">{t('kaizen.columns.action')}</th>
+                <th className="pb-2 font-medium">{t('common.labels.manager')}</th>
+                <th className="pb-2 font-medium">{t('common.labels.dueDate')}</th>
+                <th className="pb-2 font-medium">{t('common.labels.status')}</th>
               </tr>
             </thead>
             <tbody>
