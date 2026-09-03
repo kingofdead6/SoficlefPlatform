@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { surveysApi } from '../../../api/surveys.js';
 import { usersApi } from '../../../api/users.js';
@@ -16,10 +17,10 @@ const fieldClass =
   'rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
 const PERIODS = [
-  { value: '', labelFr: 'Toute la période' },
-  { value: '30', labelFr: '30 derniers jours' },
-  { value: '90', labelFr: '90 derniers jours' },
-  { value: '180', labelFr: '6 derniers mois' },
+  { value: '', key: 'all' },
+  { value: '30', key: '30' },
+  { value: '90', key: '90' },
+  { value: '180', key: '180' },
 ];
 
 /**
@@ -33,6 +34,7 @@ const PERIODS = [
  * definition of the score; the visible response count makes the effect explicit.
  */
 export default function HrSurveyResultsPage() {
+  const { t, i18n } = useTranslation();
   const [results, setResults] = useState(null);
   const [facets, setFacets] = useState({ units: [], managers: [] });
   const [filters, setFilters] = useState({ unitCode: '', managerId: '', period: '' });
@@ -63,12 +65,12 @@ export default function HrSurveyResultsPage() {
       setResults(data);
       setError(null);
     } catch {
-      setError('Impossible de charger les résultats des enquêtes.');
+      setError(t('hr.surveyResults.loadError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   // Only the server-side filters re-query; `period` is applied to the returned rows below.
   useEffect(() => {
@@ -82,7 +84,7 @@ export default function HrSurveyResultsPage() {
     return all.filter((response) => new Date(response.answeredAt).getTime() >= cutoff);
   }, [results, filters.period]);
 
-  if (loading) return <PageLoading label="Chargement des résultats…" />;
+  if (loading) return <PageLoading label={t('hr.surveyResults.loading')} />;
   if (error) return <PageError message={error} />;
 
   const aggregate = results?.filtered ?? results?.overall;
@@ -91,13 +93,13 @@ export default function HrSurveyResultsPage() {
   return (
     <div>
       <Link to="/app/hr/surveys" className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← Retour aux enquêtes
+        {t('hr.surveyResults.back')}
       </Link>
 
       <PageHeader
-        eyebrow="Ressources humaines"
-        title="Résultats des enquêtes"
-        subtitle="Scores par indicateur, par jalon et réponses individuelles, filtrables par structure, manager et période."
+        eyebrow={t('hr.dashboard.eyebrow')}
+        title={t('hr.surveyResults.title')}
+        subtitle={t('hr.surveyResults.subtitle')}
       />
 
       <div className={`${CARD} mb-6 flex flex-wrap items-center gap-3 p-4`}>
@@ -106,7 +108,7 @@ export default function HrSurveyResultsPage() {
           onChange={(e) => setFilters((f) => ({ ...f, unitCode: e.target.value }))}
           className={fieldClass}
         >
-          <option value="">Toutes les structures</option>
+          <option value="">{t('hr.surveyResults.allStructures')}</option>
           {facets.units.map((unit) => (
             <option key={unit.code} value={unit.code}>
               {unit.code} — {unit.nameFr}
@@ -118,7 +120,7 @@ export default function HrSurveyResultsPage() {
           onChange={(e) => setFilters((f) => ({ ...f, managerId: e.target.value }))}
           className={fieldClass}
         >
-          <option value="">Tous les managers</option>
+          <option value="">{t('hr.surveyResults.allManagers')}</option>
           {facets.managers.map((manager) => (
             <option key={manager.id} value={manager.id}>
               {manager.displayName}
@@ -132,7 +134,7 @@ export default function HrSurveyResultsPage() {
         >
           {PERIODS.map((period) => (
             <option key={period.value} value={period.value}>
-              {period.labelFr}
+              {t(`hr.surveyResults.periods.${period.key}`)}
             </option>
           ))}
         </select>
@@ -142,12 +144,11 @@ export default function HrSurveyResultsPage() {
             onClick={() => setFilters({ unitCode: '', managerId: '', period: '' })}
             className="text-sm text-red-brand hover:underline"
           >
-            Réinitialiser
+            {t('hr.surveyResults.reset')}
           </button>
         )}
         <span className="ml-auto text-sm text-text-dim">
-          {responses.length} réponse{responses.length > 1 ? 's' : ''} affichée
-          {responses.length > 1 ? 's' : ''}
+          {t('hr.surveyResults.responseCount', { count: responses.length })}
         </span>
       </div>
 
@@ -159,7 +160,7 @@ export default function HrSurveyResultsPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Score global
+            {t('hr.surveyResults.metrics.overall')}
           </p>
           {aggregate?.score === null || aggregate?.score === undefined ? (
             <p className="font-display text-3xl text-text-dim">—</p>
@@ -171,7 +172,7 @@ export default function HrSurveyResultsPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Taux de réponse
+            {t('hr.surveyResults.metrics.responseRate')}
           </p>
           {aggregate?.responseRate === null || aggregate?.responseRate === undefined ? (
             <p className="font-display text-3xl text-text-dim">—</p>
@@ -183,7 +184,7 @@ export default function HrSurveyResultsPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Enquêtes émises
+            {t('hr.surveyResults.metrics.issued')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={aggregate?.roundsIssued ?? 0} />
@@ -191,7 +192,7 @@ export default function HrSurveyResultsPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Renseignées
+            {t('hr.surveyResults.metrics.answered')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={aggregate?.roundsAnswered ?? 0} />
@@ -200,29 +201,31 @@ export default function HrSurveyResultsPage() {
       </motion.div>
 
       <section className="mb-10">
-        <h2 className="mb-4 font-display text-xl text-text">Scores par indicateur</h2>
+        <h2 className="mb-4 font-display text-xl text-text">{t('hr.surveyResults.byIndicator')}</h2>
         <div className={`overflow-hidden ${CARD}`}>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                <th className="px-4 py-3 font-medium">Indicateur</th>
-                <th className="px-4 py-3 font-medium">Moyenne (/5)</th>
-                <th className="w-1/2 px-4 py-3 font-medium">Score</th>
-                <th className="px-4 py-3 font-medium">Réponses</th>
+                <th className="px-4 py-3 font-medium">{t('hr.surveys.table.indicator')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.surveys.table.average')}</th>
+                <th className="w-1/2 px-4 py-3 font-medium">{t('hr.surveys.table.score')}</th>
+                <th className="px-4 py-3 font-medium">{t('hr.surveys.table.responses')}</th>
               </tr>
             </thead>
             <tbody>
               {(aggregate?.indicators ?? []).map((indicator) => (
                 <tr key={indicator.indicator} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 text-text">
-                    {INDICATOR_LABELS[indicator.indicator] ?? indicator.indicator}
+                    {INDICATOR_LABELS[indicator.indicator]
+                      ? t(`hr.surveys.indicators.${INDICATOR_LABELS[indicator.indicator]}`)
+                      : indicator.indicator}
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-text-dim">
                     {indicator.average === null ? '—' : indicator.average}
                   </td>
                   <td className="px-4 py-3">
                     {indicator.percent === null ? (
-                      <span className="text-text-dim">Non mesurable</span>
+                      <span className="text-text-dim">{t('hr.surveyResults.notMeasurable')}</span>
                     ) : (
                       <div className="flex items-center gap-3">
                         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
@@ -250,7 +253,7 @@ export default function HrSurveyResultsPage() {
       </section>
 
       <section className="mb-10">
-        <h2 className="mb-4 font-display text-xl text-text">Scores par jalon</h2>
+        <h2 className="mb-4 font-display text-xl text-text">{t('hr.surveyResults.byMilestone')}</h2>
         <motion.div
           variants={staggerContainer(0.06)}
           initial={initialOrNone(reduce)}
@@ -268,8 +271,7 @@ export default function HrSurveyResultsPage() {
                 </p>
               )}
               <p className="mt-1 text-xs text-text-dim">
-                {milestone.answered}
-                {milestone.issued !== undefined ? `/${milestone.issued}` : ''} réponses
+                {t('hr.surveyResults.responsePair', { answered: milestone.answered, issued: milestone.issued ?? 0 })}
               </p>
             </motion.div>
           ))}
@@ -277,14 +279,14 @@ export default function HrSurveyResultsPage() {
       </section>
 
       <section>
-        <h2 className="mb-4 font-display text-xl text-text">Réponses individuelles</h2>
+        <h2 className="mb-4 font-display text-xl text-text">{t('hr.surveyResults.individual')}</h2>
         {responses.length === 0 ? (
           <EmptyState
-            title="Aucune réponse"
+            title={t('hr.surveyResults.emptyTitle')}
             detail={
               filtersActive
-                ? 'Aucune enquête renseignée ne correspond à ces filtres.'
-                : 'Aucune enquête n’a encore été renseignée dans votre périmètre.'
+                ? t('hr.surveyResults.emptyFiltered')
+                : t('hr.surveyResults.emptyScope')
             }
             muted
           />
@@ -293,12 +295,12 @@ export default function HrSurveyResultsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Collaborateur</th>
-                  <th className="px-4 py-3 font-medium">Jalon</th>
-                  <th className="px-4 py-3 font-medium">Structure</th>
-                  <th className="px-4 py-3 font-medium">Manager</th>
-                  <th className="px-4 py-3 font-medium">Score</th>
-                  <th className="px-4 py-3 font-medium">Répondu le</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.surveyResults.table.employee')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.surveyResults.table.milestone')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.surveyResults.table.structure')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.surveyResults.table.manager')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.surveyResults.table.score')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.surveyResults.table.answeredAt')}</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -331,7 +333,7 @@ export default function HrSurveyResultsPage() {
                         {response.score === null ? '—' : `${response.score}%`}
                       </td>
                       <td className="px-4 py-3 text-text-dim">
-                        {new Date(response.answeredAt).toLocaleDateString('fr-FR')}
+                        {new Date(response.answeredAt).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'fr-FR')}
                       </td>
                       <td className="px-4 py-3 text-end">
                         <button
@@ -344,7 +346,7 @@ export default function HrSurveyResultsPage() {
                           aria-expanded={openRoundId === response.roundId}
                           className="text-xs text-red-brand hover:underline"
                         >
-                          {openRoundId === response.roundId ? 'Masquer' : 'Détail'}
+                          {openRoundId === response.roundId ? t('hr.surveyResults.hide') : t('hr.surveyResults.detail')}
                         </button>
                       </td>
                     </motion.tr>
@@ -361,7 +363,9 @@ export default function HrSurveyResultsPage() {
                               {response.scores.map((entry) => (
                                 <div key={entry.indicator}>
                                   <p className="text-[10px] uppercase tracking-wide text-text-dim">
-                                    {INDICATOR_LABELS[entry.indicator] ?? entry.indicator}
+                                    {INDICATOR_LABELS[entry.indicator]
+                                      ? t(`hr.surveys.indicators.${INDICATOR_LABELS[entry.indicator]}`)
+                                      : entry.indicator}
                                   </p>
                                   <p className="font-display text-lg text-red-deep">
                                     {entry.score}/5
