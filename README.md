@@ -1,255 +1,156 @@
-# SOFICLEF — Plateforme Compétences & Emplois
+# SOFICLEF — Plateforme d'intégration
 
-Internal platform for **SOFICLEF SARL** (Si Mustapha, Boumerdès — locks and locking
-solutions, ISO 9001:2015): organizational structures, jobs, job descriptions,
-competencies and onboarding journeys, in French, Arabic (RTL) and English.
+Onboarding and HR platform for **SOFICLEF SARL** (Si Mustapha, Boumerdès — locks and
+locking solutions, ISO 9001:2015): organizational structure, job descriptions,
+competencies and the new-hire onboarding journey, in French, English and Arabic (RTL).
 
-The first onboarding journey it carries is that of the new Directeur de Production. It is
-an instance of a reusable template, not a hardcoded portal — see `docs/SCOPE.md`.
+**Live**
+- App: https://soficlef-platform.vercel.app
+- API: https://soficlefplatform.onrender.com/api/v1
 
-## Documentation
+## What it does
 
-| File                        | What it holds                                                                                         |
-| --------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `docs/USER-GUIDE.md`        | **How the platform works**: each user type, what they can and cannot do, the pages, the two workflows |
-| `docs/ARCHITECTURE.md`      | **How the codebase is put together**: what each file does, where it lives, and what depends on what   |
-| `docs/SCOPE.md`             | Reconciled scope, MVP boundary, and the mapping of every CDC v1 module and CDC v0.1 section to a Part |
-| `docs/DECISIONS.md`         | ADRs. Anything flagged `ASSUMPTION` awaits client confirmation                                        |
-| `docs/OPEN-QUESTIONS.md`    | Business questions with a proposed default each, so an unanswered one never halts the build           |
-| `docs/CONTENT-INVENTORY.md` | What was extracted from the client's HTML prototype, with counts and source pages                     |
+Four portals, one platform, each scoped to what that role may see and do:
 
-## Requirements
+| Portal | Route | For |
+| --- | --- | --- |
+| New hire | `/app/me` | Onboarding journey, org chart, job description, team, documents, training, surveys, quests from their manager |
+| Manager | `/app/manager` | Their direct reports' onboarding, evaluations, probation, calendar, quests, job descriptions, documents |
+| HR | `/app/hr` | Employee directory, assignment, positions, probation review queue, templates, documents, training, surveys, analytics, alerts |
+| Admin | `/admin` | Accounts, roles, org structure, audit log, backups, security, integrations, AI config, GDPR register |
 
-- Node.js 22+
-- Docker and Docker Compose (or a local PostgreSQL 16)
+Plus a public marketing site (home, company, strategy, org chart) that needs no login.
 
-## Getting started
+Every account also gets an AI assistant, scoped to what that account can already see:
+retrieval always runs first against the platform's own data, and an answer either cites a
+real source or says it found nothing — it never invents a SOFICLEF-specific fact. If
+retrieval finds nothing, it may answer from general knowledge instead, but that answer is
+visibly labelled as such and never presented as platform data.
 
-```bash
-cp .env.example .env          # then fill in POSTGRES_PASSWORD and AUTH_SESSION_SECRET
-docker compose up --build     # Postgres 16 + the app, migrations applied on start-up
-```
+## Demo accounts
 
-The application is on http://localhost:3000. The design-token showcase, development only,
-is on http://localhost:3000/dev/tokens.
+Every account below uses the password **`Soficlef#2026Demo`** (or the value of
+`SEED_DEMO_PASSWORD` if the deployment overrides it).
 
-Without Docker, point `DATABASE_URL` at your own PostgreSQL and run:
-
-```bash
-npm ci
-npx prisma generate
-npm run db:deploy
-npm run dev
-```
-
-## Scripts
-
-| Command                                   | Purpose                                                        |
-| ----------------------------------------- | -------------------------------------------------------------- |
-| `npm run dev`                             | Development server                                             |
-| `npm run build` / `npm start`             | Production build and server                                    |
-| `npm run lint` / `npm run lint:fix`       | ESLint, including the layering and RTL rules                   |
-| `npm run format` / `npm run format:check` | Prettier                                                       |
-| `npm run typecheck`                       | `tsc --noEmit`, strict                                         |
-| `npm run test:unit`                       | Vitest                                                         |
-| `npm run seed:extract`                    | Re-parse the HTML prototype into `seed/data/`                  |
-| `npm run db:migrate`                      | Create and apply a migration (development)                     |
-| `npm run db:deploy`                       | Apply pending migrations (any environment)                     |
-| `npm run db:check`                        | Fail if `schema.prisma` and `prisma/migrations/` have diverged |
-
-## Running the test suites
-
-`npm run test:unit` needs nothing but the repository. The **E2E and API suites apply
-migrations and reseed**, which resets every demo account's password, so they require
-`TEST_DATABASE_URL` to point at a separate, throwaway database and refuse to start if it
-is unset or resolves to the same host, port and database name as `DATABASE_URL`
-(`tests/support/test-database.ts`).
-
-```bash
-npm run test:unit                     # no database needed
-TEST_DATABASE_URL=… npm run test:e2e  # builds, seeds a throwaway database, runs Playwright
-TEST_DATABASE_URL=… npm run test:api  # the security suite, over HTTP
-```
+| Email | Role | Portal |
+| --- | --- | --- |
+| `admin@soficlef.local` | ADMIN | `/admin` |
+| `rh@soficlef.local` | HR | `/app/hr` |
+| `manager@soficlef.local` | MANAGER | `/app/manager` |
+| `employe@soficlef.local` | EMPLOYEE | `/app/me` |
 
 ## Architecture
 
+Two deployable pieces, developed and shipped separately:
+
 ```
-src/
-├── domain/           business rules and types — imports no framework
-├── application/      use cases, orchestration
-├── infrastructure/   Prisma, HTTP, storage adapters
-├── app/              routes (App Router)
-├── components/       UI, built against the tokens
-├── lib/              cross-cutting helpers (env, fonts)
-└── styles/tokens.css the design system, as CSS custom properties
+Client/   React 19 + Vite + Tailwind v4 — deployed to Vercel
+server/   Express + Prisma 7 + PostgreSQL — deployed to Render
 ```
 
-Dependencies point inwards. `src/domain` may not import Next, React, Prisma or an
-adapter, and ESLint enforces it (ADR-019).
+```
+Client/src/
+├── api/         one module per resource, thin fetch wrappers over the shared client
+├── auth/        session context, protected-route gating
+├── pages/       one file per route, grouped by portal (me/, manager/, hr/, admin/, public/)
+├── components/  shared UI — shell (sidebar/topbar), org chart, manager widgets, assistant chat
+├── i18n/        react-i18next setup, fr/en/ar catalogues, the language switcher
+└── lib/         permissions mirror, nav tree, date/locale helpers, motion presets
 
-Two further rules are enforced rather than remembered:
+server/src/
+├── domain/          auth (permissions, scoping), navigation, workflow rules — no framework import
+├── application/      use cases: onboarding, assistant, job descriptions, shared mutate() helper
+├── infrastructure/   Prisma client, session/auth middleware, Cloudinary, audit log
+└── routes/            one Express router per resource, mounted under /api/v1
+```
 
-- **RTL safety** — physical CSS direction properties (`margin-left`, `pl-*`, `left`) are
-  banned in favour of logical ones (`margin-inline-start`, `ps-*`, `inset-inline-start`),
-  so every component mirrors correctly in Arabic (ADR-029).
-- **Server-side validation** — every server boundary parses its input with Zod, even where
-  the client already validated (ADR-014).
+Authorization is **role + scope**, decided in one place (`can()` /
+`assertCan()` / `assertCanAnyScope()` in `server/src/domain/auth/authorization.js`) and
+re-applied on every route — the client-side nav filter is a courtesy, never the boundary.
+Every mutation goes through `application/shared/mutate.js`, which authenticates,
+re-validates with Zod, authorizes against the resolved target, runs the change and writes
+an audit row in one transaction.
 
-## Conventions
+## Requirements
 
-- No secret in the repository. `.env.example` documents every variable; `.env` is ignored.
-- Migrations are versioned. `prisma db push` is for a throwaway local database only.
-- Nothing extracted from the prototype is retyped by hand — re-run `npm run seed:extract`.
-- Business content is never machine-translated. Untranslated fields fall back to French
-  with a visible "translation pending" affordance (ADR-025).
+- Node.js 22.x (pinned — Prisma 7's generated client has an ESM interop issue on Node 24)
+- PostgreSQL (a Neon connection string works out of the box)
+
+## Getting started
+
+**Server**
+
+```bash
+cd server
+cp .env.example .env     # fill in DATABASE_URL, AUTH_SESSION_SECRET, APP_URL, CORS_ORIGIN
+npm install               # postinstall runs `prisma generate` automatically
+npm run db:deploy         # apply migrations
+npm run db:seed           # creates the four demo accounts above
+npm run dev                # http://localhost:5000
+```
+
+**Client**
+
+```bash
+cd Client
+npm install
+npm run dev                # http://localhost:5173
+```
+
+The client's API base URL is hardcoded in `Client/api.js`, not read from `.env` — point it
+at your local server (`http://localhost:5000/api/v1`) for local development, and back at
+the Render URL before deploying.
+
+## Cross-origin auth
+
+Client and server are deployed on different origins (Vercel, Render), so the session
+cookie is set with `SameSite=None; Secure` whenever `APP_URL` is `https://` — required for
+the cookie to survive a cross-site fetch at all. `CORS_ORIGIN` must match the deployed
+client's exact origin (no wildcard is possible with `credentials: true`).
 
 ## Languages
 
-French is the design and content language, Arabic adds RTL, English carries the
-international industrial vocabulary. Routes are locale-prefixed: `/fr/…`, `/ar/…`,
-`/en/…`.
+French, English and Arabic, switchable from any authenticated page or the public site.
+`document.dir` follows the active language, so Arabic renders right-to-left — the app uses
+logical CSS properties (`ps-`/`pe-`/`start-`/`end-`) throughout rather than physical
+`left`/`right`, and directional glyphs (arrows) mirror with the layout. The three
+catalogues (`Client/src/i18n/locales/{fr,en,ar}.json`) are kept in exact key parity.
 
-- `messages/fr.json` is the source of truth; `ar.json` and `en.json` mirror its key
-  structure, and `npm run i18n:check` fails CI on a missing key, an orphaned key or a
-  dropped ICU placeholder.
-- `lang` and `dir` come from the URL, so a link states its own language.
-- Physical CSS direction properties are banned by lint; layouts mirror on their own.
-- Arabic uses Noto Kufi Arabic and Noto Sans Arabic — Playfair Display has no Arabic
-  glyphs — and Western Arabic digits, so a document code or a phone extension reads
-  identically in all three languages.
-- **Business content is never machine-translated.** Extracted French stays French until
-  the client supplies reviewed translations; the UI falls back to French with a visible
-  "traduction en attente" marker.
+## Quests
 
-## Security model
+A manager can assign an ad-hoc task ("quest") to any of their direct reports, independent
+of the onboarding journey — unlike the onboarding-scoped manager tasks, a quest works for
+an already-onboarded employee too. Only the assignee can mark it done.
 
-Rights are **role + scope**, never role alone. The seven profiles of CDC v0.1 §3 are
-`TECH_ADMIN`, `BIZ_ADMIN_CE`, `HEAD_CE`, `HR`, `MANAGER`, `EMPLOYEE`, `VIEWER`.
+## Scripts
 
-- One decision point: `can(user, action, resource, scope)` in `src/domain/auth`. Every
-  route, action and repository calls it; there is no second place a permission is decided.
-- Scope is applied **in the query**, not in the UI: a manager's request returns their
-  structures and what hangs beneath them, and nothing else.
-- An out-of-scope read answers 404, so ids cannot be used to map the organization.
-- Every sensitive mutation writes an audit row — actor, action, entity, before, after —
-  in the same transaction as the change.
-- Sessions are server-side and revocable on the next request; passwords are Argon2id.
+**server/**
 
-`npm run test:api` asserts these over the wire, including the direct-URL and
-direct-API-call cases, because a hidden link is not a security boundary.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Development server (`node --watch`) |
+| `npm start` | Production server |
+| `npm run db:generate` | Regenerate the Prisma client |
+| `npm run db:migrate` | Create and apply a migration (development) |
+| `npm run db:deploy` | Apply pending migrations (any environment) |
+| `npm run db:seed` | Seed roles, permissions and the four demo accounts |
 
-## Application shell
+**Client/**
 
-A fixed 268px sidebar, a 52px top bar and a scrolling content area — the prototype's
-structure, rebuilt with logical properties so it mirrors in Arabic. Below tablet width the
-sidebar becomes a drawer.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview a production build locally |
+| `npm run lint` | oxlint |
 
-- Seventeen routes in six groups. Each declares the permission it needs, so the menu and the
-  route agree by construction: entries a user cannot open are never sent to the browser,
-  and typing the URL answers 404.
-- Every route is a real page with an empty state that names what will live there and what
-  unblocks it — never "coming soon".
-- Shared components (`Card`, `SectionTitle`, `DataTable`, `StatusBadge`, `Tabs`, `Timeline`,
-  `Stepper`, `Modal`, `Drawer`, `EmptyState`, `KpiTile`) are documented on `/dev/components`,
-  built on the tokens, RTL-safe and keyboard-navigable.
-- Lighthouse accessibility scores 100 on the shell in French and Arabic and on the sign-in
-  form; the E2E suite also runs axe with the WCAG 2.1 AA rule set.
+## Security notes
 
-The AI assistant is deliberately absent from the navigation: it is phase 2, and the
-prototype's browser-side implementation could not have worked outside a sandbox (ADR-003).
-
-## Modules
-
-| Route              | What it does                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------- |
-| Public pages       | `/`, `/entreprise`, `/strategie`, `/carrieres` — no session needed. See `docs/USER-GUIDE.md` §2   |
-| `/dashboard`       | Role-aware KPIs: onboarding health, competency gaps, job-description coverage, data quality       |
-| `/organization`    | The structure tree, with create / edit / archive. Nothing is deleted — archival preserves history |
-| `/onboarding`      | The 30-day journey: task states, deadlines, lateness, manager validation, and an oversight table  |
-| `/competencies`    | The job↔competency matrix, gaps against a configurable level scale, and assessment recording      |
-| `/remarks`         | The collaborator's journal to HR and the DG, with an audited text export                          |
-| `/hr`              | The queue of unplaced accounts, and assignment to a post. `HR` only                               |
-| `/pending`         | Where an account with no post lands: a message and the HR contact, no sidebar, no data            |
-| `/admin`           | Accounts, roles and the audit trail. `TECH_ADMIN` only                                            |
-| `/job-description` | The `EN-012-DRH` fiche, its versions, and the §6.1 validation circuit                             |
-| Content routes     | Company, strategy, management, recruitment, Kaizen, QMS, HSE, contacts, documents                 |
-
-### The provisioning chain
-
-An account reaches the platform through two roles, never one. `TECH_ADMIN` creates it on
-`/admin`; `HR` gives it a post on `/hr`. Until that second step the account is
-`PENDING_ASSIGNMENT` and every route redirects to `/pending`.
-
-The split is enforced in the permission table, not by hiding buttons: HR does not hold
-`user:create`, and `TECH_ADMIN` does not hold `assignment:create`. `/hr` is gated on
-*creating* an assignment rather than reading one, because an administrator legitimately
-reads assignments and must still never be offered the screen that makes one.
-
-Assigning is a single transaction: it closes any open assignment, opens the new one, marks
-the seat occupied, flips the lifecycle state, and creates the onboarding journey with its
-J+7/30/60/90 surveys. Reassignment closes the previous row rather than deleting it — the
-history is what the turnover reporting reads.
-
-### The org model
-
-`Position` is the seat, `Assignment` is who holds it and when. A person's placement is not
-free text on their record: it is a row with dates, which is what makes "who held this post
-in March" answerable and lets a post be reassigned without rebuilding the chart. A partial
-unique index enforces at most one *open* assignment per person.
-
-`getVisibleTree()` returns the slice of the chart a given user may see — the whole thing for
-a global reader, their own sub-tree for a manager, and a configurable window (levels up,
-levels down, peers) for everyone else. The limits come from `AppSetting`, and the narrowing
-happens in the SQL, not in the component.
-
-Every mutation goes through one helper (`src/application/shared/mutate.ts`) that
-authenticates, re-validates the payload with Zod, authorizes against the resolved target
-and writes the audit row in the same transaction — so a new action cannot forget one of
-the four.
-
-The public pages are a sibling route group, `src/app/[locale]/(public)/`, deliberately not
-a child of `(app)`: the `(app)` layout resolves the session and refuses anonymous
-visitors, so a page that must stay public cannot live under it. Their reads are isolated in
-`src/application/public/presentation.ts`, where every query names its columns explicitly —
-adding a field to a table can therefore never widen what an anonymous visitor sees.
-
-Two gaps are deliberate and documented in `docs/SCOPE.md`: field-level editing of a job
-description's §6.2 content (the versioning and validation workflow around it is complete),
-and document upload with per-document ACLs, which awaits the storage decision (OQ-15).
-
-The AI assistant is structure only, and deliberately so (ADR-003): `src/domain/assistant/`
-declares the five agents of CDC-2026 §4, what each may read, and the rule that an answer
-either cites a source the reader can check or admits it found nothing. Agent 1
-(`src/application/assistant/orientation.ts`) answers "who do I talk to about X" by
-retrieval over the asker's *own* visible org tree and the contact directory — no model, no
-API key, no vector storage anywhere in the codebase.
-
-Set `DEMO_DATA=true` to badge every page as demonstration data, so seeded people are not
-mistaken for colleagues.
-
-## Data seeded from the prototype
-
-`seed/data/` holds 14 validated JSON files extracted from the client's HTML prototype:
-company identity, the four values (Arabic verbatim), the 2024–2026 strategy, the
-`EN-012-DRH` job description, the organization, the management team, open recruitments,
-the Kaizen missions and their 17 tracked actions, the QMS and HSE reference data, the
-12-milestone onboarding checklist, the internal directory and the document list.
-Counts are asserted by the extractor and re-asserted in CI.
-
-
-admin@soficlef.local — ADMIN
-rh@soficlef.local — HR
-manager@soficlef.local — MANAGER
-nouveau.4@soficlef.local — EMPLOYEE,
-plus attente@soficlef.local
-
-
-
-
-
-
-
-
-add to the hr dashboard something like trial period validation for new hires like the hr sees just the result and he can change its status if its more than 60% he confirms him if between 30 to 60% he prolongs the testing duration if less than 30% he fires him and the one that edits and there is a responsable of each emplyee when someone has someone under him its he who evaluates the ones under him 
-and for the hr in the documents page he can add documents and when he accepts a document it will be published in all the accounts in the hr departement
-add these informations to the previous pdf so it becomes a complete one keep its design paterns
+- Passwords are hashed with Argon2id; sessions are server-side and revocable.
+- Every sensitive mutation writes an audit row (actor, action, entity, before/after) in the
+  same transaction as the change.
+- An out-of-scope read answers 404 or 403, not a filtered 200 — a hidden UI link is never
+  the security boundary.
+- No secret lives in the repository. `server/.env.example` documents every server
+  variable; the real `server/.env` is git-ignored. The client has no `.env` at all — its
+  only configurable value is the API URL in `Client/api.js`.
