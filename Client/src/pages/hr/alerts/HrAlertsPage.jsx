@@ -14,18 +14,13 @@ const fieldClass =
   'w-full rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
 const TRIGGER_LABELS = {
-  TASK_OVERDUE: 'Étape d’intégration en retard',
-  SURVEY_UNANSWERED: 'Enquête restée sans réponse',
-  EVALUATION_DUE: 'Évaluation à échéance',
+  TASK_OVERDUE: 'taskOverdue',
+  SURVEY_UNANSWERED: 'surveyUnanswered',
+  EVALUATION_DUE: 'evaluationDue',
 };
 
 const DEPARTMENT_LABELS = {
-  HR: 'RH',
-  IT: 'SI',
-  HSE: 'HSE',
-  QUALITY: 'Qualité',
-  MANAGER: 'Manager',
-  EMPLOYEE: 'Collaborateur',
+  HR: 'HR', IT: 'IT', HSE: 'HSE', QUALITY: 'QUALITY', MANAGER: 'MANAGER', EMPLOYEE: 'EMPLOYEE',
 };
 
 const EMPTY_FORM = {
@@ -69,11 +64,11 @@ export default function HrAlertsPage() {
       setRules(data);
       setError(null);
     } catch {
-      setError('Impossible de charger les règles d’alerte.');
+      setError(t('hr.alerts.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -132,7 +127,7 @@ export default function HrAlertsPage() {
       setEditingId(null);
       await load();
     } catch (err) {
-      setFormError(err.body?.message ?? 'L’enregistrement de la règle a échoué.');
+      setFormError(err.body?.message ?? t('hr.alerts.saveError'));
     } finally {
       setSubmitting(false);
     }
@@ -143,17 +138,17 @@ export default function HrAlertsPage() {
       await alertsApi.updateRule(rule.id, { isActive: !rule.isActive });
       await load();
     } catch (err) {
-      setFormError(err.body?.message ?? 'La mise à jour a échoué.');
+      setFormError(err.body?.message ?? t('hr.alerts.updateError'));
     }
   }
 
   async function handleDelete(rule) {
-    if (!window.confirm(`Supprimer la règle « ${rule.labelFr} » ?`)) return;
+    if (!window.confirm(t('hr.alerts.deleteConfirm', { label: rule.labelFr }))) return;
     try {
       await alertsApi.deleteRule(rule.id);
       await load();
     } catch (err) {
-      setFormError(err.body?.message ?? 'La suppression a échoué.');
+      setFormError(err.body?.message ?? t('hr.alerts.deleteError'));
     }
   }
 
@@ -172,7 +167,7 @@ export default function HrAlertsPage() {
             onClick={showForm ? () => setShowForm(false) : openCreate}
             className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light"
           >
-            {showForm ? 'Annuler' : 'Nouvelle règle'}
+            {showForm ? t('hr.alerts.cancel') : t('hr.alerts.newRule')}
           </button>
         }
       />
@@ -185,7 +180,7 @@ export default function HrAlertsPage() {
       >
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Règles définies
+            {t('hr.alerts.stats.total')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.total} />
@@ -193,7 +188,7 @@ export default function HrAlertsPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Actives
+            {t('hr.alerts.stats.active')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.active} />
@@ -201,7 +196,7 @@ export default function HrAlertsPage() {
         </motion.div>
         <motion.div variants={staggerItem} className={`${CARD} p-5`}>
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-            Avec escalade
+            {t('hr.alerts.stats.escalating')}
           </p>
           <p className="font-display text-3xl text-red-deep">
             <CountUp value={stats.escalating} />
@@ -221,14 +216,14 @@ export default function HrAlertsPage() {
           >
             <div className={`${CARD} mb-6 space-y-4 p-6`}>
               <h2 className="font-display text-lg text-text">
-                {editingId ? 'Modifier la règle' : 'Nouvelle règle'}
+                {editingId ? t('hr.alerts.form.editTitle') : t('hr.alerts.form.newTitle')}
               </h2>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-text">Intitulé</label>
+                <label className="mb-1 block text-sm font-medium text-text">{t('hr.alerts.form.label')}</label>
                 <input
                   required
-                  placeholder="Relance des étapes SI non traitées"
+                  placeholder={t('hr.alerts.form.labelPlaceholder')}
                   value={form.labelFr}
                   onChange={(e) => setForm((f) => ({ ...f, labelFr: e.target.value }))}
                   className={fieldClass}
@@ -237,7 +232,7 @@ export default function HrAlertsPage() {
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-text">Déclencheur</label>
+                  <label className="mb-1 block text-sm font-medium text-text">{t('hr.alerts.form.trigger')}</label>
                   <select
                     value={form.trigger}
                     onChange={(e) => setForm((f) => ({ ...f, trigger: e.target.value }))}
@@ -245,14 +240,14 @@ export default function HrAlertsPage() {
                   >
                     {Object.entries(TRIGGER_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
-                        {label}
+                        {t(`hr.alerts.triggers.${label}`)}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-text">
-                    Notifier le service
+                    {t('hr.alerts.form.department')}
                   </label>
                   <select
                     value={form.notifyDepartment}
@@ -261,7 +256,7 @@ export default function HrAlertsPage() {
                   >
                     {Object.entries(DEPARTMENT_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
-                        {label}
+                        {t(`hr.alerts.departments.${label}`)}
                       </option>
                     ))}
                   </select>
@@ -271,7 +266,7 @@ export default function HrAlertsPage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-text">
-                    Relancer après (jours)
+                    {t('hr.alerts.form.threshold')}
                   </label>
                   <input
                     type="number"
@@ -285,19 +280,19 @@ export default function HrAlertsPage() {
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-text">
-                    Escalader après (jours)
+                    {t('hr.alerts.form.escalation')}
                   </label>
                   <input
                     type="number"
                     min={1}
                     max={365}
-                    placeholder="Aucune escalade"
+                    placeholder={t('hr.alerts.form.noEscalation')}
                     value={form.escalateAfterDays}
                     onChange={(e) => setForm((f) => ({ ...f, escalateAfterDays: e.target.value }))}
                     className={fieldClass}
                   />
                   <p className="mt-1 text-xs text-text-dim">
-                    Laisser vide si la règle ne remonte jamais plus haut.
+                    {t('hr.alerts.form.escalationHint')}
                   </p>
                 </div>
               </div>
@@ -309,7 +304,7 @@ export default function HrAlertsPage() {
                   onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
                   className="accent-[var(--color-red-brand)]"
                 />
-                Règle active
+                {t('hr.alerts.form.active')}
               </label>
 
               {formError && <p className="text-sm text-status-red">{formError}</p>}
@@ -320,14 +315,14 @@ export default function HrAlertsPage() {
                   onClick={() => setShowForm(false)}
                   className="rounded-app border border-border px-4 py-2 text-sm font-medium text-text-dim transition hover:bg-surface-2"
                 >
-                  Annuler
+                  {t('hr.alerts.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="rounded-app bg-red-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-60"
                 >
-                  {submitting ? 'Enregistrement…' : 'Enregistrer la règle'}
+                  {submitting ? t('hr.alerts.saving') : t('hr.alerts.save')}
                 </button>
               </div>
             </div>
@@ -337,8 +332,8 @@ export default function HrAlertsPage() {
 
       {rules.length === 0 ? (
         <EmptyState
-          title="Aucune règle définie"
-          detail="Aucune relance automatique n’est configurée. Une règle décrit la situation qui déclenche un rappel, le délai avant ce rappel et le service à prévenir."
+          title={t('hr.alerts.emptyTitle')}
+          detail={t('hr.alerts.emptyDetail')}
           muted
         />
       ) : (
@@ -360,7 +355,7 @@ export default function HrAlertsPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-medium text-text">{rule.labelFr}</p>
                   <span className="rounded-full bg-red-brand/10 px-2 py-0.5 text-xs font-medium text-red-brand">
-                    {TRIGGER_LABELS[rule.trigger] ?? rule.trigger}
+                    {TRIGGER_LABELS[rule.trigger] ? t(`hr.alerts.triggers.${TRIGGER_LABELS[rule.trigger]}`) : rule.trigger}
                   </span>
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -369,17 +364,14 @@ export default function HrAlertsPage() {
                         : 'bg-surface-2 text-text-dim'
                     }`}
                   >
-                    {rule.isActive ? 'Active' : 'Inactive'}
+                    {rule.isActive ? t('hr.alerts.active') : t('hr.alerts.inactive')}
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-text-dim">
-                  Rappel envoyé à <strong className="text-text-muted">
-                    {DEPARTMENT_LABELS[rule.notifyDepartment] ?? rule.notifyDepartment}
-                  </strong>{' '}
-                  après <strong className="text-text-muted">{rule.thresholdDays} jour(s)</strong>
+                  {t('hr.alerts.ruleSummary', { department: DEPARTMENT_LABELS[rule.notifyDepartment] ? t(`hr.alerts.departments.${DEPARTMENT_LABELS[rule.notifyDepartment]}`) : rule.notifyDepartment, days: rule.thresholdDays })}
                   {rule.escalateAfterDays
-                    ? `, puis escalade après ${rule.escalateAfterDays} jour(s) supplémentaires.`
-                    : ', sans escalade.'}
+                    ? ` ${t('hr.alerts.escalationSummary', { days: rule.escalateAfterDays })}`
+                    : ` ${t('hr.alerts.noEscalationSummary')}`}
                 </p>
               </div>
 
@@ -389,21 +381,21 @@ export default function HrAlertsPage() {
                   onClick={() => openEdit(rule)}
                   className="text-red-brand hover:underline"
                 >
-                  Modifier
+                  {t('hr.alerts.edit')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleToggle(rule)}
                   className="text-text-dim hover:text-red-brand hover:underline"
                 >
-                  {rule.isActive ? 'Désactiver' : 'Activer'}
+                  {rule.isActive ? t('hr.alerts.disable') : t('hr.alerts.enable')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(rule)}
                   className="text-status-red hover:underline"
                 >
-                  Supprimer
+                  {t('hr.alerts.delete')}
                 </button>
               </div>
             </motion.div>
@@ -412,10 +404,7 @@ export default function HrAlertsPage() {
       )}
 
       <p className="mt-8 rounded-app border border-dashed border-border bg-surface-2/60 p-4 text-xs text-text-dim">
-        Ces règles définissent la politique de relance et sont enregistrées durablement. Aucun
-        planificateur ne tourne pour l’instant dans le serveur applicatif : rien ne déclenche encore
-        ces rappels à heure fixe. Les alertes visibles sur le tableau de bord sont, elles, calculées
-        en direct à chaque consultation, à partir des retards et blocages réels.
+        {t('hr.alerts.footerNote')}
       </p>
     </div>
   );
