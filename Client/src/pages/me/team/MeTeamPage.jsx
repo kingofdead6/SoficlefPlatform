@@ -136,21 +136,21 @@ export default function MeTeamPage() {
     }
   }
 
-  if (loading) return <PageLoading label="Chargement de votre équipe…" />;
+  if (loading) return <PageLoading label={t('me.team.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Mon espace"
-        title="Mon équipe"
-        subtitle="Votre responsable, les collègues qui partagent votre rattachement, et les services à contacter selon le sujet."
+        eyebrow={t('me.eyebrow')}
+        title={t('me.team.title')}
+        subtitle={t('me.team.subtitle')}
         actions={
           <Link
             to="/app/me/organigram"
             className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
           >
-            Organigramme
+            {t('me.organigram.title')}
           </Link>
         }
       />
@@ -168,7 +168,7 @@ export default function MeTeamPage() {
                 : 'border-status-red/40 bg-status-red/5 text-status-red',
             )}
           >
-            {notice.textFr}
+            {notice.text}
           </motion.p>
         )}
       </AnimatePresence>
@@ -176,12 +176,14 @@ export default function MeTeamPage() {
       {/* Band 1 — me, my manager, and the counts. */}
       <div data-gsap="band" className="mb-10 grid gap-4 lg:grid-cols-3">
         <div className={`${CARD} p-5`}>
-          <p className="mb-3 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">Moi</p>
+          <p className="mb-3 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">{t('me.team.me')}</p>
           <div className="flex items-center gap-4">
             <Avatar name={user?.displayName} url={myAvatarUrl ?? user?.avatarUrl} size="md" />
             <div className="min-w-0">
               <p className="truncate font-medium text-text">{user?.displayName}</p>
-              <p className="truncate text-sm text-text-dim">{team?.myPosition?.titleFr ?? 'Poste non affecté'}</p>
+              <p className="truncate text-sm text-text-dim">
+                {team?.myPosition?.titleFr ?? t('me.team.positionUnassigned')}
+              </p>
               <p className="truncate text-xs text-text-dim">
                 {team?.myPosition?.organizationUnitNameFr ?? '—'}
               </p>
@@ -189,7 +191,7 @@ export default function MeTeamPage() {
           </div>
 
           <label className="mt-4 block text-xs text-text-dim">
-            Photo de profil
+            {t('me.team.avatar.label')}
             <input
               ref={avatarInput}
               type="file"
@@ -199,32 +201,33 @@ export default function MeTeamPage() {
               className="mt-1 w-full text-xs text-text-dim file:mr-3 file:rounded-app file:border file:border-border file:bg-surface-2 file:px-3 file:py-1.5 file:text-xs file:text-text disabled:opacity-50"
             />
           </label>
-          {uploading && <p className="mt-1 text-xs text-text-dim">Envoi de la photo…</p>}
+          {uploading && <p className="mt-1 text-xs text-text-dim">{t('me.team.avatar.uploading')}</p>}
         </div>
 
         <div className={`${CARD} p-5 lg:col-span-2`}>
-          <p className="mb-3 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">Mon responsable</p>
+          <p className="mb-3 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">{t('me.team.myManager')}</p>
           {team?.manager ? (
             <div className="flex flex-wrap items-center gap-4">
               <Avatar name={team.manager.displayName} url={team.manager.avatarUrl} size="lg" />
               <div className="min-w-0 flex-1">
                 <p className="font-display text-xl text-red-deep">{team.manager.displayName}</p>
-                <p className="text-sm text-text-dim">{team.manager.positionTitleFr ?? 'Poste non renseigné'}</p>
+                <p className="text-sm text-text-dim">
+                  {team.manager.positionTitleFr ?? t('me.team.positionNotSpecified')}
+                </p>
                 <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
                   {team.manager.email && (
                     <a href={`mailto:${team.manager.email}`} className="text-red-brand hover:underline">
                       {team.manager.email}
                     </a>
                   )}
-                  {team.manager.phone && <span className="text-text-dim">Poste {team.manager.phone}</span>}
+                  {team.manager.phone && (
+                    <span className="text-text-dim">{t('me.team.extension', { extension: team.manager.phone })}</span>
+                  )}
                 </div>
               </div>
             </div>
           ) : (
-            <EmptyState
-              detail="Aucun responsable n’est déclaré sur votre compte. Les RH renseignent ce lien au moment de l’affectation."
-              muted
-            />
+            <EmptyState detail={t('me.team.noManager')} muted />
           )}
         </div>
       </div>
@@ -238,20 +241,15 @@ export default function MeTeamPage() {
         className="mb-10"
       >
         <div className="mb-1 flex items-baseline justify-between gap-3">
-          <h2 className="font-display text-xl text-text">Mes collègues</h2>
+          <h2 className="font-display text-xl text-text">{t('me.team.peers.heading')}</h2>
           <span className="text-sm text-text-dim">
             <CountUp value={team?.peers?.length ?? 0} />
           </span>
         </div>
-        <p className="mb-4 text-xs text-text-dim">
-          Les personnes qui occupent un poste rattaché au même poste supérieur que le vôtre.
-        </p>
+        <p className="mb-4 text-xs text-text-dim">{t('me.team.peers.subtitle')}</p>
 
         {(team?.peers?.length ?? 0) === 0 ? (
-          <EmptyState
-            detail="Aucun collègue de même niveau n’apparaît : soit votre poste n’a pas de poste supérieur déclaré, soit vous êtes seul à ce niveau."
-            muted
-          />
+          <EmptyState detail={t('me.team.peers.empty')} muted />
         ) : (
           <motion.ul
             variants={staggerContainer(0.05, 0.15)}
@@ -281,7 +279,9 @@ export default function MeTeamPage() {
                         {peer.email}
                       </a>
                     )}
-                    {peer.phone && <p className="text-xs text-text-dim">Poste {peer.phone}</p>}
+                    {peer.phone && (
+                      <p className="text-xs text-text-dim">{t('me.team.extension', { extension: peer.phone })}</p>
+                    )}
                   </div>
                 </div>
               </motion.li>
@@ -298,19 +298,17 @@ export default function MeTeamPage() {
         animate="visible"
         className="flex-1"
       >
-        <h2 className="font-display text-xl text-text">Contacts clés</h2>
-        <p className="mb-6 text-xs text-text-dim">
-          L’annuaire publié de l’entreprise, regroupé par service. Le numéro indiqué est le poste interne.
-        </p>
+        <h2 className="font-display text-xl text-text">{t('me.team.contacts.heading')}</h2>
+        <p className="mb-6 text-xs text-text-dim">{t('me.team.contacts.subtitle')}</p>
 
         {groupedContacts.length === 0 ? (
-          <EmptyState detail="Aucun contact n’est publié dans l’annuaire pour l’instant." muted />
+          <EmptyState detail={t('me.team.contacts.empty')} muted />
         ) : (
           <div className="space-y-8">
             {groupedContacts.map((group) => (
               <div key={group.id}>
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.08em] text-red-brand">
-                  {group.labelFr}
+                  {t(group.labelKey)}
                 </h3>
                 <motion.ul
                   variants={staggerContainer(0.04)}
@@ -327,7 +325,9 @@ export default function MeTeamPage() {
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium text-text">{contact.nameFr}</p>
                           <p className="truncate text-xs text-text-dim">{contact.roleFr}</p>
-                          <p className="mt-1 font-mono text-xs text-text">Poste {contact.extension}</p>
+                          <p className="mt-1 font-mono text-xs text-text">
+                            {t('me.team.extension', { extension: contact.extension })}
+                          </p>
                           {contact.priorityFr && (
                             <p className="mt-1 text-[11px] text-text-dim">{contact.priorityFr}</p>
                           )}

@@ -168,7 +168,10 @@
       "strategy": "Strategy",
       "surveys": "Surveys",
       "training": "Training",
-      "welcome": "Welcome"
+      "welcome": "Welcome",
+      "managerJobDescriptions": "Job descriptions",
+      "managerQuests": "Quests",
+      "meQuests": "My quests"
     },
     "public": {
       "brandHome": "SOFICLEF — home",
@@ -1362,6 +1365,29 @@
       "subtitle": "Your team and its reporting line, with the onboarding progress of each recruit.",
       "empty": "No position is attached to your account at the moment.",
       "onboardingBadge": "{{percent}}% onboarded"
+    },
+    "jobDescriptions": {
+      "loadError": "Could not load the job descriptions.",
+      "loading": "Loading job descriptions…",
+      "title": "Job descriptions",
+      "subtitle": "The job descriptions for your team's positions.",
+      "empty": "No job description has been written yet for your team’s positions."
+    },
+    "quests": {
+      "loadError": "Could not load the quests.",
+      "loading": "Loading quests…",
+      "title": "Quests",
+      "subtitle": "One-off tasks you hand to a member of your team.",
+      "newQuest": "New quest",
+      "empty": "No quest assigned at the moment.",
+      "noReports": "No one reports directly to you.",
+      "assignTo": "Assign to",
+      "createFailed": "Could not create the quest.",
+      "submit": "Assign quest",
+      "status": {
+        "todo": "To do",
+        "done": "Done"
+      }
     }
   },
   "managerRecruits": {
@@ -2836,9 +2862,11 @@
       "avatarUploadFailed": "The photo could not be uploaded.",
       "avatarUploading": "Uploading the photo…",
       "contacts": {
-        "empty": "No contact is published in the directory at the moment.",
+        "empty": "No contact is published in the directory yet.",
         "help": "The company's published directory, grouped by department. The number shown is the internal extension.",
-        "title": "Key contacts"
+        "title": "Key contacts",
+        "heading": "Key contacts",
+        "subtitle": "The company's published directory, grouped by service. The number shown is the internal extension."
       },
       "extension": "Ext. {{extension}}",
       "loadFailed": "Could not load your team.",
@@ -2848,25 +2876,35 @@
         "noPosition": "Position not recorded",
         "title": "My manager"
       },
-      "me": {
-        "noPosition": "No position assigned",
-        "title": "Me"
-      },
+      "me": "Me",
       "orgChart": "Org chart",
       "peers": {
-        "empty": "No colleague at your level appears: either your position has no superior position declared, or you are alone at that level.",
+        "empty": "No peer at the same level appears: either your position has no declared superior position, or you are alone at this level.",
         "help": "The people holding a position that reports to the same superior position as yours.",
-        "title": "My colleagues"
+        "title": "My colleagues",
+        "heading": "My colleagues",
+        "subtitle": "People who hold a position attached to the same superior position as yours."
       },
       "services": {
         "hr": "Human resources",
-        "hse": "Health, safety and environment",
+        "hse": "Health, safety, environment",
         "it": "IT",
         "others": "Other contacts",
         "quality": "Quality"
       },
-      "subtitle": "Your manager, the colleagues who share your reporting line, and the departments to contact depending on the subject.",
-      "title": "My team"
+      "subtitle": "Your manager, the colleagues who share your reporting line, and the services to contact depending on the topic.",
+      "title": "My team",
+      "loadError": "Could not load your team.",
+      "positionUnassigned": "Position unassigned",
+      "positionNotSpecified": "Position not specified",
+      "myManager": "My manager",
+      "noManager": "No manager is declared on your account. HR fills in this link when you are assigned.",
+      "avatar": {
+        "label": "Profile photo",
+        "uploading": "Uploading photo…",
+        "uploadSuccess": "Profile photo saved. It appears on your org chart card.",
+        "uploadFailed": "The photo upload failed."
+      }
     },
     "training": {
       "catalogue": {
@@ -3061,6 +3099,21 @@
         "steps": "{{done}}/{{total}} steps completed",
         "title": "My progress"
       }
+    },
+    "quests": {
+      "loadError": "Could not load your quests.",
+      "loading": "Loading your quests…",
+      "title": "My quests",
+      "subtitle": "One-off tasks your manager has assigned you.",
+      "empty": "No quest has been assigned to you yet.",
+      "openHeading_one": "{{count}} quest in progress",
+      "openHeading_other": "{{count}} quests in progress",
+      "noneOpen": "No quest in progress.",
+      "doneHeading_one": "{{count}} quest done",
+      "doneHeading_other": "{{count}} quests done",
+      "assignedBy": "Assigned by {{name}}",
+      "markDone": "Mark as done",
+      "reopen": "Mark as not done"
     }
   },
   "notifications": {
@@ -3108,5 +3161,23 @@
       "title": "Steering",
       "daysSuffix": "{{count}} d"
     }
+  },
+  "jobDescription": {
+    "status": {
+      "draft": "Draft",
+      "inReview": "In review",
+      "changesRequested": "Changes requested",
+      "validated": "Validated",
+      "archived": "Archived"
+    },
+    "loadFailed": "Could not load the job descriptions.",
+    "listTitle": "Job descriptions",
+    "listSubtitle": "Every job description and its validation status.",
+    "columns": {
+      "code": "Code",
+      "jobTitle": "Title",
+      "version": "Version"
+    },
+    "empty": "No job description yet."
   }
 }

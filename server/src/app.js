@@ -41,6 +41,7 @@ import publicRoutes from './routes/public.routes.js';
 import templatesRoutes from './routes/templates.routes.js';
 import alertsRoutes from './routes/alerts.routes.js';
 import adminConfigRoutes from './routes/admin-config.routes.js';
+import questsRoutes from './routes/quests.routes.js';
 
 export function createApp() {
   const app = express();
@@ -97,6 +98,7 @@ export function createApp() {
   app.use('/api/v1/public', publicRoutes);
   app.use('/api/v1/templates', templatesRoutes);
   app.use('/api/v1/alerts', alertsRoutes);
+  app.use('/api/v1/quests', questsRoutes);
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {

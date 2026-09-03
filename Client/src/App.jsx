@@ -63,6 +63,9 @@ import ManagerCalendarPage from './pages/manager/calendar/ManagerCalendarPage.js
 import ManagerDocumentsPage from './pages/manager/documents/ManagerDocumentsPage.jsx';
 import ManagerArchivePage from './pages/manager/archive/ManagerArchivePage.jsx';
 import ManagerSettingsPage from './pages/manager/settings/ManagerSettingsPage.jsx';
+import ManagerJobDescriptionsPage from './pages/manager/job-descriptions/ManagerJobDescriptionsPage.jsx';
+import ManagerQuestsPage from './pages/manager/quests/ManagerQuestsPage.jsx';
+import MeQuestsPage from './pages/me/quests/MeQuestsPage.jsx';
 
 import CompetenciesPage from './pages/competencies/CompetenciesPage.jsx';
 import JobDescriptionListPage from './pages/job-description/JobDescriptionListPage.jsx';
@@ -190,6 +193,10 @@ export default function App() {
               <Route path="/onboarding" element={<OnboardingChecklistPage />} />
             </Route>
 
+            <Route element={<ProtectedRoute requires={{ resource: 'quest', action: 'read' }} />}>
+              <Route path="/app/me/quests" element={<MeQuestsPage />} />
+            </Route>
+
             <Route element={<ProtectedRoute requires={{ resource: 'job_description', action: 'read' }} />}>
               <Route path="/app/me/position" element={<PositionPage />} />
               <Route path="/job-description" element={<JobDescriptionListPage />} />
@@ -236,6 +243,8 @@ export default function App() {
               <Route path="/app/manager/documents" element={<ManagerDocumentsPage />} />
               <Route path="/app/manager/archive" element={<ManagerArchivePage />} />
               <Route path="/app/manager/settings" element={<ManagerSettingsPage />} />
+              <Route path="/app/manager/job-descriptions" element={<ManagerJobDescriptionsPage />} />
+              <Route path="/app/manager/quests" element={<ManagerQuestsPage />} />
             </Route>
 
             <Route element={<ProtectedRoute requires={{ resource: 'dashboard', action: 'read' }} />}>

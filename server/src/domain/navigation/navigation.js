@@ -29,6 +29,7 @@ export const NAV_ITEMS = [
   { id: 'meCertificates', href: '/app/me/training/certificates', group: 'me', requires: { resource: 'training', action: 'read' } },
   { id: 'meSurveys', href: '/app/me/surveys', group: 'me', requires: { resource: 'survey', action: 'read' } },
   { id: 'meAssistant', href: '/app/me/assistant', group: 'me', requires: { resource: 'organization_unit', action: 'read' } },
+  { id: 'meQuests', href: '/app/me/quests', group: 'me', requires: { resource: 'quest', action: 'read' } },
 
   { id: 'dashboard', href: '/dashboard', group: 'steering', requires: { resource: 'dashboard', action: 'read' } },
 
@@ -60,6 +61,8 @@ export const NAV_ITEMS = [
   { id: 'managerTeam', href: '/app/manager/team', group: 'manager', requires: { resource: 'onboarding_task', action: 'validate' } },
   { id: 'managerReports', href: '/app/manager/reports', group: 'manager', requires: { resource: 'onboarding_task', action: 'validate' } },
   { id: 'managerAssistant', href: '/app/manager/assistant', group: 'manager', requires: { resource: 'onboarding_task', action: 'validate' } },
+  { id: 'managerJobDescriptions', href: '/app/manager/job-descriptions', group: 'manager', requires: { resource: 'onboarding_task', action: 'validate' } },
+  { id: 'managerQuests', href: '/app/manager/quests', group: 'manager', requires: { resource: 'quest', action: 'create' } },
 
   { id: 'hrDashboard', href: '/app/hr', group: 'hr', requires: { resource: 'assignment', action: 'create' } },
   { id: 'hrUnassigned', href: '/app/hr/employees/unassigned', group: 'hr', requires: { resource: 'assignment', action: 'create' } },

@@ -26,6 +26,7 @@ export const RESOURCES = [
   'role',
   'audit_log',
   'setting',
+  'quest',
 ];
 
 export const ACTIONS = [
@@ -162,6 +163,9 @@ export const ROLE_PERMISSIONS = {
     'notification:update',
     'survey:read',
     'training:read',
+    'quest:create',
+    'quest:read',
+    'quest:update',
   ],
   EMPLOYEE: [
     'organization_unit:read',
@@ -185,6 +189,8 @@ export const ROLE_PERMISSIONS = {
     'survey:update',
     'training:read',
     'training:update',
+    'quest:read',
+    'quest:update',
   ],
 };
 

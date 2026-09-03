@@ -168,7 +168,10 @@
       "strategy": "Stratégie",
       "surveys": "Enquêtes",
       "training": "Formation",
-      "welcome": "Bienvenue"
+      "welcome": "Bienvenue",
+      "managerJobDescriptions": "Fiches de poste",
+      "managerQuests": "Quêtes",
+      "meQuests": "Mes quêtes"
     },
     "public": {
       "brandHome": "SOFICLEF — accueil",
@@ -1362,6 +1365,29 @@
       "subtitle": "Votre équipe et sa chaîne hiérarchique, avec la progression d'intégration de chaque recrue.",
       "empty": "Aucun poste n'est rattaché à votre compte pour le moment.",
       "onboardingBadge": "{{percent}}% intégré"
+    },
+    "jobDescriptions": {
+      "loadError": "Impossible de charger les fiches de poste.",
+      "loading": "Chargement des fiches de poste…",
+      "title": "Fiches de poste",
+      "subtitle": "Les fiches de poste des postes de votre équipe.",
+      "empty": "Aucune fiche de poste n'est encore rédigée pour les postes de votre équipe."
+    },
+    "quests": {
+      "loadError": "Impossible de charger les quêtes.",
+      "loading": "Chargement des quêtes…",
+      "title": "Quêtes",
+      "subtitle": "Des tâches ponctuelles que vous confiez à un membre de votre équipe.",
+      "newQuest": "Nouvelle quête",
+      "empty": "Aucune quête assignée pour le moment.",
+      "noReports": "Aucun collaborateur ne vous est directement rattaché.",
+      "assignTo": "Assigner à",
+      "createFailed": "Impossible de créer la quête.",
+      "submit": "Assigner la quête",
+      "status": {
+        "todo": "À faire",
+        "done": "Terminée"
+      }
     }
   },
   "managerRecruits": {
@@ -2836,9 +2862,11 @@
       "avatarUploadFailed": "L’envoi de la photo a échoué.",
       "avatarUploading": "Envoi de la photo…",
       "contacts": {
-        "empty": "Aucun contact n’est publié dans l’annuaire pour l’instant.",
+        "empty": "Aucun contact n'est publié dans l'annuaire pour l'instant.",
         "help": "L’annuaire publié de l’entreprise, regroupé par service. Le numéro indiqué est le poste interne.",
-        "title": "Contacts clés"
+        "title": "Contacts clés",
+        "heading": "Contacts clés",
+        "subtitle": "L'annuaire publié de l'entreprise, regroupé par service. Le numéro indiqué est le poste interne."
       },
       "extension": "Poste {{extension}}",
       "loadFailed": "Impossible de charger votre équipe.",
@@ -2848,15 +2876,14 @@
         "noPosition": "Poste non renseigné",
         "title": "Mon responsable"
       },
-      "me": {
-        "noPosition": "Poste non affecté",
-        "title": "Moi"
-      },
+      "me": "Moi",
       "orgChart": "Organigramme",
       "peers": {
-        "empty": "Aucun collègue de même niveau n’apparaît : soit votre poste n’a pas de poste supérieur déclaré, soit vous êtes seul à ce niveau.",
+        "empty": "Aucun collègue de même niveau n'apparaît : soit votre poste n'a pas de poste supérieur déclaré, soit vous êtes seul à ce niveau.",
         "help": "Les personnes qui occupent un poste rattaché au même poste supérieur que le vôtre.",
-        "title": "Mes collègues"
+        "title": "Mes collègues",
+        "heading": "Mes collègues",
+        "subtitle": "Les personnes qui occupent un poste rattaché au même poste supérieur que le vôtre."
       },
       "services": {
         "hr": "Ressources humaines",
@@ -2866,7 +2893,18 @@
         "quality": "Qualité"
       },
       "subtitle": "Votre responsable, les collègues qui partagent votre rattachement, et les services à contacter selon le sujet.",
-      "title": "Mon équipe"
+      "title": "Mon équipe",
+      "loadError": "Impossible de charger votre équipe.",
+      "positionUnassigned": "Poste non affecté",
+      "positionNotSpecified": "Poste non renseigné",
+      "myManager": "Mon responsable",
+      "noManager": "Aucun responsable n'est déclaré sur votre compte. Les RH renseignent ce lien au moment de l'affectation.",
+      "avatar": {
+        "label": "Photo de profil",
+        "uploading": "Envoi de la photo…",
+        "uploadSuccess": "Photo de profil enregistrée. Elle apparaît sur votre carte de l'organigramme.",
+        "uploadFailed": "L'envoi de la photo a échoué."
+      }
     },
     "training": {
       "catalogue": {
@@ -3061,6 +3099,21 @@
         "steps": "{{done}}/{{total}} étapes terminées",
         "title": "Ma progression"
       }
+    },
+    "quests": {
+      "loadError": "Impossible de charger vos quêtes.",
+      "loading": "Chargement de vos quêtes…",
+      "title": "Mes quêtes",
+      "subtitle": "Les tâches ponctuelles que votre responsable vous a confiées.",
+      "empty": "Aucune quête ne vous a été assignée pour le moment.",
+      "openHeading_one": "{{count}} quête en cours",
+      "openHeading_other": "{{count}} quêtes en cours",
+      "noneOpen": "Aucune quête en cours.",
+      "doneHeading_one": "{{count}} quête terminée",
+      "doneHeading_other": "{{count}} quêtes terminées",
+      "assignedBy": "Confiée par {{name}}",
+      "markDone": "Marquer comme terminée",
+      "reopen": "Marquer comme non terminée"
     }
   },
   "notifications": {
@@ -3108,5 +3161,23 @@
       "title": "Pilotage",
       "daysSuffix": "{{count}} j"
     }
+  },
+  "jobDescription": {
+    "status": {
+      "draft": "Brouillon",
+      "inReview": "En relecture",
+      "changesRequested": "Modifications demandées",
+      "validated": "Validée",
+      "archived": "Archivée"
+    },
+    "loadFailed": "Impossible de charger les fiches de poste.",
+    "listTitle": "Fiches de poste",
+    "listSubtitle": "L'ensemble des fiches de poste et leur statut de validation.",
+    "columns": {
+      "code": "Code",
+      "jobTitle": "Intitulé",
+      "version": "Version"
+    },
+    "empty": "Aucune fiche de poste pour le moment."
   }
 }

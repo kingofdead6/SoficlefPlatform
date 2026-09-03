@@ -15,6 +15,7 @@ export const NAV_ITEMS = [
   { id: 'meCertificates', href: '/app/me/training/certificates', group: 'me', labelKey: 'nav.items.meCertificates', requires: { resource: 'training', action: 'read' } },
   { id: 'meSurveys', href: '/app/me/surveys', group: 'me', labelKey: 'nav.items.meSurveys', requires: { resource: 'survey', action: 'read' } },
   { id: 'meAssistant', href: '/app/me/assistant', group: 'me', labelKey: 'nav.items.meAssistant', requires: { resource: 'organization_unit', action: 'read' } },
+  { id: 'meQuests', href: '/app/me/quests', group: 'me', labelKey: 'nav.items.meQuests', requires: { resource: 'quest', action: 'read' } },
 
   { id: 'dashboard', href: '/dashboard', group: 'steering', labelKey: 'nav.items.dashboard', requires: { resource: 'dashboard', action: 'read' } },
 
@@ -49,6 +50,8 @@ export const NAV_ITEMS = [
   { id: 'managerCalendar', href: '/app/manager/calendar', group: 'manager', labelKey: 'nav.items.managerCalendar', requires: { resource: 'onboarding_task', action: 'validate' } },
   { id: 'managerDocuments', href: '/app/manager/documents', group: 'manager', labelKey: 'nav.items.managerDocuments', requires: { resource: 'document', action: 'read' } },
   { id: 'managerArchive', href: '/app/manager/archive', group: 'manager', labelKey: 'nav.items.managerArchive', requires: { resource: 'onboarding_task', action: 'validate' } },
+  { id: 'managerJobDescriptions', href: '/app/manager/job-descriptions', group: 'manager', labelKey: 'nav.items.managerJobDescriptions', requires: { resource: 'onboarding_task', action: 'validate' } },
+  { id: 'managerQuests', href: '/app/manager/quests', group: 'manager', labelKey: 'nav.items.managerQuests', requires: { resource: 'quest', action: 'create' } },
   { id: 'managerSettings', href: '/app/manager/settings', group: 'manager', labelKey: 'nav.items.managerSettings', requires: { resource: 'onboarding_task', action: 'validate' } },
 
   { id: 'hrDashboard', href: '/app/hr', group: 'hr', labelKey: 'nav.items.hrDashboard', end: true, requires: { resource: 'assignment', action: 'create' } },
