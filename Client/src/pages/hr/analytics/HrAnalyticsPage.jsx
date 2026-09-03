@@ -20,10 +20,10 @@ const fieldClass =
   'rounded-app border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-red-brand';
 
 const PERIODS = [
-  { value: '30', labelFr: '30 jours' },
-  { value: '90', labelFr: '90 jours' },
-  { value: '180', labelFr: '6 mois' },
-  { value: '365', labelFr: '12 mois' },
+  { value: '30', key: '30' },
+  { value: '90', key: '90' },
+  { value: '180', key: '180' },
+  { value: '365', key: '365' },
 ];
 
 /**
@@ -45,7 +45,7 @@ const PERIODS = [
  * rather than implying the filters moved a number they did not.
  */
 export default function HrAnalyticsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [kpis, setKpis] = useState(null);
   const [directory, setDirectory] = useState([]);
   const [satisfaction, setSatisfaction] = useState(null);
@@ -72,12 +72,12 @@ export default function HrAnalyticsPage() {
         setCoverage(coverageRes.data);
         setFacets(facetsRes.data);
       } catch {
-        setError('Impossible de charger les indicateurs.');
+        setError(t('hr.analytics.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const loadDirectory = useCallback(async (active) => {
     setRefreshing(true);
@@ -165,54 +165,52 @@ export default function HrAnalyticsPage() {
             to="/app/hr/analytics/reports"
             className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
           >
-            Générateur de rapports
+            {t('hr.analytics.reportLink')}
           </Link>
         }
       />
 
       {!hr ? (
         <EmptyState
-          title="Aucun indicateur"
-          detail="Aucun indicateur n’est disponible pour votre périmètre."
+          title={t('hr.analytics.emptyTitle')}
+          detail={t('hr.analytics.emptyDetail')}
         />
       ) : (
         <>
           {/* Band 1 — the Module 10 indicators, full perimeter */}
           <div data-gsap="band" className="mb-4">
-            <h2 className="mb-3 font-display text-xl text-text">Indicateurs Module 10</h2>
+            <h2 className="mb-3 font-display text-xl text-text">{t('hr.analytics.moduleTitle')}</h2>
             <motion.div
               variants={staggerContainer(0.06)}
               initial={initialOrNone(reduce)}
               animate="visible"
               className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
             >
-              <StatCard label="Taux de complétion" value={hr.completionRate} suffix="%" />
-              <StatCard label="Durée moyenne" value={hr.averageOnboardingDays} suffix=" j" />
-              <StatCard label="Taux de confirmation" value={hr.confirmationRate} suffix="%" />
+              <StatCard label={t('hr.analytics.metrics.completion')} value={hr.completionRate} suffix="%" />
+              <StatCard label={t('hr.analytics.metrics.duration')} value={hr.averageOnboardingDays} suffix={` ${t('hr.analytics.dayShort')}`} />
+              <StatCard label={t('hr.analytics.metrics.confirmation')} value={hr.confirmationRate} suffix="%" />
               <StatCard
-                label="Turnover 6 mois"
+                label={i18n.language === 'en' ? 'Six-month turnover' : 'Turnover 6 mois'}
                 value={hr.turnoverRate}
                 suffix="%"
                 tone={hr.turnoverRate !== null && hr.turnoverRate > 15 ? 'red' : undefined}
                 footnote={
                   hr.turnoverCohort === 0
-                    ? 'Aucune cohorte de six mois'
-                    : `Sur ${hr.turnoverCohort} parcours de plus de six mois`
+                    ? t('hr.analytics.metrics.noCohort')
+                    : t('hr.analytics.metrics.cohort', { count: hr.turnoverCohort })
                 }
               />
-              <StatCard label="Satisfaction" value={hr.satisfaction} suffix="%" />
-              <StatCard label="Formation à jour" value={hr.trainingRate} suffix="%" />
+              <StatCard label={t('hr.analytics.metrics.satisfaction')} value={hr.satisfaction} suffix="%" />
+              <StatCard label={t('hr.analytics.metrics.training')} value={hr.trainingRate} suffix="%" />
             </motion.div>
             <p className="mt-3 text-xs text-text-dim">
-              Un tiret signifie « non mesurable » et non « zéro » : la plateforme distingue l’absence
-              de données d’un résultat nul. Ces six indicateurs portent sur l’ensemble de votre
-              périmètre ; les filtres ci-dessous s’appliquent à la vue détaillée.
+              {t('hr.analytics.moduleNote')}
             </p>
           </div>
 
           {/* Band 2 — filters + period comparison */}
           <div data-gsap="band" className="mb-10 mt-8">
-            <h2 className="mb-3 font-display text-xl text-text">Vue filtrée et comparaison</h2>
+            <h2 className="mb-3 font-display text-xl text-text">{t('hr.analytics.filteredTitle')}</h2>
 
             <div className={`${CARD} mb-4 flex flex-wrap items-center gap-3 p-4`}>
               <select
@@ -220,7 +218,7 @@ export default function HrAnalyticsPage() {
                 onChange={(e) => setFilters((f) => ({ ...f, unitCode: e.target.value }))}
                 className={fieldClass}
               >
-                <option value="">Toutes les structures</option>
+                <option value="">{t('hr.analytics.allStructures')}</option>
                 {facets.units.map((unit) => (
                   <option key={unit.code} value={unit.code}>
                     {unit.code} — {unit.nameFr}
@@ -232,7 +230,7 @@ export default function HrAnalyticsPage() {
                 onChange={(e) => setFilters((f) => ({ ...f, managerId: e.target.value }))}
                 className={fieldClass}
               >
-                <option value="">Tous les managers</option>
+                <option value="">{t('hr.analytics.allManagers')}</option>
                 {facets.managers.map((manager) => (
                   <option key={manager.id} value={manager.id}>
                     {manager.displayName}
@@ -246,7 +244,7 @@ export default function HrAnalyticsPage() {
               >
                 {PERIODS.map((period) => (
                   <option key={period.value} value={period.value}>
-                    Période : {period.labelFr}
+                    {t('hr.analytics.period', { period: t(`hr.analytics.periods.${period.key}`) })}
                   </option>
                 ))}
               </select>
@@ -256,11 +254,11 @@ export default function HrAnalyticsPage() {
                   onClick={() => setFilters((f) => ({ ...f, unitCode: '', managerId: '' }))}
                   className="text-sm text-red-brand hover:underline"
                 >
-                  Réinitialiser
+                  {t('hr.analytics.reset')}
                 </button>
               )}
               <span className="ml-auto text-sm text-text-dim">
-                {directory.length} collaborateur{directory.length > 1 ? 's' : ''}
+                {t('hr.analytics.peopleCount', { count: directory.length })}
               </span>
             </div>
 
@@ -272,7 +270,7 @@ export default function HrAnalyticsPage() {
             >
               <motion.div variants={staggerItem} className={`${CARD} p-5`}>
                 <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-                  Recrutements ({PERIODS.find((p) => p.value === filters.period)?.labelFr})
+                  {t('hr.analytics.hires', { period: t(`hr.analytics.periods.${filters.period}`) })}
                 </p>
                 <p className="font-display text-3xl text-red-deep">
                   <CountUp value={currentHires} />
@@ -283,14 +281,14 @@ export default function HrAnalyticsPage() {
                   }`}
                 >
                   {delta === 0
-                    ? `Stable par rapport aux ${filters.period} jours précédents (${previousHires})`
-                    : `${delta > 0 ? '+' : ''}${delta} vs période précédente (${previousHires})`}
+                    ? t('hr.analytics.stable', { days, count: previousHires })
+                    : t('hr.analytics.delta', { delta: `${delta > 0 ? '+' : ''}${delta}`, count: previousHires })}
                 </p>
               </motion.div>
 
               <motion.div variants={staggerItem} className={`${CARD} p-5`}>
                 <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-                  Intégrations en cours
+                  {t('hr.analytics.filteredInProgress')}
                 </p>
                 <p className="font-display text-3xl text-red-deep">
                   <CountUp value={filteredInProgress} />
@@ -299,7 +297,7 @@ export default function HrAnalyticsPage() {
 
               <motion.div variants={staggerItem} className={`${CARD} p-5`}>
                 <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-                  Intégrations terminées
+                  {t('hr.analytics.filteredCompleted')}
                 </p>
                 <p className="font-display text-3xl text-red-deep">
                   <CountUp value={filteredCompleted} />
@@ -313,9 +311,9 @@ export default function HrAnalyticsPage() {
                 />
                 <div>
                   <p className="text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-                    Avancement moyen
+                    {t('hr.analytics.averageProgress')}
                   </p>
-                  <p className="text-xs text-text-dim">Sur le périmètre filtré</p>
+                  <p className="text-xs text-text-dim">{t('hr.analytics.filteredScope')}</p>
                 </div>
               </motion.div>
             </motion.div>
@@ -324,25 +322,25 @@ export default function HrAnalyticsPage() {
           {/* Band 3 — supporting detail */}
           <div data-gsap="band" className="grid gap-8 lg:grid-cols-3">
             <section>
-              <h2 className="mb-3 font-display text-lg text-text">Santé des parcours</h2>
+              <h2 className="mb-3 font-display text-lg text-text">{t('hr.analytics.journeyHealth')}</h2>
               <div className={`${CARD} space-y-3 p-5 text-sm`}>
-                <Row label="Parcours actifs" value={onboarding?.journeys ?? 0} />
+                <Row label={t('hr.analytics.activeJourneys')} value={onboarding?.journeys ?? 0} />
                 <Row
-                  label="Étapes en retard"
+                  label={t('hr.analytics.overdueSteps')}
                   value={onboarding?.overdueTasks ?? 0}
                   tone={(onboarding?.overdueTasks ?? 0) > 0 ? 'red' : undefined}
                 />
                 <Row
-                  label="Étapes bloquées"
+                  label={t('hr.analytics.blockedSteps')}
                   value={onboarding?.blockedTasks ?? 0}
                   tone={(onboarding?.blockedTasks ?? 0) > 0 ? 'red' : undefined}
                 />
-                <Row label="Avancement moyen" value={`${onboarding?.averagePercent ?? 0}%`} />
+                <Row label={t('hr.analytics.averageProgress')} value={`${onboarding?.averagePercent ?? 0}%`} />
               </div>
             </section>
 
             <section>
-              <h2 className="mb-3 font-display text-lg text-text">Satisfaction par jalon</h2>
+              <h2 className="mb-3 font-display text-lg text-text">{t('hr.analytics.satisfactionByMilestone')}</h2>
               <div className={`${CARD} space-y-3 p-5 text-sm`}>
                 {(satisfaction?.byMilestone ?? []).map((milestone) => (
                   <Row
@@ -352,32 +350,32 @@ export default function HrAnalyticsPage() {
                   />
                 ))}
                 {(satisfaction?.byMilestone ?? []).length === 0 && (
-                  <p className="text-text-dim">Aucune enquête émise.</p>
+                  <p className="text-text-dim">{t('hr.analytics.noSurveys')}</p>
                 )}
               </div>
             </section>
 
             <section>
-              <h2 className="mb-3 font-display text-lg text-text">Qualité des données</h2>
+              <h2 className="mb-3 font-display text-lg text-text">{t('hr.analytics.dataQuality')}</h2>
               <div className={`${CARD} space-y-3 p-5 text-sm`}>
                 <Row
-                  label="Structures sans responsable"
+                  label={t('hr.analytics.unitsWithoutHead')}
                   value={kpis?.quality?.unitsWithoutHead ?? '—'}
                   tone={(kpis?.quality?.unitsWithoutHead ?? 0) > 0 ? 'red' : undefined}
                 />
                 <Row
-                  label="Postes sans fiche"
+                  label={t('hr.analytics.jobsWithoutDescription')}
                   value={kpis?.quality?.jobsWithoutDescription ?? '—'}
                   tone={(kpis?.quality?.jobsWithoutDescription ?? 0) > 0 ? 'red' : undefined}
                 />
                 <Row
-                  label="Couverture des fiches"
+                  label={t('hr.analytics.descriptionCoverage')}
                   value={
                     kpis?.jobDescriptions ? `${kpis.jobDescriptions.coverage}%` : '—'
                   }
                 />
                 <Row
-                  label="Collaborateurs formés"
+                  label={t('hr.analytics.trainedEmployees')}
                   value={coverage ? `${coverage.fullyTrained}/${coverage.people}` : '—'}
                 />
               </div>
