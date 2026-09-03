@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { surveysApi } from '../../../api/surveys.js';
 import { ApiError } from '../../../api/client.js';
@@ -8,32 +9,33 @@ import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { useGsapContext } from '../../../lib/motion/useGsapContext.js';
 import { staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { localeOf } from '../../../lib/formatDate.js';
 import { cn } from '../../../lib/cn.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 
 /**
  * The five indicators of the satisfaction survey, mirroring the server's SurveyIndicator
- * enum. `helpFr` says what the question is actually asking, so a 3 means the same thing to
- * two different recruits.
+ * enum. The help key says what the question is actually asking, so a 3 means the same thing
+ * to two different recruits.
  */
 const INDICATORS = [
-  { id: 'WELCOME_QUALITY', labelFr: "Qualité de l'accueil", helpFr: 'Votre arrivée, le premier jour, la préparation de votre poste.' },
-  { id: 'SUPPORT_LEVEL', labelFr: 'Accompagnement', helpFr: 'La disponibilité de ceux qui vous aident à prendre vos marques.' },
-  { id: 'ROLE_CLARITY', labelFr: 'Clarté du rôle', helpFr: 'Savez-vous ce qu’on attend de vous et comment cela se mesure ?' },
-  { id: 'MANAGER_RELATIONSHIP', labelFr: 'Relation avec le manager', helpFr: 'Échanges, retours, points d’étape.' },
-  { id: 'WORKING_CONDITIONS', labelFr: 'Conditions de travail', helpFr: 'Locaux, matériel, sécurité, organisation.' },
+  { id: 'WELCOME_QUALITY', labelKey: 'me.surveys.indicators.welcomeQuality.label', helpKey: 'me.surveys.indicators.welcomeQuality.help' },
+  { id: 'SUPPORT_LEVEL', labelKey: 'me.surveys.indicators.supportLevel.label', helpKey: 'me.surveys.indicators.supportLevel.help' },
+  { id: 'ROLE_CLARITY', labelKey: 'me.surveys.indicators.roleClarity.label', helpKey: 'me.surveys.indicators.roleClarity.help' },
+  { id: 'MANAGER_RELATIONSHIP', labelKey: 'me.surveys.indicators.managerRelationship.label', helpKey: 'me.surveys.indicators.managerRelationship.help' },
+  { id: 'WORKING_CONDITIONS', labelKey: 'me.surveys.indicators.workingConditions.label', helpKey: 'me.surveys.indicators.workingConditions.help' },
 ];
 
 const SCALE = [
-  { value: 1, labelFr: 'Très insatisfait' },
-  { value: 2, labelFr: 'Insatisfait' },
-  { value: 3, labelFr: 'Neutre' },
-  { value: 4, labelFr: 'Satisfait' },
-  { value: 5, labelFr: 'Très satisfait' },
+  { value: 1, labelKey: 'me.surveys.scale.veryDissatisfied' },
+  { value: 2, labelKey: 'me.surveys.scale.dissatisfied' },
+  { value: 3, labelKey: 'me.surveys.scale.neutral' },
+  { value: 4, labelKey: 'me.surveys.scale.satisfied' },
+  { value: 5, labelKey: 'me.surveys.scale.verySatisfied' },
 ];
 
-const INDICATOR_LABELS = Object.fromEntries(INDICATORS.map((entry) => [entry.id, entry.labelFr]));
+const INDICATOR_LABEL_KEYS = Object.fromEntries(INDICATORS.map((entry) => [entry.id, entry.labelKey]));
 
 /**
  * /app/me/surveys — Mes enquêtes (route guide §2.1, SITE).
