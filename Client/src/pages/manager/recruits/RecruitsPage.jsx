@@ -28,22 +28,22 @@ export default function RecruitsPage() {
         setRecruits(data);
         setAlerts(a ?? []);
       } catch {
-        setError(t('manager.recruits.loadError'));
+        setError(t('managerRecruits.loadError'));
       } finally {
         setLoading(false);
       }
     })();
   }, [t]);
 
-  if (loading) return <PageLoading label={t('manager.recruits.loading')} />;
+  if (loading) return <PageLoading label={t('managerRecruits.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div>
       <PageHeader
         eyebrow={t('manager.eyebrow')}
-        title={t('manager.recruits.title')}
-        subtitle={t('manager.recruits.subtitle')}
+        title={t('managerRecruits.title')}
+        subtitle={t('managerRecruits.subtitle')}
       />
 
       {alerts.length > 0 && (
@@ -98,7 +98,7 @@ export default function RecruitsPage() {
                 />
               </div>
               <div className="mb-3 flex flex-wrap gap-3 text-xs text-text-dim">
-                <span>{t('manager.recruits.stepsRatio', { done: recruit.done, total: recruit.total })}</span>
+                <span>{t('managerRecruits.stepsRatio', { done: recruit.done, total: recruit.total })}</span>
                 {recruit.overdue > 0 && (
                   <span className="text-status-red">{t('manager.overdueCount', { count: recruit.overdue })}</span>
                 )}
@@ -107,7 +107,7 @@ export default function RecruitsPage() {
                 )}
                 {recruit.evaluationsDue.length > 0 && (
                   <span className="text-status-amber">
-                    {t('manager.recruits.evaluationsDueCount', { count: recruit.evaluationsDue.length })}
+                    {t('managerRecruits.evaluationsDueCount', { count: recruit.evaluationsDue.length })}
                   </span>
                 )}
               </div>
@@ -115,14 +115,14 @@ export default function RecruitsPage() {
                 to={`/app/manager/recruits/${recruit.userId}`}
                 className="text-sm font-medium text-red-brand hover:underline"
               >
-                {t('manager.recruits.viewRecord')} →
+                {t('managerRecruits.viewRecord')} →
               </Link>
             </motion.div>
           </motion.li>
         ))}
       </motion.ul>
       {recruits.length === 0 && (
-        <EmptyState detail={t('manager.recruits.empty')} />
+        <EmptyState detail={t('managerRecruits.empty')} />
       )}
     </div>
   );
