@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import { sectionVariants, initialOrNone } from '../../../lib/motion/variants.js';
@@ -34,6 +35,7 @@ function load() {
  * devices — the page says so plainly rather than implying a backend that doesn't exist.
  */
 export default function ManagerSettingsPage() {
+  const { t } = useTranslation();
   const [settings, setSettings] = useState(DEFAULTS);
   const [saved, setSaved] = useState(false);
   const reduce = useReducedMotion();
@@ -58,9 +60,9 @@ export default function ManagerSettingsPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Manager"
-        title="Paramètres"
-        subtitle="Préférences d'affichage et de rappels, propres à cet appareil."
+        eyebrow={t('manager.eyebrow')}
+        title={t('manager.settings.title')}
+        subtitle={t('manager.settings.subtitle')}
       />
 
       <motion.div
@@ -70,16 +72,16 @@ export default function ManagerSettingsPage() {
         className="max-w-xl space-y-6"
       >
         <div className="rounded-app border border-dashed border-border bg-surface-2 p-3 text-xs text-text-dim">
-          Ces préférences sont enregistrées uniquement sur cet appareil (aucune synchronisation entre postes).
+          {t('manager.settings.deviceOnlyNote')}
         </div>
 
         <section className="rounded-app border border-border bg-surface p-5 shadow-app">
-          <h2 className="mb-4 font-display text-lg text-text">Rappels</h2>
+          <h2 className="mb-4 font-display text-lg text-text">{t('manager.settings.reminders.heading')}</h2>
 
           <label className="mb-4 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-text">Fenêtre de rappel</p>
-              <p className="text-xs text-text-dim">Nombre de jours avant échéance pour afficher une évaluation en alerte.</p>
+              <p className="text-sm font-medium text-text">{t('manager.settings.reminders.windowLabel')}</p>
+              <p className="text-xs text-text-dim">{t('manager.settings.reminders.windowHelp')}</p>
             </div>
             <input
               type="number"
@@ -93,17 +95,17 @@ export default function ManagerSettingsPage() {
 
           <div className="space-y-3 border-t border-border pt-4">
             <ToggleRow
-              label="Étapes bloquées"
+              label={t('manager.settings.reminders.blockedSteps')}
               checked={settings.notifyOnBlocked}
               onChange={(v) => update({ notifyOnBlocked: v })}
             />
             <ToggleRow
-              label="Étapes en retard"
+              label={t('manager.settings.reminders.overdueSteps')}
               checked={settings.notifyOnOverdue}
               onChange={(v) => update({ notifyOnOverdue: v })}
             />
             <ToggleRow
-              label="Évaluations à échéance"
+              label={t('manager.settings.reminders.evaluationsDue')}
               checked={settings.notifyOnEvaluationDue}
               onChange={(v) => update({ notifyOnEvaluationDue: v })}
             />
@@ -111,7 +113,7 @@ export default function ManagerSettingsPage() {
         </section>
 
         <section className="rounded-app border border-border bg-surface p-5 shadow-app">
-          <h2 className="mb-4 font-display text-lg text-text">Affichage du tableau de bord</h2>
+          <h2 className="mb-4 font-display text-lg text-text">{t('manager.settings.display.heading')}</h2>
           <div className="flex gap-2">
             {['comfortable', 'compact'].map((density) => (
               <button
@@ -124,14 +126,16 @@ export default function ManagerSettingsPage() {
                     : 'border-border text-text-dim hover:bg-surface-2'
                 }`}
               >
-                {density === 'comfortable' ? 'Confortable' : 'Compact'}
+                {density === 'comfortable'
+                  ? t('manager.settings.display.comfortable')
+                  : t('manager.settings.display.compact')}
               </button>
             ))}
           </div>
         </section>
 
         <p className={`text-xs text-status-green transition-opacity ${saved ? 'opacity-100' : 'opacity-0'}`}>
-          Enregistré.
+          {t('manager.settings.saved')}
         </p>
       </motion.div>
     </div>

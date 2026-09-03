@@ -369,20 +369,677 @@
       "body": "Depuis 1994, nous concevons et fabriquons en Algérie les serrures, poignées et coffres qui protègent la vie et les biens — du corps de serrure à la distribution nationale."
     }
   },
-  "hr": { "employeeDirectory": { "loading": "Chargement du r\u00e9pertoire...", "loadError": "Impossible de charger le r\u00e9pertoire.", "title": "Collaborateurs", "subtitle": "Le r\u00e9pertoire complet de votre p\u00e9rim\u00e8tre : recherche, filtres et export.", "unassigned": "Non affect\u00e9s", "exportButton": "Exporter (CSV)", "search": "Rechercher un nom, un e-mail, un poste...", "allStructures": "Toutes les structures", "allManagers": "Tous les managers", "allStatuses": "Tous les \u00e9tats", "reset": "R\u00e9initialiser les filtres", "stats": { "displayed": "Collaborateurs affich\u00e9s", "onboarding": "En int\u00e9gration", "unassigned": "Sans affectation" }, "emptyTitle": "Aucun collaborateur", "emptyFiltered": "Aucun collaborateur ne correspond \u00e0 ces filtres.", "emptyScope": "Aucun collaborateur visible dans votre p\u00e9rim\u00e8tre.", "status": { "pending": "En attente d\u2019affectation", "assigned": "Affect\u00e9", "onboarding": "En int\u00e9gration", "active": "Actif", "archived": "Archiv\u00e9" }, "table": { "employee": "Collaborateur", "position": "Poste", "structure": "Structure", "manager": "Manager", "status": "\u00c9tat", "onboarding": "Int\u00e9gration" }, "export": { "name": "Nom", "email": "E-mail", "phone": "T\u00e9l\u00e9phone", "position": "Poste", "direction": "Direction", "department": "Service", "structure": "Structure", "manager": "Manager", "status": "\u00c9tat", "hireDate": "Date d\u2019embauche", "onboarding": "Int\u00e9gration (%)" } },
-    "accountRequests": { "loading": "Chargement des demandes...", "loadError": "Impossible de charger les demandes de compte.", "title": "Demander un compte", "subtitle": "Les RH ne cr\u00e9ent pas de compte : cette demande ouvre un ticket que le SI traite, puis le compte revient ici pour affectation.", "confirmation": "Demande envoy\u00e9e au SI pour {{name}}.", "validationError": "V\u00e9rifiez les champs du formulaire.", "saveError": "La demande n\u2019a pas pu \u00eatre enregistr\u00e9e.", "form": { "title": "Nouvelle demande", "candidate": "Nom du candidat", "position": "Poste pr\u00e9vu", "hireDate": "Embauche pr\u00e9vue", "urgency": "Urgence", "note": "Note (facultatif)", "sending": "Envoi...", "submit": "Envoyer la demande au SI" }, "urgency": { "normal": "Normale", "urgent": "Urgente" }, "status": { "open": "Ouverte", "created": "Compte cr\u00e9\u00e9", "rejected": "Rejet\u00e9e" }, "list": { "title": "Demandes enregistr\u00e9es", "empty": "Aucune demande de compte enregistr\u00e9e." }, "table": { "candidate": "Candidat", "position": "Poste pr\u00e9vu", "urgency": "Urgence", "status": "Statut", "waiting": "Attente" }, "days_one": "{{count}} jour", "days_other": "{{count}} jours" },
-    "organigram": { "loading": "Chargement de l’organigramme…", "loadError": "Impossible de charger l’organigramme.", "title": "Organigramme", "subtitle": "La structure complète de l’entreprise, de la direction générale aux postes de terrain.", "tabs": { "tree": "Organigramme", "anomalies": "Anomalies ({{count}})" }, "search": "Rechercher un poste, un code, une personne…", "allStructures": "Toutes les structures", "vacantOnly": "Postes vacants uniquement", "positionCount": "{{visible}} / {{total}} postes", "emptyFiltered": "Aucun poste ne correspond à ces filtres.", "noAnomaly": "Aucune anomalie de ce type.", "vacant": "Vacant", "table": { "position": "Poste", "code": "Code", "structure": "Structure", "holder": "Titulaire" }, "anomalies": { "vacant": { "title": "Postes vacants", "rule": "Le poste existe dans l’organigramme mais personne ne l’occupe aujourd’hui." }, "headless": { "title": "Branches sans responsable", "rule": "Des postes sont rattachés à ce poste, mais celui-ci n’a pas de titulaire." }, "orphans": { "title": "Nœuds orphelins", "rule": "Le poste déclare un poste parent qui n’existe pas (ou plus) dans l’organigramme." }, "unattached": { "title": "Postes sans structure", "rule": "Le poste n’est rattaché à aucune direction ni service." } } },
-    "positions": { "loading": "Chargement des postes…", "loadError": "Impossible de charger les postes.", "saveError": "L’enregistrement du poste a échoué.", "archiveConfirm": "Archiver le poste « {{title}} » ?", "archiveError": "L’archivage a échoué.", "title": "Postes", "subtitle": "Chaque poste est un nœud de l’organigramme : intitulé, mission et ligne hiérarchique.", "newPosition": "Nouveau poste", "readOnlyNotice": "Votre rôle donne un accès en lecture aux postes. La création et la modification des postes relèvent de l’administration.", "stats": { "active": "Postes actifs", "vacant": "Postes vacants", "withoutDescription": "Sans fiche de poste" }, "form": { "editTitle": "Modifier le poste", "newTitle": "Nouveau poste", "code": "Code", "codeHint": "Le code identifie le poste et ne se modifie pas.", "title": "Intitulé", "mission": "Mission", "structure": "Structure", "noStructure": "Aucune structure", "parent": "Rattaché à (ligne hiérarchique)", "noParent": "Aucun (racine)" }, "cancel": "Annuler", "saving": "Enregistrement…", "save": "Enregistrer", "search": "Rechercher un poste…", "allStructures": "Toutes les structures", "positionCount": "{{visible}} / {{total}}", "empty": "Aucun poste ne correspond à ces critères.", "table": { "code": "Code", "title": "Intitulé", "structure": "Structure", "parent": "Rattaché à", "occupation": "Occupation", "description": "Fiche de poste" }, "vacant": "Vacant", "occupied": "Occupé", "viewDescription": "Consulter", "missingDescription": "Absente" },
-    "templates": { "loading": "Chargement des modèles…", "loadError": "Impossible de charger les modèles de parcours.", "createError": "La création du modèle a échoué.", "title": "Modèles d’intégration", "subtitle": "La bibliothèque des parcours types, par profil de poste.", "cancel": "Annuler", "newTemplate": "Nouveau modèle", "readOnlyNotice": "Votre rôle donne un accès en lecture à la bibliothèque de modèles. La création et la modification d’un modèle relèvent de l’administration (permissions", "stats": { "templates": "Modèles disponibles", "steps": "Étapes décrites", "generated": "Parcours générés" }, "form": { "title": "Nouveau modèle", "code": "Code du modèle", "codeHint": "Minuscules, chiffres et tirets.", "titleLabel": "Intitulé", "position": "Profil de poste", "generic": "Modèle générique (tous profils)", "creating": "Création…", "create": "Créer le modèle" }, "emptyTitle": "Aucun modèle", "emptyDetail": "La bibliothèque de parcours est vide. Un modèle décrit la séquence d’étapes qu’un profil suit à son arrivée.", "profile": "Profil", "genericProfile": "Modèle générique — tous profils", "stepsCount_one": "{{count}} étape", "stepsCount_other": "{{count}} étapes", "generatedCount_one": "{{count}} parcours généré", "generatedCount_other": "{{count}} parcours générés" },
-    "templateBuilder": { "loading": "Chargement du modèle…", "notFound": "Modèle introuvable.", "saveError": "L’enregistrement de la séquence a échoué.", "back": "← Retour à la bibliothèque", "profileSubtitle": "Profil : {{profile}} — {{steps}} étape(s), {{journeys}} parcours généré(s).", "genericSubtitle": "Modèle générique — {{steps}} étape(s), {{journeys}} parcours généré(s).", "addStep": "Ajouter une étape", "saving": "Enregistrement…", "saveSequence": "Enregistrer la séquence", "readOnlyNotice": "Votre rôle donne un accès en lecture aux modèles de parcours. La modification de la séquence relève de l’administration (permission", "saved": "Séquence enregistrée.", "unsaved": "Modifications non enregistrées.", "emptyTitle": "Séquence vide", "emptyEditable": "Ce modèle ne décrit encore aucune étape. Ajoutez la première ci-dessus.", "emptyReadOnly": "Ce modèle ne décrit encore aucune étape.", "moveUp": "Déplacer l’étape {{number}} vers le haut", "moveDown": "Déplacer l’étape {{number}} vers le bas", "fields": { "stepTitle": "Intitulé de l’étape", "offset": "Décalage (jours)", "department": "Service responsable", "description": "Description", "phase": "Phase", "mandatory": "Étape obligatoire" }, "departments": { "HR": "RH", "IT": "SI", "HSE": "HSE", "QUALITY": "Qualité", "MANAGER": "Manager", "EMPLOYEE": "Collaborateur" }, "phases": { "PRE_ONBOARDING": "Avant l’arrivée", "DAY_ONE": "Jour 1", "PROBATION": "Période d’essai" }, "remove": "Supprimer", "existingJourneys": "{{count}} parcours ont été générés depuis ce modèle. Modifier la séquence n’altère pas les parcours déjà en cours ; supprimer une étape déjà suivie par quelqu’un est refusé par le serveur, pour ne pas effacer une validation existante." },
-    "documentLibrary": { "loadError": "Impossible de charger la bibliothèque documentaire.", "createError": "La création du document a échoué.", "uploaded": "« {{name}} » a été téléversé et le document est publié.", "uploadError": "Le téléversement a échoué.", "updateError": "La mise à jour a échoué.", "publishError": "La publication a échoué.", "cancel": "Annuler", "newDocument": "Nouveau document", "storageUnavailable": "Aucun espace de stockage n’est configuré sur ce serveur : les fiches documentaires peuvent être créées et décrites, mais le téléversement de fichiers est indisponible jusqu’à la configuration des identifiants Cloudinary.", "stats": { "documents": "Documents", "published": "Publiés", "acknowledgements": "Accusés de lecture" }, "form": { "title": "Nouveau document", "reference": "Référence", "documentTitle": "Titre", "description": "Description", "order": "Ordre", "creating": "Création…", "create": "Créer la fiche", "hint": "La fiche est créée « en préparation » ; téléversez ensuite le fichier depuis la liste pour la publier." }, "search": "Rechercher un document…", "emptySearch": "Aucun document ne correspond à cette recherche.", "table": { "document": "Document", "file": "Fichier", "status": "État", "acknowledgements": "Accusés" }, "status": { "published": "Publié", "pending": "En préparation" }, "open": "Ouvrir", "noFile": "Aucun fichier", "noDepartments": "aucun département ciblé", "allPersonnel": "tout le personnel", "uploading": "Téléversement…", "replaceFile": "Remplacer le fichier", "upload": "Téléverser", "unpublish": "Dépublier", "publish": "Publier…", "versionNote": "Le modèle de données ne conserve pas d’historique de versions : téléverser un nouveau fichier remplace le précédent. Chaque remplacement est consigné au journal d’audit, avec le nom du fichier remplacé.", "publishAction": "Publier", "dialog": { "ariaLabel": "Publier le document", "title": "Publier « {{title}} »", "subtitle": "Le document deviendra visible dans l’espace des personnes concernées.", "audience": "Destinataires", "allHint": "Toute personne pouvant consulter la bibliothèque.", "departments": "Départements ciblés", "departmentsHint": "Seules les personnes rattachées aux départements choisis verront le document.", "noDepartments": "Aucun département n’est renseigné dans l’annuaire : les fiches collaborateurs n’ont ni direction ni service. Renseignez-les avant de cibler une publication.", "selectedDepartments": "Sera visible par les comptes rattachés à : {{departments}}.", "chooseDepartment": "Choisissez au moins un département.", "allSummary": "Sera visible par l’ensemble du personnel." } },
-    "training": { "loading": "Chargement du catalogue…", "loadError": "Impossible de charger le catalogue de formation.", "createError": "La création du module a échoué.", "title": "Catalogue de formation", "subtitle": "Les modules d’intégration, leur caractère obligatoire et leur quiz de validation.", "cancel": "Annuler", "newModule": "Nouveau module", "readOnlyNotice": "Votre rôle donne un accès en lecture au catalogue. La création d’un module relève de l’administration.", "stats": { "modules": "Modules", "mandatory": "Obligatoires", "withoutQuiz": "Sans quiz", "coverage": "Couverture" }, "coverage": "{{trained}}/{{people}} collaborateurs à jour", "form": { "title": "Nouveau module", "code": "Code", "titleLabel": "Titre", "summary": "Résumé", "content": "Contenu du module", "mandatory": "Module obligatoire", "threshold": "Seuil (%)", "order": "Ordre", "creating": "Création…", "create": "Créer le module" }, "emptyTitle": "Catalogue vide", "emptyDetail": "Aucun module de formation n’est publié.", "mandatory": "Obligatoire", "noQuiz": "Aucun quiz", "quizSummary_one": "{{count}} question — seuil {{score}}%", "quizSummary_other": "{{count}} questions — seuil {{score}}%", "quiz": "Quiz" },
-    "surveys": { "loading": "Chargement des enquêtes…", "loadError": "Impossible de charger la configuration des enquêtes.", "title": "Enquêtes de satisfaction", "subtitle": "Les jalons, le questionnaire et les règles de relance qui encadrent le suivi d’intégration.", "reminderRules": "Règles de relance", "viewResults": "Voir les résultats", "stats": { "issued": "Enquêtes émises", "answered": "Renseignées", "overdue": "En retard", "responseRate": "Taux de réponse" }, "responses": "{{answered}}/{{issued}} réponses", "score": "Score de satisfaction", "milestones": { "title": "Jalons d’enquête", "detail": "Les quatre jalons sont générés automatiquement à l’affectation, à partir de la date d’embauche. Ils sont définis dans le domaine (J+7, J+30, J+60, J+90) et s’appliquent à tout parcours ; les modifier relèverait d’un changement de modèle, pas d’un réglage.", "firstWeek": "Première semaine — accueil, matériel, premiers repères.", "firstMonth": "Premier mois — clarté du rôle et accompagnement.", "secondMonth": "Deux mois — autonomie et intégration dans l’équipe.", "trialEnd": "Fin de période d’essai — bilan global." }, "questionnaire": { "title": "Questionnaire", "detail": "Les cinq indicateurs notés de 1 à 5 qui composent chaque enquête. Ce sont des valeurs d’énumération en base : ajouter un indicateur suppose une migration, la liste n’est donc pas modifiable depuis l’interface." }, "indicators": { "welcomeQuality": "Qualité de l’accueil", "supportLevel": "Accompagnement reçu", "roleClarity": "Clarté du rôle", "managerRelationship": "Relation avec le manager", "workingConditions": "Conditions de travail" }, "table": { "indicator": "Indicateur", "average": "Moyenne (/5)", "score": "Score", "responses": "Réponses" }, "rules": { "title": "Règles de relance", "detail": "Les règles qui déclenchent une relance sur une enquête restée sans réponse. Elles se configurent sur la page des alertes.", "emptyTitle": "Aucune règle de relance sur les enquêtes", "emptyDetail": "Rien ne relance automatiquement une enquête sans réponse aujourd’hui. Créez une règle « enquête sans réponse » depuis la page Alertes." }, "active": "Active", "inactive": "Inactive", "ruleSummary": "Relance après {{threshold}} jour(s), notification à {{department}}", "escalation": ", escalade après {{days}} jour(s).", "noEscalation": ", sans escalade." },
-    "surveyResults": { "loading": "Chargement des résultats…", "loadError": "Impossible de charger les résultats des enquêtes.", "back": "← Retour aux enquêtes", "title": "Résultats des enquêtes", "subtitle": "Scores par indicateur, par jalon et réponses individuelles, filtrables par structure, manager et période.", "allStructures": "Toutes les structures", "allManagers": "Tous les managers", "reset": "Réinitialiser", "responseCount_one": "{{count}} réponse affichée", "responseCount_other": "{{count}} réponses affichées", "metrics": { "overall": "Score global", "responseRate": "Taux de réponse", "issued": "Enquêtes émises", "answered": "Renseignées" }, "byIndicator": "Scores par indicateur", "byMilestone": "Scores par jalon", "individual": "Réponses individuelles", "notMeasurable": "Non mesurable", "responsePair": "{{answered}}/{{issued}} réponses", "emptyTitle": "Aucune réponse", "emptyFiltered": "Aucune enquête renseignée ne correspond à ces filtres.", "emptyScope": "Aucune enquête n’a encore été renseignée dans votre périmètre.", "hide": "Masquer", "detail": "Détail", "periods": { "all": "Toute la période", "30": "30 derniers jours", "90": "90 derniers jours", "180": "6 derniers mois" }, "table": { "employee": "Collaborateur", "milestone": "Jalon", "structure": "Structure", "manager": "Manager", "score": "Score", "answeredAt": "Répondu le" } },
-    "analytics": { "loadError": "Impossible de charger les indicateurs.", "reportLink": "Générateur de rapports", "emptyTitle": "Aucun indicateur", "emptyDetail": "Aucun indicateur n’est disponible pour votre périmètre.", "moduleTitle": "Indicateurs Module 10", "dayShort": "j", "metrics": { "completion": "Taux de complétion", "duration": "Durée moyenne", "confirmation": "Taux de confirmation", "noCohort": "Aucune cohorte de six mois", "cohort": "Sur {{count}} parcours de plus de six mois", "satisfaction": "Satisfaction", "training": "Formation à jour" }, "moduleNote": "Un tiret signifie « non mesurable » et non « zéro » : la plateforme distingue l’absence de données d’un résultat nul. Ces six indicateurs portent sur l’ensemble de votre périmètre ; les filtres ci-dessous s’appliquent à la vue détaillée.", "filteredTitle": "Vue filtrée et comparaison", "allStructures": "Toutes les structures", "allManagers": "Tous les managers", "period": "Période : {{period}}", "periods": { "30": "30 jours", "90": "90 jours", "180": "6 mois", "365": "12 mois" }, "reset": "Réinitialiser", "peopleCount_one": "{{count}} collaborateur", "peopleCount_other": "{{count}} collaborateurs", "hires": "Recrutements ({{period}})", "stable": "Stable par rapport aux {{days}} jours précédents ({{count}})", "delta": "{{delta}} par rapport à la période précédente ({{count}})", "filteredInProgress": "Intégrations en cours", "filteredCompleted": "Intégrations terminées", "averageProgress": "Avancement moyen", "filteredScope": "Sur le périmètre filtré", "journeyHealth": "Santé des parcours", "activeJourneys": "Parcours actifs", "overdueSteps": "Étapes en retard", "blockedSteps": "Étapes bloquées", "satisfactionByMilestone": "Satisfaction par jalon", "noSurveys": "Aucune enquête émise.", "dataQuality": "Qualité des données", "unitsWithoutHead": "Structures sans responsable", "jobsWithoutDescription": "Postes sans fiche", "descriptionCoverage": "Couverture des fiches", "trainedEmployees": "Collaborateurs formés" },
-    "reportBuilder": { "loadError": "Impossible de charger les données du rapport.", "notMeasurable": "non mesurable", "days": "jours", "back": "← Retour à l’analytique", "export": "Exporter le rapport (CSV)", "naturalTitle": "Rédaction en langage naturel", "unavailable": "Non disponible", "naturalDetail": "La rédaction automatique d’un rapport (« Agent 5 ») suppose un fournisseur de modèle de langage, dont aucun n’est raccordé à cette plateforme. Les données ci-dessous sont celles que la plateforme calcule effectivement et sont exportables telles quelles.", "sectionsTitle": "Sections du rapport", "preview": "Aperçu", "rowCount_one": "{{count}} ligne", "rowCount_other": "{{count}} lignes", "selectSection": "Sélectionnez au moins une section pour composer un rapport.", "unknownPosition": "poste non renseigné", "noStructure": "sans structure", "noManager": "sans manager", "noJourney": "hors parcours", "sections": { "indicators": "Indicateurs RH", "onboarding": "Parcours", "satisfaction": "Satisfaction", "quality": "Qualité des données", "directory": "Répertoire" }, "sectionLabels": { "indicators": "Indicateurs RH (Module 10)", "onboarding": "Santé des parcours", "satisfaction": "Satisfaction par jalon", "directory": "Répertoire des collaborateurs", "quality": "Qualité des données" }, "sectionDetails": { "indicators": "Complétion, durée, confirmation, turnover, satisfaction, formation.", "onboarding": "Parcours actifs, étapes en retard et bloquées, avancement moyen.", "satisfaction": "Score et taux de réponse pour J+7, J+30, J+60, J+90.", "directory": "Nom, poste, structure, manager, état, avancement.", "quality": "Structures sans responsable, postes sans fiche de poste." }, "rows": { "completion": "Taux de complétion des parcours", "duration": "Durée moyenne d’intégration", "confirmation": "Taux de confirmation", "turnover": "Turnover à six mois", "cohort": "Cohorte turnover", "satisfaction": "Satisfaction", "training": "Formation à jour", "activeJourneys": "Parcours actifs", "overdue": "Étapes en retard", "blocked": "Étapes bloquées", "progress": "Avancement moyen", "overall": "Score global", "responseRate": "Taux de réponse", "milestone": "Score J+{{day}}", "units": "Structures sans responsable", "jobs": "Postes sans fiche de poste", "coverage": "Couverture des fiches" }, "table": { "section": "Section", "indicator": "Indicateur", "value": "Valeur" } },
-    "alerts": { "loadError": "Impossible de charger les règles d’alerte.", "saveError": "L’enregistrement de la règle a échoué.", "updateError": "La mise à jour a échoué.", "deleteConfirm": "Supprimer la règle « {{label}} » ?", "deleteError": "La suppression a échoué.", "cancel": "Annuler", "newRule": "Nouvelle règle", "stats": { "total": "Règles définies", "active": "Actives", "escalating": "Avec escalade" }, "form": { "editTitle": "Modifier la règle", "newTitle": "Nouvelle règle", "label": "Intitulé", "labelPlaceholder": "Relance des étapes SI non traitées", "trigger": "Déclencheur", "department": "Notifier le service", "threshold": "Relancer après (jours)", "escalation": "Escalader après (jours)", "noEscalation": "Aucune escalade", "escalationHint": "Laisser vide si la règle ne remonte jamais plus haut.", "active": "Règle active" }, "triggers": { "taskOverdue": "Étape d’intégration en retard", "surveyUnanswered": "Enquête restée sans réponse", "evaluationDue": "Évaluation à échéance" }, "departments": { "HR": "RH", "IT": "SI", "HSE": "HSE", "QUALITY": "Qualité", "MANAGER": "Manager", "EMPLOYEE": "Collaborateur" }, "saving": "Enregistrement…", "save": "Enregistrer la règle", "emptyTitle": "Aucune règle définie", "emptyDetail": "Aucune relance automatique n’est configurée. Une règle décrit la situation qui déclenche un rappel, le délai avant ce rappel et le service à prévenir.", "active": "Active", "inactive": "Inactive", "ruleSummary": "Rappel envoyé à {{department}} après {{days}} jour(s)", "escalationSummary": ", puis escalade après {{days}} jour(s) supplémentaires.", "noEscalationSummary": ", sans escalade.", "edit": "Modifier", "disable": "Désactiver", "enable": "Activer", "delete": "Supprimer", "footerNote": "Ces règles définissent la politique de relance et sont enregistrées durablement. Aucun planificateur ne tourne pour l’instant dans le serveur applicatif : les rappels ne sont pas encore déclenchés à heure fixe. Les alertes du tableau de bord sont calculées en direct à partir des retards et blocages réels." },
-    "knowledge": { "loading": "Chargement des agents…", "loadError": "Impossible de charger la configuration des agents.", "title": "Base de connaissances des agents", "subtitle": "Ce que chaque agent est autorisé à lire, et l’état réel de la fonctionnalité.", "stats": { "defined": "Agents définis", "operational": "Agents opérationnels", "published": "Documents publiés" }, "operational": "Opérationnel", "outOfScope": "Hors de vos droits", "reads": "Lit", "resources": { "position": "Postes", "assignment": "Affectations", "organizationUnit": "Structures", "document": "Bibliothèque documentaire", "onboardingInstance": "Parcours d’intégration", "onboardingTask": "Étapes de parcours", "training": "Catalogue de formation", "competency": "Référentiel de compétences", "jobDescription": "Fiches de poste" }, "sources": { "title": "Sources de chaque agent", "detail": "Les sources ne sont pas des fichiers indexés mais des ressources de la plateforme, lues avec les permissions et le périmètre de la personne qui pose la question. Un agent ne peut donc jamais faire apparaître une ligne que son interlocuteur n’aurait pas pu ouvrir lui-même." }, "test": { "title": "Tester une question", "detail": "Les cinq agents répondent. Chacun cherche d’abord dans les données de la plateforme, avec les droits de la personne qui pose la question — ici, les vôtres. Le résultat reflète donc le comportement réel de l’agent pour votre compte.", "emptyTitle": "Aucun agent interrogeable", "emptyDetail": "Votre compte ne dispose des droits de lecture d’aucune des ressources lues par ces agents.", "emptyChat": "Posez une question pour observer ce que l’agent renvoie, et depuis quelles sources." }, "reindex": { "title": "Réindexation", "emptyTitle": "Sans objet", "detail": "Il n’y a pas d’index à reconstruire : la recherche interroge directement la base, à chaque question, avec les permissions de la personne qui demande." }, "flagged": { "title": "Réponses signalées", "emptyTitle": "Non disponible", "detail": "Aucun historique de réponses n’est conservé. Une réponse n’existe que le temps de la question qui l’a produite, ce qui rend impossible toute revue a posteriori." }, "documents": { "title": "Documents accessibles à l’agent 2", "detail": "Les documents publiés que l’agent documentaire consulte. Ce sont exactement ceux de la bibliothèque, sans copie ni index séparé, avec la même règle d’audience.", "empty": "Aucun document publié dans la bibliothèque.", "table": { "document": "Document", "reference": "Référence", "file": "Fichier" }, "noFile": "Aucun fichier joint", "manage": "Gérer la bibliothèque documentaire" } },
+  "hr": {
+    "employeeDirectory": {
+      "loading": "Chargement du répertoire...",
+      "loadError": "Impossible de charger le répertoire.",
+      "title": "Collaborateurs",
+      "subtitle": "Le répertoire complet de votre périmètre : recherche, filtres et export.",
+      "unassigned": "Non affectés",
+      "exportButton": "Exporter (CSV)",
+      "search": "Rechercher un nom, un e-mail, un poste...",
+      "allStructures": "Toutes les structures",
+      "allManagers": "Tous les managers",
+      "allStatuses": "Tous les états",
+      "reset": "Réinitialiser les filtres",
+      "stats": {
+        "displayed": "Collaborateurs affichés",
+        "onboarding": "En intégration",
+        "unassigned": "Sans affectation"
+      },
+      "emptyTitle": "Aucun collaborateur",
+      "emptyFiltered": "Aucun collaborateur ne correspond à ces filtres.",
+      "emptyScope": "Aucun collaborateur visible dans votre périmètre.",
+      "status": {
+        "pending": "En attente d’affectation",
+        "assigned": "Affecté",
+        "onboarding": "En intégration",
+        "active": "Actif",
+        "archived": "Archivé"
+      },
+      "table": {
+        "employee": "Collaborateur",
+        "position": "Poste",
+        "structure": "Structure",
+        "manager": "Manager",
+        "status": "État",
+        "onboarding": "Intégration"
+      },
+      "export": {
+        "name": "Nom",
+        "email": "E-mail",
+        "phone": "Téléphone",
+        "position": "Poste",
+        "direction": "Direction",
+        "department": "Service",
+        "structure": "Structure",
+        "manager": "Manager",
+        "status": "État",
+        "hireDate": "Date d’embauche",
+        "onboarding": "Intégration (%)"
+      }
+    },
+    "accountRequests": {
+      "loading": "Chargement des demandes...",
+      "loadError": "Impossible de charger les demandes de compte.",
+      "title": "Demander un compte",
+      "subtitle": "Les RH ne créent pas de compte : cette demande ouvre un ticket que le SI traite, puis le compte revient ici pour affectation.",
+      "confirmation": "Demande envoyée au SI pour {{name}}.",
+      "validationError": "Vérifiez les champs du formulaire.",
+      "saveError": "La demande n’a pas pu être enregistrée.",
+      "form": {
+        "title": "Nouvelle demande",
+        "candidate": "Nom du candidat",
+        "position": "Poste prévu",
+        "hireDate": "Embauche prévue",
+        "urgency": "Urgence",
+        "note": "Note (facultatif)",
+        "sending": "Envoi...",
+        "submit": "Envoyer la demande au SI"
+      },
+      "urgency": {
+        "normal": "Normale",
+        "urgent": "Urgente"
+      },
+      "status": {
+        "open": "Ouverte",
+        "created": "Compte créé",
+        "rejected": "Rejetée"
+      },
+      "list": {
+        "title": "Demandes enregistrées",
+        "empty": "Aucune demande de compte enregistrée."
+      },
+      "table": {
+        "candidate": "Candidat",
+        "position": "Poste prévu",
+        "urgency": "Urgence",
+        "status": "Statut",
+        "waiting": "Attente"
+      },
+      "days_one": "{{count}} jour",
+      "days_other": "{{count}} jours"
+    },
+    "organigram": {
+      "loading": "Chargement de l’organigramme…",
+      "loadError": "Impossible de charger l’organigramme.",
+      "title": "Organigramme",
+      "subtitle": "La structure complète de l’entreprise, de la direction générale aux postes de terrain.",
+      "tabs": {
+        "tree": "Organigramme",
+        "anomalies": "Anomalies ({{count}})"
+      },
+      "search": "Rechercher un poste, un code, une personne…",
+      "allStructures": "Toutes les structures",
+      "vacantOnly": "Postes vacants uniquement",
+      "positionCount": "{{visible}} / {{total}} postes",
+      "emptyFiltered": "Aucun poste ne correspond à ces filtres.",
+      "noAnomaly": "Aucune anomalie de ce type.",
+      "vacant": "Vacant",
+      "table": {
+        "position": "Poste",
+        "code": "Code",
+        "structure": "Structure",
+        "holder": "Titulaire"
+      },
+      "anomalies": {
+        "vacant": {
+          "title": "Postes vacants",
+          "rule": "Le poste existe dans l’organigramme mais personne ne l’occupe aujourd’hui."
+        },
+        "headless": {
+          "title": "Branches sans responsable",
+          "rule": "Des postes sont rattachés à ce poste, mais celui-ci n’a pas de titulaire."
+        },
+        "orphans": {
+          "title": "Nœuds orphelins",
+          "rule": "Le poste déclare un poste parent qui n’existe pas (ou plus) dans l’organigramme."
+        },
+        "unattached": {
+          "title": "Postes sans structure",
+          "rule": "Le poste n’est rattaché à aucune direction ni service."
+        }
+      }
+    },
+    "positions": {
+      "loading": "Chargement des postes…",
+      "loadError": "Impossible de charger les postes.",
+      "saveError": "L’enregistrement du poste a échoué.",
+      "archiveConfirm": "Archiver le poste « {{title}} » ?",
+      "archiveError": "L’archivage a échoué.",
+      "title": "Postes",
+      "subtitle": "Chaque poste est un nœud de l’organigramme : intitulé, mission et ligne hiérarchique.",
+      "newPosition": "Nouveau poste",
+      "readOnlyNotice": "Votre rôle donne un accès en lecture aux postes. La création et la modification des postes relèvent de l’administration.",
+      "stats": {
+        "active": "Postes actifs",
+        "vacant": "Postes vacants",
+        "withoutDescription": "Sans fiche de poste"
+      },
+      "form": {
+        "editTitle": "Modifier le poste",
+        "newTitle": "Nouveau poste",
+        "code": "Code",
+        "codeHint": "Le code identifie le poste et ne se modifie pas.",
+        "title": "Intitulé",
+        "mission": "Mission",
+        "structure": "Structure",
+        "noStructure": "Aucune structure",
+        "parent": "Rattaché à (ligne hiérarchique)",
+        "noParent": "Aucun (racine)"
+      },
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "save": "Enregistrer",
+      "search": "Rechercher un poste…",
+      "allStructures": "Toutes les structures",
+      "positionCount": "{{visible}} / {{total}}",
+      "empty": "Aucun poste ne correspond à ces critères.",
+      "table": {
+        "code": "Code",
+        "title": "Intitulé",
+        "structure": "Structure",
+        "parent": "Rattaché à",
+        "occupation": "Occupation",
+        "description": "Fiche de poste"
+      },
+      "vacant": "Vacant",
+      "occupied": "Occupé",
+      "viewDescription": "Consulter",
+      "missingDescription": "Absente"
+    },
+    "templates": {
+      "loading": "Chargement des modèles…",
+      "loadError": "Impossible de charger les modèles de parcours.",
+      "createError": "La création du modèle a échoué.",
+      "title": "Modèles d’intégration",
+      "subtitle": "La bibliothèque des parcours types, par profil de poste.",
+      "cancel": "Annuler",
+      "newTemplate": "Nouveau modèle",
+      "readOnlyNotice": "Votre rôle donne un accès en lecture à la bibliothèque de modèles. La création et la modification d’un modèle relèvent de l’administration (permissions",
+      "stats": {
+        "templates": "Modèles disponibles",
+        "steps": "Étapes décrites",
+        "generated": "Parcours générés"
+      },
+      "form": {
+        "title": "Nouveau modèle",
+        "code": "Code du modèle",
+        "codeHint": "Minuscules, chiffres et tirets.",
+        "titleLabel": "Intitulé",
+        "position": "Profil de poste",
+        "generic": "Modèle générique (tous profils)",
+        "creating": "Création…",
+        "create": "Créer le modèle"
+      },
+      "emptyTitle": "Aucun modèle",
+      "emptyDetail": "La bibliothèque de parcours est vide. Un modèle décrit la séquence d’étapes qu’un profil suit à son arrivée.",
+      "profile": "Profil",
+      "genericProfile": "Modèle générique — tous profils",
+      "stepsCount_one": "{{count}} étape",
+      "stepsCount_other": "{{count}} étapes",
+      "generatedCount_one": "{{count}} parcours généré",
+      "generatedCount_other": "{{count}} parcours générés"
+    },
+    "templateBuilder": {
+      "loading": "Chargement du modèle…",
+      "notFound": "Modèle introuvable.",
+      "saveError": "L’enregistrement de la séquence a échoué.",
+      "back": "← Retour à la bibliothèque",
+      "profileSubtitle": "Profil : {{profile}} — {{steps}} étape(s), {{journeys}} parcours généré(s).",
+      "genericSubtitle": "Modèle générique — {{steps}} étape(s), {{journeys}} parcours généré(s).",
+      "addStep": "Ajouter une étape",
+      "saving": "Enregistrement…",
+      "saveSequence": "Enregistrer la séquence",
+      "readOnlyNotice": "Votre rôle donne un accès en lecture aux modèles de parcours. La modification de la séquence relève de l’administration (permission",
+      "saved": "Séquence enregistrée.",
+      "unsaved": "Modifications non enregistrées.",
+      "emptyTitle": "Séquence vide",
+      "emptyEditable": "Ce modèle ne décrit encore aucune étape. Ajoutez la première ci-dessus.",
+      "emptyReadOnly": "Ce modèle ne décrit encore aucune étape.",
+      "moveUp": "Déplacer l’étape {{number}} vers le haut",
+      "moveDown": "Déplacer l’étape {{number}} vers le bas",
+      "fields": {
+        "stepTitle": "Intitulé de l’étape",
+        "offset": "Décalage (jours)",
+        "department": "Service responsable",
+        "description": "Description",
+        "phase": "Phase",
+        "mandatory": "Étape obligatoire"
+      },
+      "departments": {
+        "HR": "RH",
+        "IT": "SI",
+        "HSE": "HSE",
+        "QUALITY": "Qualité",
+        "MANAGER": "Manager",
+        "EMPLOYEE": "Collaborateur"
+      },
+      "phases": {
+        "PRE_ONBOARDING": "Avant l’arrivée",
+        "DAY_ONE": "Jour 1",
+        "PROBATION": "Période d’essai"
+      },
+      "remove": "Supprimer",
+      "existingJourneys": "{{count}} parcours ont été générés depuis ce modèle. Modifier la séquence n’altère pas les parcours déjà en cours ; supprimer une étape déjà suivie par quelqu’un est refusé par le serveur, pour ne pas effacer une validation existante."
+    },
+    "documentLibrary": {
+      "loadError": "Impossible de charger la bibliothèque documentaire.",
+      "createError": "La création du document a échoué.",
+      "uploaded": "« {{name}} » a été téléversé et le document est publié.",
+      "uploadError": "Le téléversement a échoué.",
+      "updateError": "La mise à jour a échoué.",
+      "publishError": "La publication a échoué.",
+      "cancel": "Annuler",
+      "newDocument": "Nouveau document",
+      "storageUnavailable": "Aucun espace de stockage n’est configuré sur ce serveur : les fiches documentaires peuvent être créées et décrites, mais le téléversement de fichiers est indisponible jusqu’à la configuration des identifiants Cloudinary.",
+      "stats": {
+        "documents": "Documents",
+        "published": "Publiés",
+        "acknowledgements": "Accusés de lecture"
+      },
+      "form": {
+        "title": "Nouveau document",
+        "reference": "Référence",
+        "documentTitle": "Titre",
+        "description": "Description",
+        "order": "Ordre",
+        "creating": "Création…",
+        "create": "Créer la fiche",
+        "hint": "La fiche est créée « en préparation » ; téléversez ensuite le fichier depuis la liste pour la publier."
+      },
+      "search": "Rechercher un document…",
+      "emptySearch": "Aucun document ne correspond à cette recherche.",
+      "table": {
+        "document": "Document",
+        "file": "Fichier",
+        "status": "État",
+        "acknowledgements": "Accusés"
+      },
+      "status": {
+        "published": "Publié",
+        "pending": "En préparation"
+      },
+      "open": "Ouvrir",
+      "noFile": "Aucun fichier",
+      "noDepartments": "aucun département ciblé",
+      "allPersonnel": "tout le personnel",
+      "uploading": "Téléversement…",
+      "replaceFile": "Remplacer le fichier",
+      "upload": "Téléverser",
+      "unpublish": "Dépublier",
+      "publish": "Publier…",
+      "versionNote": "Le modèle de données ne conserve pas d’historique de versions : téléverser un nouveau fichier remplace le précédent. Chaque remplacement est consigné au journal d’audit, avec le nom du fichier remplacé.",
+      "publishAction": "Publier",
+      "dialog": {
+        "ariaLabel": "Publier le document",
+        "title": "Publier « {{title}} »",
+        "subtitle": "Le document deviendra visible dans l’espace des personnes concernées.",
+        "audience": "Destinataires",
+        "allHint": "Toute personne pouvant consulter la bibliothèque.",
+        "departments": "Départements ciblés",
+        "departmentsHint": "Seules les personnes rattachées aux départements choisis verront le document.",
+        "noDepartments": "Aucun département n’est renseigné dans l’annuaire : les fiches collaborateurs n’ont ni direction ni service. Renseignez-les avant de cibler une publication.",
+        "selectedDepartments": "Sera visible par les comptes rattachés à : {{departments}}.",
+        "chooseDepartment": "Choisissez au moins un département.",
+        "allSummary": "Sera visible par l’ensemble du personnel."
+      }
+    },
+    "training": {
+      "loading": "Chargement du catalogue…",
+      "loadError": "Impossible de charger le catalogue de formation.",
+      "createError": "La création du module a échoué.",
+      "title": "Catalogue de formation",
+      "subtitle": "Les modules d’intégration, leur caractère obligatoire et leur quiz de validation.",
+      "cancel": "Annuler",
+      "newModule": "Nouveau module",
+      "readOnlyNotice": "Votre rôle donne un accès en lecture au catalogue. La création d’un module relève de l’administration.",
+      "stats": {
+        "modules": "Modules",
+        "mandatory": "Obligatoires",
+        "withoutQuiz": "Sans quiz",
+        "coverage": "Couverture"
+      },
+      "coverage": "{{trained}}/{{people}} collaborateurs à jour",
+      "form": {
+        "title": "Nouveau module",
+        "code": "Code",
+        "titleLabel": "Titre",
+        "summary": "Résumé",
+        "content": "Contenu du module",
+        "mandatory": "Module obligatoire",
+        "threshold": "Seuil (%)",
+        "order": "Ordre",
+        "creating": "Création…",
+        "create": "Créer le module"
+      },
+      "emptyTitle": "Catalogue vide",
+      "emptyDetail": "Aucun module de formation n’est publié.",
+      "mandatory": "Obligatoire",
+      "noQuiz": "Aucun quiz",
+      "quizSummary_one": "{{count}} question — seuil {{score}}%",
+      "quizSummary_other": "{{count}} questions — seuil {{score}}%",
+      "quiz": "Quiz"
+    },
+    "surveys": {
+      "loading": "Chargement des enquêtes…",
+      "loadError": "Impossible de charger la configuration des enquêtes.",
+      "title": "Enquêtes de satisfaction",
+      "subtitle": "Les jalons, le questionnaire et les règles de relance qui encadrent le suivi d’intégration.",
+      "reminderRules": "Règles de relance",
+      "viewResults": "Voir les résultats",
+      "stats": {
+        "issued": "Enquêtes émises",
+        "answered": "Renseignées",
+        "overdue": "En retard",
+        "responseRate": "Taux de réponse"
+      },
+      "responses": "{{answered}}/{{issued}} réponses",
+      "score": "Score de satisfaction",
+      "milestones": {
+        "title": "Jalons d’enquête",
+        "detail": "Les quatre jalons sont générés automatiquement à l’affectation, à partir de la date d’embauche. Ils sont définis dans le domaine (J+7, J+30, J+60, J+90) et s’appliquent à tout parcours ; les modifier relèverait d’un changement de modèle, pas d’un réglage.",
+        "firstWeek": "Première semaine — accueil, matériel, premiers repères.",
+        "firstMonth": "Premier mois — clarté du rôle et accompagnement.",
+        "secondMonth": "Deux mois — autonomie et intégration dans l’équipe.",
+        "trialEnd": "Fin de période d’essai — bilan global."
+      },
+      "questionnaire": {
+        "title": "Questionnaire",
+        "detail": "Les cinq indicateurs notés de 1 à 5 qui composent chaque enquête. Ce sont des valeurs d’énumération en base : ajouter un indicateur suppose une migration, la liste n’est donc pas modifiable depuis l’interface."
+      },
+      "indicators": {
+        "welcomeQuality": "Qualité de l’accueil",
+        "supportLevel": "Accompagnement reçu",
+        "roleClarity": "Clarté du rôle",
+        "managerRelationship": "Relation avec le manager",
+        "workingConditions": "Conditions de travail"
+      },
+      "table": {
+        "indicator": "Indicateur",
+        "average": "Moyenne (/5)",
+        "score": "Score",
+        "responses": "Réponses"
+      },
+      "rules": {
+        "title": "Règles de relance",
+        "detail": "Les règles qui déclenchent une relance sur une enquête restée sans réponse. Elles se configurent sur la page des alertes.",
+        "emptyTitle": "Aucune règle de relance sur les enquêtes",
+        "emptyDetail": "Rien ne relance automatiquement une enquête sans réponse aujourd’hui. Créez une règle « enquête sans réponse » depuis la page Alertes."
+      },
+      "active": "Active",
+      "inactive": "Inactive",
+      "ruleSummary": "Relance après {{threshold}} jour(s), notification à {{department}}",
+      "escalation": ", escalade après {{days}} jour(s).",
+      "noEscalation": ", sans escalade."
+    },
+    "surveyResults": {
+      "loading": "Chargement des résultats…",
+      "loadError": "Impossible de charger les résultats des enquêtes.",
+      "back": "← Retour aux enquêtes",
+      "title": "Résultats des enquêtes",
+      "subtitle": "Scores par indicateur, par jalon et réponses individuelles, filtrables par structure, manager et période.",
+      "allStructures": "Toutes les structures",
+      "allManagers": "Tous les managers",
+      "reset": "Réinitialiser",
+      "responseCount_one": "{{count}} réponse affichée",
+      "responseCount_other": "{{count}} réponses affichées",
+      "metrics": {
+        "overall": "Score global",
+        "responseRate": "Taux de réponse",
+        "issued": "Enquêtes émises",
+        "answered": "Renseignées"
+      },
+      "byIndicator": "Scores par indicateur",
+      "byMilestone": "Scores par jalon",
+      "individual": "Réponses individuelles",
+      "notMeasurable": "Non mesurable",
+      "responsePair": "{{answered}}/{{issued}} réponses",
+      "emptyTitle": "Aucune réponse",
+      "emptyFiltered": "Aucune enquête renseignée ne correspond à ces filtres.",
+      "emptyScope": "Aucune enquête n’a encore été renseignée dans votre périmètre.",
+      "hide": "Masquer",
+      "detail": "Détail",
+      "periods": {
+        "30": "30 derniers jours",
+        "90": "90 derniers jours",
+        "180": "6 derniers mois",
+        "all": "Toute la période"
+      },
+      "table": {
+        "employee": "Collaborateur",
+        "milestone": "Jalon",
+        "structure": "Structure",
+        "manager": "Manager",
+        "score": "Score",
+        "answeredAt": "Répondu le"
+      }
+    },
+    "analytics": {
+      "loadError": "Impossible de charger les indicateurs.",
+      "reportLink": "Générateur de rapports",
+      "emptyTitle": "Aucun indicateur",
+      "emptyDetail": "Aucun indicateur n’est disponible pour votre périmètre.",
+      "moduleTitle": "Indicateurs Module 10",
+      "dayShort": "j",
+      "metrics": {
+        "completion": "Taux de complétion",
+        "duration": "Durée moyenne",
+        "confirmation": "Taux de confirmation",
+        "noCohort": "Aucune cohorte de six mois",
+        "cohort": "Sur {{count}} parcours de plus de six mois",
+        "satisfaction": "Satisfaction",
+        "training": "Formation à jour"
+      },
+      "moduleNote": "Un tiret signifie « non mesurable » et non « zéro » : la plateforme distingue l’absence de données d’un résultat nul. Ces six indicateurs portent sur l’ensemble de votre périmètre ; les filtres ci-dessous s’appliquent à la vue détaillée.",
+      "filteredTitle": "Vue filtrée et comparaison",
+      "allStructures": "Toutes les structures",
+      "allManagers": "Tous les managers",
+      "period": "Période : {{period}}",
+      "periods": {
+        "30": "30 jours",
+        "90": "90 jours",
+        "180": "6 mois",
+        "365": "12 mois"
+      },
+      "reset": "Réinitialiser",
+      "peopleCount_one": "{{count}} collaborateur",
+      "peopleCount_other": "{{count}} collaborateurs",
+      "hires": "Recrutements ({{period}})",
+      "stable": "Stable par rapport aux {{days}} jours précédents ({{count}})",
+      "delta": "{{delta}} par rapport à la période précédente ({{count}})",
+      "filteredInProgress": "Intégrations en cours",
+      "filteredCompleted": "Intégrations terminées",
+      "averageProgress": "Avancement moyen",
+      "filteredScope": "Sur le périmètre filtré",
+      "journeyHealth": "Santé des parcours",
+      "activeJourneys": "Parcours actifs",
+      "overdueSteps": "Étapes en retard",
+      "blockedSteps": "Étapes bloquées",
+      "satisfactionByMilestone": "Satisfaction par jalon",
+      "noSurveys": "Aucune enquête émise.",
+      "dataQuality": "Qualité des données",
+      "unitsWithoutHead": "Structures sans responsable",
+      "jobsWithoutDescription": "Postes sans fiche",
+      "descriptionCoverage": "Couverture des fiches",
+      "trainedEmployees": "Collaborateurs formés"
+    },
+    "reportBuilder": {
+      "loadError": "Impossible de charger les données du rapport.",
+      "notMeasurable": "non mesurable",
+      "days": "jours",
+      "back": "← Retour à l’analytique",
+      "export": "Exporter le rapport (CSV)",
+      "naturalTitle": "Rédaction en langage naturel",
+      "unavailable": "Non disponible",
+      "naturalDetail": "La rédaction automatique d’un rapport (« Agent 5 ») suppose un fournisseur de modèle de langage, dont aucun n’est raccordé à cette plateforme. Les données ci-dessous sont celles que la plateforme calcule effectivement et sont exportables telles quelles.",
+      "sectionsTitle": "Sections du rapport",
+      "preview": "Aperçu",
+      "rowCount_one": "{{count}} ligne",
+      "rowCount_other": "{{count}} lignes",
+      "selectSection": "Sélectionnez au moins une section pour composer un rapport.",
+      "unknownPosition": "poste non renseigné",
+      "noStructure": "sans structure",
+      "noManager": "sans manager",
+      "noJourney": "hors parcours",
+      "sections": {
+        "indicators": "Indicateurs RH",
+        "onboarding": "Parcours",
+        "satisfaction": "Satisfaction",
+        "quality": "Qualité des données",
+        "directory": "Répertoire"
+      },
+      "sectionLabels": {
+        "indicators": "Indicateurs RH (Module 10)",
+        "onboarding": "Santé des parcours",
+        "satisfaction": "Satisfaction par jalon",
+        "directory": "Répertoire des collaborateurs",
+        "quality": "Qualité des données"
+      },
+      "sectionDetails": {
+        "indicators": "Complétion, durée, confirmation, turnover, satisfaction, formation.",
+        "onboarding": "Parcours actifs, étapes en retard et bloquées, avancement moyen.",
+        "satisfaction": "Score et taux de réponse pour J+7, J+30, J+60, J+90.",
+        "directory": "Nom, poste, structure, manager, état, avancement.",
+        "quality": "Structures sans responsable, postes sans fiche de poste."
+      },
+      "rows": {
+        "completion": "Taux de complétion des parcours",
+        "duration": "Durée moyenne d’intégration",
+        "confirmation": "Taux de confirmation",
+        "turnover": "Turnover à six mois",
+        "cohort": "Cohorte turnover",
+        "satisfaction": "Satisfaction",
+        "training": "Formation à jour",
+        "activeJourneys": "Parcours actifs",
+        "overdue": "Étapes en retard",
+        "blocked": "Étapes bloquées",
+        "progress": "Avancement moyen",
+        "overall": "Score global",
+        "responseRate": "Taux de réponse",
+        "milestone": "Score J+{{day}}",
+        "units": "Structures sans responsable",
+        "jobs": "Postes sans fiche de poste",
+        "coverage": "Couverture des fiches"
+      },
+      "table": {
+        "section": "Section",
+        "indicator": "Indicateur",
+        "value": "Valeur"
+      }
+    },
+    "alerts": {
+      "loadError": "Impossible de charger les règles d’alerte.",
+      "saveError": "L’enregistrement de la règle a échoué.",
+      "updateError": "La mise à jour a échoué.",
+      "deleteConfirm": "Supprimer la règle « {{label}} » ?",
+      "deleteError": "La suppression a échoué.",
+      "cancel": "Annuler",
+      "newRule": "Nouvelle règle",
+      "stats": {
+        "total": "Règles définies",
+        "active": "Actives",
+        "escalating": "Avec escalade"
+      },
+      "form": {
+        "editTitle": "Modifier la règle",
+        "newTitle": "Nouvelle règle",
+        "label": "Intitulé",
+        "labelPlaceholder": "Relance des étapes SI non traitées",
+        "trigger": "Déclencheur",
+        "department": "Notifier le service",
+        "threshold": "Relancer après (jours)",
+        "escalation": "Escalader après (jours)",
+        "noEscalation": "Aucune escalade",
+        "escalationHint": "Laisser vide si la règle ne remonte jamais plus haut.",
+        "active": "Règle active"
+      },
+      "triggers": {
+        "taskOverdue": "Étape d’intégration en retard",
+        "surveyUnanswered": "Enquête restée sans réponse",
+        "evaluationDue": "Évaluation à échéance"
+      },
+      "departments": {
+        "HR": "RH",
+        "IT": "SI",
+        "HSE": "HSE",
+        "QUALITY": "Qualité",
+        "MANAGER": "Manager",
+        "EMPLOYEE": "Collaborateur"
+      },
+      "saving": "Enregistrement…",
+      "save": "Enregistrer la règle",
+      "emptyTitle": "Aucune règle définie",
+      "emptyDetail": "Aucune relance automatique n’est configurée. Une règle décrit la situation qui déclenche un rappel, le délai avant ce rappel et le service à prévenir.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "ruleSummary": "Rappel envoyé à {{department}} après {{days}} jour(s)",
+      "escalationSummary": ", puis escalade après {{days}} jour(s) supplémentaires.",
+      "noEscalationSummary": ", sans escalade.",
+      "edit": "Modifier",
+      "disable": "Désactiver",
+      "enable": "Activer",
+      "delete": "Supprimer",
+      "footerNote": "Ces règles définissent la politique de relance et sont enregistrées durablement. Aucun planificateur ne tourne pour l’instant dans le serveur applicatif : les rappels ne sont pas encore déclenchés à heure fixe. Les alertes du tableau de bord sont calculées en direct à partir des retards et blocages réels."
+    },
+    "knowledge": {
+      "loading": "Chargement des agents…",
+      "loadError": "Impossible de charger la configuration des agents.",
+      "title": "Base de connaissances des agents",
+      "subtitle": "Ce que chaque agent est autorisé à lire, et l’état réel de la fonctionnalité.",
+      "stats": {
+        "defined": "Agents définis",
+        "operational": "Agents opérationnels",
+        "published": "Documents publiés"
+      },
+      "operational": "Opérationnel",
+      "outOfScope": "Hors de vos droits",
+      "reads": "Lit",
+      "resources": {
+        "position": "Postes",
+        "assignment": "Affectations",
+        "organizationUnit": "Structures",
+        "document": "Bibliothèque documentaire",
+        "onboardingInstance": "Parcours d’intégration",
+        "onboardingTask": "Étapes de parcours",
+        "training": "Catalogue de formation",
+        "competency": "Référentiel de compétences",
+        "jobDescription": "Fiches de poste"
+      },
+      "sources": {
+        "title": "Sources de chaque agent",
+        "detail": "Les sources ne sont pas des fichiers indexés mais des ressources de la plateforme, lues avec les permissions et le périmètre de la personne qui pose la question. Un agent ne peut donc jamais faire apparaître une ligne que son interlocuteur n’aurait pas pu ouvrir lui-même."
+      },
+      "test": {
+        "title": "Tester une question",
+        "detail": "Les cinq agents répondent. Chacun cherche d’abord dans les données de la plateforme, avec les droits de la personne qui pose la question — ici, les vôtres. Le résultat reflète donc le comportement réel de l’agent pour votre compte.",
+        "emptyTitle": "Aucun agent interrogeable",
+        "emptyDetail": "Votre compte ne dispose des droits de lecture d’aucune des ressources lues par ces agents.",
+        "emptyChat": "Posez une question pour observer ce que l’agent renvoie, et depuis quelles sources."
+      },
+      "reindex": {
+        "title": "Réindexation",
+        "emptyTitle": "Sans objet",
+        "detail": "Il n’y a pas d’index à reconstruire : la recherche interroge directement la base, à chaque question, avec les permissions de la personne qui demande."
+      },
+      "flagged": {
+        "title": "Réponses signalées",
+        "emptyTitle": "Non disponible",
+        "detail": "Aucun historique de réponses n’est conservé. Une réponse n’existe que le temps de la question qui l’a produite, ce qui rend impossible toute revue a posteriori."
+      },
+      "documents": {
+        "title": "Documents accessibles à l’agent 2",
+        "detail": "Les documents publiés que l’agent documentaire consulte. Ce sont exactement ceux de la bibliothèque, sans copie ni index séparé, avec la même règle d’audience.",
+        "empty": "Aucun document publié dans la bibliothèque.",
+        "table": {
+          "document": "Document",
+          "reference": "Référence",
+          "file": "Fichier"
+        },
+        "noFile": "Aucun fichier joint",
+        "manage": "Gérer la bibliothèque documentaire"
+      }
+    },
     "dashboard": {
       "eyebrow": "Ressources humaines",
       "title": "Tableau de bord",
@@ -392,23 +1049,421 @@
       "requestAccount": "Demander un compte",
       "assignmentQueue": "File d’affectation",
       "openQueue": "Ouvrir la file",
-      "tiles": { "hired": "Recrutements (30 j)", "inProgress": "Intégrations en cours", "completed": "Intégrations terminées", "overdue": "Étapes en retard" },
-      "probation": { "title": "Périodes d’essai à valider", "one": "Un responsable a transmis son évaluation. La décision vous revient.", "other": "Des responsables ont transmis leurs évaluations. Les décisions vous reviennent.", "more": "et {{count}} autre(s)…" },
-      "progress": { "title": "Avancement", "average": "Progression moyenne", "unavailable": "Taux de complétion non mesurable.", "completionRate": "Taux de complétion des parcours : {{percent}}%." },
-      "satisfaction": { "title": "Score de satisfaction", "answered": "{{answered}}/{{issued}} enquêtes renseignées.", "none": "Aucune enquête émise.", "link": "Voir le détail des résultats →" },
-      "alerts": { "title": "Alertes", "empty": "Aucune alerte. Tout est à jour.", "pending": { "title": "{{count}} compte(s) en attente depuis plus de 3 jours", "detail": "Le plus ancien attend depuis {{days}} jours." }, "requests": { "title": "{{count}} demande(s) de compte ouverte(s) auprès du SI", "urgent": "Dont au moins une marquée urgente.", "detail": "En attente de création par le SI." }, "overdue": { "title": "{{count}} étape(s) d’intégration en retard", "detail": "Des étapes ont dépassé leur date prévue sur les parcours en cours." }, "blocked": { "title": "{{count}} étape(s) bloquée(s)", "detail": "Ces étapes ont été signalées comme bloquées par leur responsable." }, "surveys": { "title": "{{count}} enquête(s) sans réponse", "detail": "Des enquêtes de satisfaction ont dépassé leur échéance." }, "jobs": { "title": "{{count}} poste(s) sans fiche de poste", "detail": "Ces postes existent dans l’organigramme mais n’ont pas de fiche." } },
-      "waiting": { "title": "Comptes en attente d’affectation", "viewAll": "Tout voir", "empty": "Aucun compte en attente d’affectation.", "days_one": "{{count}} j", "days_other": "{{count}} j" }
+      "tiles": {
+        "hired": "Recrutements (30 j)",
+        "inProgress": "Intégrations en cours",
+        "completed": "Intégrations terminées",
+        "overdue": "Étapes en retard"
+      },
+      "probation": {
+        "title": "Périodes d’essai à valider",
+        "one": "Un responsable a transmis son évaluation. La décision vous revient.",
+        "other": "Des responsables ont transmis leurs évaluations. Les décisions vous reviennent.",
+        "more": "et {{count}} autre(s)…"
+      },
+      "progress": {
+        "title": "Avancement",
+        "average": "Progression moyenne",
+        "unavailable": "Taux de complétion non mesurable.",
+        "completionRate": "Taux de complétion des parcours : {{percent}}%."
+      },
+      "satisfaction": {
+        "title": "Score de satisfaction",
+        "answered": "{{answered}}/{{issued}} enquêtes renseignées.",
+        "none": "Aucune enquête émise.",
+        "link": "Voir le détail des résultats →"
+      },
+      "alerts": {
+        "title": "Alertes",
+        "empty": "Aucune alerte. Tout est à jour.",
+        "pending": {
+          "title": "{{count}} compte(s) en attente depuis plus de 3 jours",
+          "detail": "Le plus ancien attend depuis {{days}} jours."
+        },
+        "requests": {
+          "title": "{{count}} demande(s) de compte ouverte(s) auprès du SI",
+          "urgent": "Dont au moins une marquée urgente.",
+          "detail": "En attente de création par le SI."
+        },
+        "overdue": {
+          "title": "{{count}} étape(s) d’intégration en retard",
+          "detail": "Des étapes ont dépassé leur date prévue sur les parcours en cours."
+        },
+        "blocked": {
+          "title": "{{count}} étape(s) bloquée(s)",
+          "detail": "Ces étapes ont été signalées comme bloquées par leur responsable."
+        },
+        "surveys": {
+          "title": "{{count}} enquête(s) sans réponse",
+          "detail": "Des enquêtes de satisfaction ont dépassé leur échéance."
+        },
+        "jobs": {
+          "title": "{{count}} poste(s) sans fiche de poste",
+          "detail": "Ces postes existent dans l’organigramme mais n’ont pas de fiche."
+        }
+      },
+      "waiting": {
+        "title": "Comptes en attente d’affectation",
+        "viewAll": "Tout voir",
+        "empty": "Aucun compte en attente d’affectation.",
+        "days_one": "{{count}} j",
+        "days_other": "{{count}} j"
+      }
     },
-    "probation": { "loading": "Chargement des périodes d’essai…", "title": "Périodes d’essai", "subtitle": "Les évaluations transmises par les responsables, et la décision qui reste à prendre.", "noticeTitle": "La suggestion ne décide pas.", "noticeDetail": "Le pourcentage est calculé à partir des quatre notes du responsable : au-dessus de 60 % la confirmation est suggérée, entre 30 et 60 % la prolongation, en dessous de 30 % la fin de période d’essai. Vous pouvez vous en écarter — dans ce cas, le motif est requis et conservé avec la décision.", "pending": "À trancher", "suggested": "suggéré", "emptyTitle": "Rien à valider", "emptyDetail": "Aucune évaluation n’a été transmise. Une période d’essai apparaît ici dès que le responsable du collaborateur a transmis son évaluation.", "outcomes": { "CONFIRMED": { "label": "Confirmer" }, "EXTENDED": { "label": "Prolonger" }, "TERMINATED": { "label": "Mettre fin" } } },
-    "pages": { "alerts": { "loading": "Chargement des règles…", "title": "Règles d’alerte", "subtitle": "Qui est relancé, au bout de combien de jours, et vers qui la relance remonte." }, "analytics": { "loading": "Chargement des indicateurs…", "title": "Analytique", "subtitle": "Les indicateurs RH : complétion, intégration, confirmation, satisfaction, formation et turnover." }, "report": { "loading": "Chargement des données…", "title": "Générateur de rapports", "subtitle": "Composer un rapport à partir des indicateurs calculés par la plateforme, puis l’exporter." }, "documents": { "loading": "Chargement de la bibliothèque…", "title": "Bibliothèque documentaire", "subtitle": "Publier les documents de référence et suivre leurs accusés de lecture." }, "employees": { "loading": "Chargement du répertoire…", "title": "Collaborateurs", "subtitle": "Le répertoire complet de votre périmètre : recherche, filtres et export." }, "unassigned": { "loading": "Chargement de la file d’affectation…", "loadError": "Impossible de charger la file d’affectation.", "title": "Comptes non affectés", "subtitle": "Les comptes créés par le SI qui attendent une affectation, du plus ancien au plus récent.", "requestAccount": "Demander un compte", "stats": { "pending": "En attente", "stale": "Au-delà de {{days}} jours", "longest": "Attente la plus longue" }, "dayShort": "j", "queueTitle": "File d’affectation", "queueEmptyTitle": "File vide", "queueEmptyDetail": "Aucun compte créé par le SI n’attend d’affectation.", "table": { "employee": "Collaborateur", "email": "Adresse e-mail", "created": "Compte créé le", "waiting": "Attente" }, "days_one": "{{count}} jour", "days_other": "{{count}} jours", "assign": "Affecter", "requestsTitle": "Demandes de compte en cours auprès du SI", "requestsEmpty": "Aucune demande de compte ouverte.", "urgent": "Urgent", "requestedDays_one": "Demandé il y a {{count}} jour", "requestedDays_other": "Demandé il y a {{count}} jours", "plannedHire": "embauche prévue le {{date}}" } }
+    "probation": {
+      "loading": "Chargement des périodes d’essai…",
+      "title": "Périodes d’essai",
+      "subtitle": "Les évaluations transmises par les responsables, et la décision qui reste à prendre.",
+      "noticeTitle": "La suggestion ne décide pas.",
+      "noticeDetail": "Le pourcentage est calculé à partir des quatre notes du responsable : au-dessus de 60 % la confirmation est suggérée, entre 30 et 60 % la prolongation, en dessous de 30 % la fin de période d’essai. Vous pouvez vous en écarter — dans ce cas, le motif est requis et conservé avec la décision.",
+      "pending": "À trancher",
+      "suggested": "suggéré",
+      "emptyTitle": "Rien à valider",
+      "emptyDetail": "Aucune évaluation n’a été transmise. Une période d’essai apparaît ici dès que le responsable du collaborateur a transmis son évaluation.",
+      "outcomes": {
+        "CONFIRMED": {
+          "label": "Confirmer"
+        },
+        "EXTENDED": {
+          "label": "Prolonger"
+        },
+        "TERMINATED": {
+          "label": "Mettre fin"
+        }
+      }
+    },
+    "pages": {
+      "alerts": {
+        "loading": "Chargement des règles…",
+        "title": "Règles d’alerte",
+        "subtitle": "Qui est relancé, au bout de combien de jours, et vers qui la relance remonte."
+      },
+      "analytics": {
+        "loading": "Chargement des indicateurs…",
+        "title": "Analytique",
+        "subtitle": "Les indicateurs RH : complétion, intégration, confirmation, satisfaction, formation et turnover."
+      },
+      "report": {
+        "loading": "Chargement des données…",
+        "title": "Générateur de rapports",
+        "subtitle": "Composer un rapport à partir des indicateurs calculés par la plateforme, puis l’exporter."
+      },
+      "documents": {
+        "loading": "Chargement de la bibliothèque…",
+        "title": "Bibliothèque documentaire",
+        "subtitle": "Publier les documents de référence et suivre leurs accusés de lecture."
+      },
+      "employees": {
+        "loading": "Chargement du répertoire…",
+        "title": "Collaborateurs",
+        "subtitle": "Le répertoire complet de votre périmètre : recherche, filtres et export."
+      },
+      "unassigned": {
+        "loading": "Chargement de la file d’affectation…",
+        "loadError": "Impossible de charger la file d’affectation.",
+        "title": "Comptes non affectés",
+        "subtitle": "Les comptes créés par le SI qui attendent une affectation, du plus ancien au plus récent.",
+        "requestAccount": "Demander un compte",
+        "stats": {
+          "pending": "En attente",
+          "stale": "Au-delà de {{days}} jours",
+          "longest": "Attente la plus longue"
+        },
+        "dayShort": "j",
+        "queueTitle": "File d’affectation",
+        "queueEmptyTitle": "File vide",
+        "queueEmptyDetail": "Aucun compte créé par le SI n’attend d’affectation.",
+        "table": {
+          "employee": "Collaborateur",
+          "email": "Adresse e-mail",
+          "created": "Compte créé le",
+          "waiting": "Attente"
+        },
+        "days_one": "{{count}} jour",
+        "days_other": "{{count}} jours",
+        "assign": "Affecter",
+        "requestsTitle": "Demandes de compte en cours auprès du SI",
+        "requestsEmpty": "Aucune demande de compte ouverte.",
+        "urgent": "Urgent",
+        "requestedDays_one": "Demandé il y a {{count}} jour",
+        "requestedDays_other": "Demandé il y a {{count}} jours",
+        "plannedHire": "embauche prévue le {{date}}"
+      }
+    }
   },
-  "manager": { "eyebrow": "Encadrement", "dayPlus_one": "J+{{count}}", "dayPlus_other": "J+{{count}}", "noPosition": "Poste non renseigné", "blockedCount_one": "{{count}} bloquée", "blockedCount_other": "{{count}} bloquées", "overdueCount_one": "{{count}} en retard", "overdueCount_other": "{{count}} en retard", "taskStatus": { "todo": "À faire", "inProgress": "En cours", "blocked": "Bloquée" }, "dashboard": { "loading": "Chargement du tableau de bord…", "loadError": "Impossible de charger le tableau de bord manager.", "title": "Tableau de bord", "subtitle": "Suivez les intégrations, validez les étapes et repérez les situations qui nécessitent votre intervention.", "calendar": "Calendrier", "allRecruits": "Tous les recrutements", "activeRecruits": "Recrutements actifs", "averageProgress": "Avancement moyen", "needAttention": "À surveiller", "pendingTasks": "Tâches en attente", "recruitsInProgress": "Intégrations en cours", "noRecruits": "Aucune intégration en cours.", "alerts": "Alertes", "noAlerts": "Aucune alerte.", "detailedProgress": "Avancement détaillé", "dayColumn": "Jour", "stepsColumn": "Étapes", "progressColumn": "Progression", "noRecruitsToShow": "Aucun recrutement à afficher.", "myTasks": "Mes tâches", "taskDue": "{{name}} — échéance le {{date}}", "noPendingTasks": "Aucune tâche en attente." } },
-  "managerRecruits": { "loading": "Chargement des nouvelles recrues…", "loadError": "Impossible de charger les nouvelles recrues.", "title": "Nouvelles recrues", "subtitle": "Suivez les intégrations de votre périmètre et intervenez sur les étapes en retard ou bloquées.", "stepsRatio": "{{done}}/{{total}} étapes", "evaluationsDueCount_one": "{{count}} évaluation à venir", "evaluationsDueCount_other": "{{count}} évaluations à venir", "viewRecord": "Voir le dossier", "empty": "Aucune nouvelle recrue dans votre périmètre." },
-  "managerEvaluations": { "loading": "Chargement des évaluations…", "loadError": "Impossible de charger les évaluations.", "title": "Évaluations à effectuer", "subtitle": "Les évaluations dues pour les nouvelles recrues de votre périmètre.", "milestoneColumn": "Jalon", "evaluateAction": "Évaluer", "empty": "Aucune évaluation à effectuer." },
-  "managerOrganigram": { "loading": "Chargement de l’organigramme…", "loadError": "Impossible de charger l’organigramme.", "title": "Organigramme", "subtitle": "La structure de votre périmètre, avec l’avancement des intégrations en cours.", "empty": "Aucun poste dans votre périmètre.", "onboardingBadge": "Intégration : {{percent}}%" },
-  "managerTeamPage": { "loading": "Chargement de l’équipe…", "loadError": "Impossible de charger votre équipe.", "title": "Mon équipe", "subtitle": "Membres, fiches de poste et postes vacants de votre périmètre.", "members_one": "Membre ({{count}})", "members_other": "Membres ({{count}})", "vacancies_one": "Poste vacant ({{count}})", "vacancies_other": "Postes vacants ({{count}})", "table": { "name": "Nom", "position": "Poste", "occupation": "Occupation" }, "jobDescriptions": "Fiches de poste", "noMembers": "Aucun membre.", "noVacancies": "Aucun poste vacant." },
-  "managerReports": { "loading": "Chargement des indicateurs…", "loadError": "Impossible de charger les indicateurs.", "title": "Rapports", "subtitle": "Indicateurs limités à votre périmètre.", "empty": "Aucun indicateur disponible pour votre périmètre.", "onboardingTitle": "Parcours en cours", "hrTitle": "Indicateurs RH", "dayShort": "j", "metrics": { "activeJourneys": "Parcours actifs", "averageProgress": "Progression moyenne", "overdueTasks": "Tâches en retard", "blockedTasks": "Tâches bloquées", "completion": "Taux de complétion", "duration": "Durée moyenne d’intégration", "confirmation": "Taux de confirmation", "satisfaction": "Satisfaction" } },
-  "managerAssistant": { "loading": "Chargement de l’assistant…", "loadError": "Impossible de charger l’assistant.", "title": "Assistant", "subtitle": "Posez une question sur vos recrutements, vos parcours, les documents ou les compétences de votre périmètre.", "noAgentsTitle": "Aucun agent disponible", "noAgentsDetail": "Aucun agent ne peut être utilisé avec les droits de votre compte.", "ownJourneyNotice": "L’agent de parcours répond uniquement sur votre propre parcours.", "remindersTitle": "Évaluations à venir", "noReminders": "Aucune évaluation à venir.", "blockersTitle": "Blocages à traiter", "noBlockers": "Aucun blocage à traiter.", "prepareTitle": "Préparer un entretien", "noDraftingTitle": "Préparation automatique indisponible", "noDraftingDetail": "La plateforme ne génère pas encore de préparation automatique. Ouvrez le dossier d’une recrue pour préparer son entretien.", "suggestions": { "orientation": { "1": "Qui contacter pour ce sujet ?", "2": "Qui est responsable de cette activité ?", "3": "Quel service peut m’aider ?" }, "onboarding": { "1": "Quelles sont mes prochaines étapes ?", "2": "Qu’est-ce qui bloque mon parcours ?" }, "documents": { "1": "Quels documents puis-je consulter ?", "2": "Où trouver cette procédure ?" }, "competencies": { "1": "Quelles compétences sont requises ?", "2": "Quelles compétences dois-je développer ?" } }, "placeholders": { "orientation": "Posez une question sur l’organisation…", "onboarding": "Posez une question sur votre parcours…", "documents": "Posez une question sur les documents…", "competencies": "Posez une question sur les compétences…", "fallback": "Posez une question…" } },
+  "manager": {
+    "eyebrow": "Encadrement",
+    "dayPlus_one": "J+{{count}}",
+    "dayPlus_other": "J+{{count}}",
+    "noPosition": "Poste non renseigné",
+    "blockedCount_one": "{{count}} bloquée",
+    "blockedCount_other": "{{count}} bloquées",
+    "overdueCount_one": "{{count}} en retard",
+    "overdueCount_other": "{{count}} en retard",
+    "taskStatus": {
+      "todo": "À faire",
+      "inProgress": "En cours",
+      "blocked": "Bloquée",
+      "done": "Terminée",
+      "validated": "Validée"
+    },
+    "dashboard": {
+      "loading": "Chargement du tableau de bord…",
+      "loadError": "Impossible de charger le tableau de bord manager.",
+      "title": "Tableau de bord",
+      "subtitle": "Suivez les intégrations, validez les étapes et repérez les situations qui nécessitent votre intervention.",
+      "calendar": "Calendrier",
+      "allRecruits": "Tous les recrutements",
+      "activeRecruits": "Recrutements actifs",
+      "averageProgress": "Avancement moyen",
+      "needAttention": "À surveiller",
+      "pendingTasks": "Tâches en attente",
+      "recruitsInProgress": "Intégrations en cours",
+      "noRecruits": "Aucune intégration en cours.",
+      "alerts": "Alertes",
+      "noAlerts": "Aucune alerte.",
+      "detailedProgress": "Avancement détaillé",
+      "dayColumn": "Jour",
+      "stepsColumn": "Étapes",
+      "progressColumn": "Progression",
+      "noRecruitsToShow": "Aucun recrutement à afficher.",
+      "myTasks": "Mes tâches",
+      "taskDue": "{{name}} — échéance le {{date}}",
+      "noPendingTasks": "Aucune tâche en attente."
+    },
+    "evaluations": {
+      "title": "Évaluations",
+      "subtitle": "Les évaluations dues pour vos recrues, tous jalons confondus.",
+      "loadError": "Impossible de charger les évaluations.",
+      "loading": "Chargement des évaluations…",
+      "milestoneColumn": "Jalon",
+      "evaluateAction": "Évaluer",
+      "empty": "Aucune évaluation due pour le moment."
+    },
+    "evaluationDetail": {
+      "notFound": "Cette évaluation n'existe pas.",
+      "loadError": "Impossible de charger l'évaluation.",
+      "conflict": "Cette évaluation a été modifiée entre-temps. Rechargez la page avant de continuer.",
+      "loading": "Chargement de l'évaluation…",
+      "backToEvaluations": "Retour aux évaluations",
+      "milestoneDue": "{{milestone}} — échéance le {{date}}",
+      "alreadySubmitted": "Cette évaluation a déjà été transmise aux ressources humaines.",
+      "criteria": {
+        "skills": "Compétences techniques",
+        "autonomy": "Autonomie",
+        "integration": "Intégration à l’équipe",
+        "behaviour": "Comportement professionnel"
+      },
+      "comment": "Commentaire",
+      "recommendation": "Recommandation",
+      "recommend": {
+        "confirm": "Confirmer dans le poste",
+        "extend": "Prolonger la période d'essai",
+        "terminate": "Mettre fin à la période d'essai"
+      },
+      "saveDraft": "Enregistrer le brouillon",
+      "submitToHr": "Transmettre aux RH"
+    },
+    "calendar": {
+      "loadError": "Impossible de charger le calendrier.",
+      "loading": "Chargement du calendrier…",
+      "title": "Calendrier",
+      "subtitle": "Les échéances d'évaluation à venir pour vos recrues, jour par jour.",
+      "eventTitle": "{{name}} — {{milestone}}",
+      "kind": {
+        "evaluation": "Évaluation",
+        "blocked": "Bloquée",
+        "overdue": "En retard"
+      },
+      "noUpcoming": "Aucune échéance à venir.",
+      "blockedOrOverdue": "Recrues bloquées ou en retard",
+      "nothingBlocked": "Aucune recrue bloquée ou en retard."
+    },
+    "documents": {
+      "loadError": "Impossible de charger les documents.",
+      "loading": "Chargement des documents…",
+      "title": "Documents",
+      "subtitle": "Les politiques et procédures utiles à l'intégration de vos recrues.",
+      "availability": {
+        "available": "Disponible",
+        "pending": "En préparation"
+      },
+      "acknowledgementCount_one": "{{count}} accusé de réception",
+      "acknowledgementCount_other": "{{count}} accusés de réception",
+      "empty": "Aucun document disponible pour le moment."
+    },
+    "archive": {
+      "loadError": "Impossible de charger l'archive.",
+      "loading": "Chargement de l'archive…",
+      "title": "Archive",
+      "subtitle": "Les parcours d'intégration terminés que vous avez suivis.",
+      "startedOn": "Débuté le",
+      "viewRecord": "Voir le dossier",
+      "empty": "Aucun parcours terminé pour le moment."
+    },
+    "settings": {
+      "title": "Paramètres",
+      "subtitle": "Préférences d'affichage et de rappels, propres à cet appareil.",
+      "deviceOnlyNote": "Ces préférences sont enregistrées uniquement sur cet appareil (aucune synchronisation entre postes).",
+      "reminders": {
+        "heading": "Rappels",
+        "windowLabel": "Fenêtre de rappel",
+        "windowHelp": "Nombre de jours avant échéance pour afficher une évaluation en alerte.",
+        "blockedSteps": "Étapes bloquées",
+        "overdueSteps": "Étapes en retard",
+        "evaluationsDue": "Évaluations à échéance"
+      },
+      "display": {
+        "heading": "Affichage du tableau de bord",
+        "comfortable": "Confortable",
+        "compact": "Compact"
+      },
+      "saved": "Enregistré."
+    },
+    "recruitNotFound": "Cette recrue n'a pas été trouvée.",
+    "assignTask": {
+      "title": "Assigner une tâche",
+      "createFailed": "Impossible de créer la tâche.",
+      "subtitle": "Nouvelle tâche pour {{name}}.",
+      "owner": "Responsable",
+      "departments": {
+        "HR": "Ressources humaines",
+        "IT": "Informatique",
+        "HSE": "HSE",
+        "QUALITY": "Qualité",
+        "MANAGER": "Encadrement",
+        "EMPLOYEE": "Collaborateur"
+      },
+      "submit": "Créer la tâche"
+    },
+    "evalStatus": {
+      "due": "À échéance",
+      "draft": "Brouillon",
+      "submitted": "Transmise"
+    },
+    "recruitDetail": {
+      "loading": "Chargement de la recrue…",
+      "backToRecruits": "Retour aux recrues",
+      "prepareInterview": "Préparer l'entretien",
+      "open": "Ouvrir",
+      "noEvaluations": "Aucune évaluation.",
+      "managerTasks": "Tâches manager",
+      "noManagerTasks": "Aucune tâche.",
+      "training": "Formation",
+      "scorePassed": "{{score}}% (réussi)",
+      "score": "{{score}}%",
+      "noTrainingAttempts": "Aucune tentative."
+    },
+    "backTo": "Retour à {{name}}"
+  },
+  "managerRecruits": {
+    "loading": "Chargement des nouvelles recrues…",
+    "loadError": "Impossible de charger les nouvelles recrues.",
+    "title": "Nouvelles recrues",
+    "subtitle": "Suivez les intégrations de votre périmètre et intervenez sur les étapes en retard ou bloquées.",
+    "stepsRatio": "{{done}}/{{total}} étapes",
+    "evaluationsDueCount_one": "{{count}} évaluation à venir",
+    "evaluationsDueCount_other": "{{count}} évaluations à venir",
+    "viewRecord": "Voir le dossier",
+    "empty": "Aucune nouvelle recrue dans votre périmètre."
+  },
+  "managerEvaluations": {
+    "loading": "Chargement des évaluations…",
+    "loadError": "Impossible de charger les évaluations.",
+    "title": "Évaluations à effectuer",
+    "subtitle": "Les évaluations dues pour les nouvelles recrues de votre périmètre.",
+    "milestoneColumn": "Jalon",
+    "evaluateAction": "Évaluer",
+    "empty": "Aucune évaluation à effectuer."
+  },
+  "managerOrganigram": {
+    "loading": "Chargement de l’organigramme…",
+    "loadError": "Impossible de charger l’organigramme.",
+    "title": "Organigramme",
+    "subtitle": "La structure de votre périmètre, avec l’avancement des intégrations en cours.",
+    "empty": "Aucun poste dans votre périmètre.",
+    "onboardingBadge": "Intégration : {{percent}}%"
+  },
+  "managerTeamPage": {
+    "loading": "Chargement de l’équipe…",
+    "loadError": "Impossible de charger votre équipe.",
+    "title": "Mon équipe",
+    "subtitle": "Membres, fiches de poste et postes vacants de votre périmètre.",
+    "members_one": "Membre ({{count}})",
+    "members_other": "Membres ({{count}})",
+    "vacancies_one": "Poste vacant ({{count}})",
+    "vacancies_other": "Postes vacants ({{count}})",
+    "table": {
+      "name": "Nom",
+      "position": "Poste",
+      "occupation": "Occupation"
+    },
+    "jobDescriptions": "Fiches de poste",
+    "noMembers": "Aucun membre.",
+    "noVacancies": "Aucun poste vacant."
+  },
+  "managerReports": {
+    "loading": "Chargement des indicateurs…",
+    "loadError": "Impossible de charger les indicateurs.",
+    "title": "Rapports",
+    "subtitle": "Indicateurs limités à votre périmètre.",
+    "empty": "Aucun indicateur disponible pour votre périmètre.",
+    "onboardingTitle": "Parcours en cours",
+    "hrTitle": "Indicateurs RH",
+    "dayShort": "j",
+    "metrics": {
+      "activeJourneys": "Parcours actifs",
+      "averageProgress": "Progression moyenne",
+      "overdueTasks": "Tâches en retard",
+      "blockedTasks": "Tâches bloquées",
+      "completion": "Taux de complétion",
+      "duration": "Durée moyenne d’intégration",
+      "confirmation": "Taux de confirmation",
+      "satisfaction": "Satisfaction"
+    }
+  },
+  "managerAssistant": {
+    "loading": "Chargement de l’assistant…",
+    "loadError": "Impossible de charger l’assistant.",
+    "title": "Assistant",
+    "subtitle": "Posez une question sur vos recrutements, vos parcours, les documents ou les compétences de votre périmètre.",
+    "noAgentsTitle": "Aucun agent disponible",
+    "noAgentsDetail": "Aucun agent ne peut être utilisé avec les droits de votre compte.",
+    "ownJourneyNotice": "L’agent de parcours répond uniquement sur votre propre parcours.",
+    "remindersTitle": "Évaluations à venir",
+    "noReminders": "Aucune évaluation à venir.",
+    "blockersTitle": "Blocages à traiter",
+    "noBlockers": "Aucun blocage à traiter.",
+    "prepareTitle": "Préparer un entretien",
+    "noDraftingTitle": "Préparation automatique indisponible",
+    "noDraftingDetail": "La plateforme ne génère pas encore de préparation automatique. Ouvrez le dossier d’une recrue pour préparer son entretien.",
+    "suggestions": {
+      "orientation": {
+        "1": "Qui contacter pour ce sujet ?",
+        "2": "Qui est responsable de cette activité ?",
+        "3": "Quel service peut m’aider ?"
+      },
+      "onboarding": {
+        "1": "Quelles sont mes prochaines étapes ?",
+        "2": "Qu’est-ce qui bloque mon parcours ?"
+      },
+      "documents": {
+        "1": "Quels documents puis-je consulter ?",
+        "2": "Où trouver cette procédure ?"
+      },
+      "competencies": {
+        "1": "Quelles compétences sont requises ?",
+        "2": "Quelles compétences dois-je développer ?"
+      }
+    },
+    "placeholders": {
+      "orientation": "Posez une question sur l’organisation…",
+      "onboarding": "Posez une question sur votre parcours…",
+      "documents": "Posez une question sur les documents…",
+      "competencies": "Posez une question sur les compétences…",
+      "fallback": "Posez une question…"
+    }
+  },
   "admin": {
     "console": {
       "eyebrow": "Administration",

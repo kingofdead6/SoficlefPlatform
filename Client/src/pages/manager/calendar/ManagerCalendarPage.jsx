@@ -73,7 +73,8 @@ export default function ManagerCalendarPage() {
         kind: 'evaluation',
         date: new Date(evaluation.dueDate),
         overdue: new Date(evaluation.dueDate) < now,
-        titleFr: `${recruit.displayName} — ${evaluation.milestone}`,
+        displayName: recruit.displayName,
+        milestone: evaluation.milestone,
         href: `/app/manager/evaluations/${evaluation.id}`,
       })),
     );
@@ -127,7 +128,12 @@ export default function ManagerCalendarPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium">{event.titleFr}</span>
+                      <span className="font-medium">
+                        {t('manager.calendar.eventTitle', {
+                          name: event.displayName,
+                          milestone: event.milestone,
+                        })}
+                      </span>
                       <span className="shrink-0 rounded-full bg-surface px-2 py-0.5 text-xs">
                         {event.overdue ? t(KIND_LABEL_KEYS.overdue) : t(KIND_LABEL_KEYS.evaluation)}
                       </span>

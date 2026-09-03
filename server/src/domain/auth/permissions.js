@@ -149,6 +149,7 @@ export const ROLE_PERMISSIONS = {
     'assessment:read',
     'assessment:assess',
     'onboarding_instance:read',
+    'onboarding_instance:validate',
     'onboarding_task:read',
     'onboarding_task:update',
     'onboarding_task:validate',

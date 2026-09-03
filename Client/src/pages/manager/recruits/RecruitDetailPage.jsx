@@ -112,14 +112,16 @@ export default function RecruitDetailPage() {
                         to={`/app/manager/evaluations/${evaluation.id}`}
                         className="text-xs font-medium text-red-brand hover:underline"
                       >
-                        Ouvrir
+                        {t('manager.recruitDetail.open')}
                       </Link>
                     )}
                   </div>
                 </motion.li>
               ))}
             </motion.ul>
-            {instance.evaluations.length === 0 && <EmptyState detail="Aucune évaluation." muted />}
+            {instance.evaluations.length === 0 && (
+              <EmptyState detail={t('manager.recruitDetail.noEvaluations')} muted />
+            )}
           </motion.section>
         )}
 
@@ -131,18 +133,20 @@ export default function RecruitDetailPage() {
             transition={{ delay: reduce ? 0 : 0.08 }}
             className="rounded-app border border-border bg-surface p-5 shadow-app"
           >
-            <h2 className="mb-3 font-display text-lg text-text">Tâches manager</h2>
+            <h2 className="mb-3 font-display text-lg text-text">{t('manager.recruitDetail.managerTasks')}</h2>
             <motion.ul variants={staggerContainer(0.05)} initial={initialOrNone(reduce)} animate="visible" className="mb-1 space-y-2">
               {instance.managerTasks.map((task) => (
                 <motion.li key={task.id} variants={staggerItem} className="flex items-center justify-between text-sm">
                   <span className="text-text-dim">{task.titleFr}</span>
                   <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-dim">
-                    {MANAGER_TASK_STATUS_LABELS[task.status]}
+                    {MANAGER_TASK_STATUS_KEYS[task.status] ? t(MANAGER_TASK_STATUS_KEYS[task.status]) : task.status}
                   </span>
                 </motion.li>
               ))}
             </motion.ul>
-            {instance.managerTasks.length === 0 && <EmptyState detail="Aucune tâche." muted />}
+            {instance.managerTasks.length === 0 && (
+              <EmptyState detail={t('manager.recruitDetail.noManagerTasks')} muted />
+            )}
           </motion.section>
         )}
 
@@ -153,18 +157,22 @@ export default function RecruitDetailPage() {
           transition={{ delay: reduce ? 0 : 0.16 }}
           className="rounded-app border border-border bg-surface p-5 shadow-app"
         >
-          <h2 className="mb-3 font-display text-lg text-text">Formation</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('manager.recruitDetail.training')}</h2>
           <motion.ul variants={staggerContainer(0.05)} initial={initialOrNone(reduce)} animate="visible" className="space-y-2 text-sm">
             {recruit.trainingAttempts.map((attempt, index) => (
               <motion.li key={index} variants={staggerItem} className="flex items-center justify-between">
                 <span className="text-text-dim">{attempt.module.titleFr}</span>
                 <span className={attempt.passed ? 'text-status-green' : 'text-status-red'}>
-                  {attempt.score}% {attempt.passed ? '(réussi)' : ''}
+                  {attempt.passed
+                    ? t('manager.recruitDetail.scorePassed', { score: attempt.score })
+                    : t('manager.recruitDetail.score', { score: attempt.score })}
                 </span>
               </motion.li>
             ))}
           </motion.ul>
-          {recruit.trainingAttempts.length === 0 && <EmptyState detail="Aucune tentative." muted />}
+          {recruit.trainingAttempts.length === 0 && (
+            <EmptyState detail={t('manager.recruitDetail.noTrainingAttempts')} muted />
+          )}
         </motion.section>
       </div>
     </div>
