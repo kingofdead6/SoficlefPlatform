@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { positionsApi } from '../../../api/organization.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -14,6 +15,7 @@ import { rowVariants, sectionVariants, staggerContainer, initialOrNone } from '.
  * (position-repository.js getVisibleTree — MANAGER role sees their full sub-tree).
  */
 export default function TeamPage() {
+  const { t } = useTranslation();
   const [nodes, setNodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,14 +27,14 @@ export default function TeamPage() {
         const { data } = await positionsApi.tree();
         setNodes(data);
       } catch {
-        setError('Impossible de charger votre équipe.');
+        setError(t('managerTeamPage.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
-  if (loading) return <PageLoading label="Chargement de l'équipe…" />;
+  if (loading) return <PageLoading label={t('managerTeamPage.loading')} />;
   if (error) return <PageError message={error} />;
 
   const members = nodes.filter((node) => node.holder);
@@ -41,20 +43,20 @@ export default function TeamPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Manager"
-        title="Mon équipe"
-        subtitle="Membres, fiches de poste et postes vacants de votre périmètre."
+        eyebrow={t('manager.eyebrow')}
+        title={t('managerTeamPage.title')}
+        subtitle={t('managerTeamPage.subtitle')}
       />
 
       <div className="grid gap-8 lg:grid-cols-2">
         <motion.section variants={sectionVariants} initial={initialOrNone(reduce)} animate="visible">
-          <h2 className="mb-3 font-display text-lg text-text">Membres ({members.length})</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('managerTeamPage.members', { count: members.length })}</h2>
           <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Nom</th>
-                  <th className="px-4 py-3 font-medium">Poste</th>
+                  <th className="px-4 py-3 font-medium">{t('managerTeamPage.table.name')}</th>
+                  <th className="px-4 py-3 font-medium">{t('managerTeamPage.table.position')}</th>
                   <th className="px-4 py-3 font-medium" />
                 </tr>
               </thead>
@@ -65,7 +67,7 @@ export default function TeamPage() {
                     <td className="px-4 py-3 text-text-dim">{node.titleFr}</td>
                     <td className="px-4 py-3 text-right">
                       <Link to="/job-description" className="text-xs font-medium text-red-brand hover:underline">
-                        Fiches de poste
+                        {t('managerTeamPage.jobDescriptions')}
                       </Link>
                     </td>
                   </motion.tr>
@@ -73,7 +75,7 @@ export default function TeamPage() {
               </motion.tbody>
             </table>
             {members.length === 0 && (
-              <p className="px-4 py-8 text-center text-sm text-text-dim">Aucun membre.</p>
+              <p className="px-4 py-8 text-center text-sm text-text-dim">{t('managerTeamPage.noMembers')}</p>
             )}
           </div>
         </motion.section>
@@ -84,13 +86,13 @@ export default function TeamPage() {
           animate="visible"
           transition={{ delay: reduce ? 0 : 0.1 }}
         >
-          <h2 className="mb-3 font-display text-lg text-text">Postes vacants ({vacant.length})</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('managerTeamPage.vacancies', { count: vacant.length })}</h2>
           <div className="overflow-hidden rounded-app border border-border bg-surface shadow-app">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Poste</th>
-                  <th className="px-4 py-3 font-medium">Occupation</th>
+                  <th className="px-4 py-3 font-medium">{t('managerTeamPage.table.position')}</th>
+                  <th className="px-4 py-3 font-medium">{t('managerTeamPage.table.occupation')}</th>
                 </tr>
               </thead>
               <motion.tbody variants={staggerContainer(0.05)} initial={initialOrNone(reduce)} animate="visible">
@@ -103,7 +105,7 @@ export default function TeamPage() {
               </motion.tbody>
             </table>
             {vacant.length === 0 && (
-              <p className="px-4 py-8 text-center text-sm text-text-dim">Aucun poste vacant.</p>
+              <p className="px-4 py-8 text-center text-sm text-text-dim">{t('managerTeamPage.noVacancies')}</p>
             )}
           </div>
         </motion.section>
