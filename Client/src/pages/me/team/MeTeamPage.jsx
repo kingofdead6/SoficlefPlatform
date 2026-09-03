@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { usersApi } from '../../../api/users.js';
 import { ApiError } from '../../../api/client.js';
@@ -25,10 +26,10 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
  * "who do I call".
  */
 const SERVICES = [
-  { id: 'hr', labelFr: 'Ressources humaines', match: /rh|ressources humaines|personnel|emploi|paie|recrutement/i },
-  { id: 'it', labelFr: 'Informatique', match: /informatique|it\b|si\b|système|reseau|réseau|support/i },
-  { id: 'hse', labelFr: 'Hygiène, sécurité, environnement', match: /hse|securite|sécurité|hygiene|hygiène|environnement/i },
-  { id: 'quality', labelFr: 'Qualité', match: /qualite|qualité|smq|audit|conformite|conformité/i },
+  { id: 'hr', labelKey: 'me.team.services.hr', match: /rh|ressources humaines|personnel|emploi|paie|recrutement/i },
+  { id: 'it', labelKey: 'me.team.services.it', match: /informatique|it\b|si\b|système|reseau|réseau|support/i },
+  { id: 'hse', labelKey: 'me.team.services.hse', match: /hse|securite|sécurité|hygiene|hygiène|environnement/i },
+  { id: 'quality', labelKey: 'me.team.services.quality', match: /qualite|qualité|smq|audit|conformite|conformité/i },
 ];
 
 /**
@@ -46,6 +47,7 @@ const SERVICES = [
  * as-is rather than a generic failure.
  */
 export default function MeTeamPage() {
+  const { t } = useTranslation();
   const { user, refresh } = useAuth();
   const [team, setTeam] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,11 +64,11 @@ export default function MeTeamPage() {
       const { data } = await usersApi.myTeam();
       setTeam(data);
     } catch {
-      setError('Impossible de charger votre équipe.');
+      setError(t('me.team.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -103,7 +105,7 @@ export default function MeTeamPage() {
 
     const rest = contacts.filter((contact) => !claimed.has(contact.id));
     if (rest.length > 0) {
-      groups.push({ id: 'others', labelFr: 'Autres contacts', contacts: rest });
+      groups.push({ id: 'others', labelKey: 'me.team.services.others', contacts: rest });
     }
 
     return groups;
@@ -119,14 +121,14 @@ export default function MeTeamPage() {
       const { avatarUrl } = await usersApi.uploadMyAvatar(file);
       setMyAvatarUrl(avatarUrl);
       await refresh();
-      setNotice({ tone: 'ok', textFr: 'Photo de profil enregistrée. Elle apparaît sur votre carte de l’organigramme.' });
+      setNotice({ tone: 'ok', text: t('me.team.avatar.uploadSuccess') });
     } catch (err) {
       setNotice({
         tone: 'error',
-        textFr:
+        text:
           err instanceof ApiError && err.body?.message
             ? err.body.message
-            : "L'envoi de la photo a échoué.",
+            : t('me.team.avatar.uploadFailed'),
       });
     } finally {
       setUploading(false);

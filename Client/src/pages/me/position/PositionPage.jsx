@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { competenciesApi } from '../../../api/competencies.js';
 import { positionsApi } from '../../../api/organization.js';
@@ -17,11 +18,11 @@ import { cn } from '../../../lib/cn.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 
-const GAP_LABELS = {
-  conforme: 'Conforme',
-  'a-developper': 'À développer',
-  critique: 'Critique',
-  'non-evalue': 'Non évalué',
+const GAP_LABEL_KEYS = {
+  conforme: 'me.position.gap.conforme',
+  'a-developper': 'me.position.gap.toDevelop',
+  critique: 'me.position.gap.critical',
+  'non-evalue': 'me.position.gap.notAssessed',
 };
 
 const GAP_STYLES = {
@@ -54,6 +55,7 @@ const GAP_STYLES = {
  * question gets answered (the IT-owned steps of the journey).
  */
 export default function PositionPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [matrix, setMatrix] = useState(null);
   const [nodes, setNodes] = useState([]);
@@ -75,12 +77,12 @@ export default function PositionPage() {
         setNodes(treeRes.data ?? []);
         setOverview(overviewRes.data);
       } catch {
-        setError('Impossible de charger votre fiche de poste.');
+        setError(t('me.position.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const myNode = useMemo(
     () => nodes.find((node) => node.holder?.id === user?.id) ?? null,
@@ -136,7 +138,7 @@ export default function PositionPage() {
     [loading, matrix, snippet],
   );
 
-  if (loading) return <PageLoading label="Chargement de votre fiche de poste…" />;
+  if (loading) return <PageLoading label={t('me.position.loading')} />;
   if (error) return <PageError message={error} />;
 
   const positionTitle =
@@ -145,10 +147,10 @@ export default function PositionPage() {
   if (!positionTitle) {
     return (
       <div className="flex flex-1 flex-col">
-        <PageHeader eyebrow="Mon espace" title="Ma fiche de poste" />
+        <PageHeader eyebrow={t('me.eyebrow')} title={t('me.position.title')} />
         <EmptyState
-          title="Aucun poste rattaché"
-          detail="Aucun poste n’est encore associé à votre compte. Les RH procèdent à l’affectation, et cette fiche se remplit à ce moment-là."
+          title={t('me.position.unassignedTitle')}
+          detail={t('me.position.unassignedDetail')}
           muted
         />
       </div>
@@ -158,27 +160,27 @@ export default function PositionPage() {
   return (
     <div ref={scopeRef} className="flex flex-1 flex-col">
       <PageHeader
-        eyebrow="Mon espace"
+        eyebrow={t('me.eyebrow')}
         title={positionTitle}
-        subtitle={myNode?.organizationUnitNameFr ?? 'Structure non renseignée'}
+        subtitle={myNode?.organizationUnitNameFr ?? t('me.position.noStructure')}
         actions={
           <Link
             to="/app/me/organigram"
             className="rounded-app border border-border px-3 py-2 text-sm font-medium text-text transition-colors hover:border-red-brand hover:text-red-brand"
           >
-            Organigramme complet
+            {t('me.position.fullOrgChart')}
           </Link>
         }
       />
 
       {/* Band 1 — identity of the post. */}
       <div data-gsap="band" className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Tile label="Intitulé" value={positionTitle} />
-        <Tile label="Code poste" value={myNode?.code ?? matrix?.positionCode ?? '—'} mono />
-        <Tile label="Structure" value={myNode?.organizationUnitNameFr ?? '—'} />
+        <Tile label={t('me.position.tiles.title')} value={positionTitle} />
+        <Tile label={t('me.position.tiles.positionCode')} value={myNode?.code ?? matrix?.positionCode ?? '—'} mono />
+        <Tile label={t('me.position.tiles.structure')} value={myNode?.organizationUnitNameFr ?? '—'} />
         <Tile
-          label="Rattaché à"
-          value={manager ? `${manager.titleFr}` : 'Aucun poste supérieur visible'}
+          label={t('me.position.tiles.reportsTo')}
+          value={manager ? `${manager.titleFr}` : t('me.position.noManagerVisible')}
           detail={manager?.holder?.displayName}
         />
       </div>
@@ -193,16 +195,13 @@ export default function PositionPage() {
             animate="visible"
             className={`${CARD} p-6`}
           >
-            <h2 className="mb-3 font-display text-lg text-text">Mission</h2>
+            <h2 className="mb-3 font-display text-lg text-text">{t('me.position.mission.heading')}</h2>
             {overview?.position?.missionFr ? (
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-dim">
                 {overview.position.missionFr}
               </p>
             ) : (
-              <EmptyState
-                detail="Aucune mission n’est rédigée pour ce poste dans la plateforme. Le dossier complet de la fiche de poste (missions, tâches permanentes, responsabilités) est tenu par les ressources humaines."
-                muted
-              />
+              <EmptyState detail={t('me.position.mission.empty')} muted />
             )}
           </motion.section>
 
@@ -213,24 +212,18 @@ export default function PositionPage() {
             initial={initialOrNone(reduce)}
             animate="visible"
           >
-            <h2 className="mb-1 font-display text-lg text-text">Compétences requises</h2>
-            <p className="mb-4 text-xs text-text-dim">
-              Le niveau attendu par le poste, comparé à votre niveau évalué. Les évaluations sont saisies par
-              votre manager.
-            </p>
+            <h2 className="mb-1 font-display text-lg text-text">{t('me.position.skills.heading')}</h2>
+            <p className="mb-4 text-xs text-text-dim">{t('me.position.skills.subtitle')}</p>
 
             {!matrix ? (
-              <EmptyState
-                detail="Aucun référentiel de compétences n’est rattaché à ce poste pour l’instant."
-                muted
-              />
+              <EmptyState detail={t('me.position.skills.noMatrix')} muted />
             ) : (
               <>
                 <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <MiniFigure label="Conformes" value={matrix.summary.conforme} />
-                  <MiniFigure label="À développer" value={matrix.summary.aDevelopper} />
+                  <MiniFigure label={t('me.position.skills.conforming')} value={matrix.summary.conforme} />
+                  <MiniFigure label={t('me.position.skills.toDevelop')} value={matrix.summary.aDevelopper} />
                   <MiniFigure
-                    label="Critiques"
+                    label={t('me.position.skills.critical')}
                     value={matrix.summary.critique}
                     tone={matrix.summary.critique > 0 ? 'red' : undefined}
                   />
@@ -253,11 +246,11 @@ export default function PositionPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                        <th className="px-4 py-3 font-medium">Compétence</th>
-                        <th className="px-4 py-3 font-medium">Famille</th>
-                        <th className="px-4 py-3 font-medium">Requis</th>
-                        <th className="px-4 py-3 font-medium">Acquis</th>
-                        <th className="px-4 py-3 font-medium">Statut</th>
+                        <th className="px-4 py-3 font-medium">{t('me.position.skills.table.competency')}</th>
+                        <th className="px-4 py-3 font-medium">{t('me.position.skills.table.family')}</th>
+                        <th className="px-4 py-3 font-medium">{t('me.position.skills.table.required')}</th>
+                        <th className="px-4 py-3 font-medium">{t('me.position.skills.table.attained')}</th>
+                        <th className="px-4 py-3 font-medium">{t('common.labels.status')}</th>
                       </tr>
                     </thead>
                     <motion.tbody
@@ -284,7 +277,7 @@ export default function PositionPage() {
                                 GAP_STYLES[row.gap.status],
                               )}
                             >
-                              {GAP_LABELS[row.gap.status]}
+                              {t(GAP_LABEL_KEYS[row.gap.status])}
                             </span>
                           </td>
                         </motion.tr>
@@ -293,7 +286,7 @@ export default function PositionPage() {
                   </table>
                   {matrix.rows.length === 0 && (
                     <p className="py-8 text-center text-sm text-text-dim">
-                      Aucune compétence n’est déclarée pour ce poste.
+                      {t('me.position.skills.noRows')}
                     </p>
                   )}
                 </div>
@@ -308,18 +301,15 @@ export default function PositionPage() {
             initial={initialOrNone(reduce)}
             animate="visible"
           >
-            <h2 className="mb-1 font-display text-lg text-text">Ma place dans l’organisation</h2>
-            <p className="mb-4 text-xs text-text-dim">
-              Votre branche : le poste dont vous dépendez, les postes de même niveau, et ceux qui vous sont
-              rattachés.
-            </p>
+            <h2 className="mb-1 font-display text-lg text-text">{t('me.position.orgSnippet.heading')}</h2>
+            <p className="mb-4 text-xs text-text-dim">{t('me.position.orgSnippet.subtitle')}</p>
             <div className={`overflow-x-auto ${CARD} p-6`}>
               <OrgChart
                 nodes={snippet}
-                emptyLabel="Votre poste n’apparaît pas encore dans l’organigramme."
+                emptyLabel={t('me.position.orgSnippet.empty')}
                 toneOf={(node) => (node.id === myNode?.id ? 'root' : node.isVacant ? 'vacant' : undefined)}
                 subtitleOf={(node) => node.organizationUnitNameFr ?? undefined}
-                badgeOf={(node) => (node.id === myNode?.id ? 'Vous' : undefined)}
+                badgeOf={(node) => (node.id === myNode?.id ? t('me.organigram.youBadge') : undefined)}
               />
             </div>
           </motion.section>
@@ -334,10 +324,12 @@ export default function PositionPage() {
             animate="visible"
             className={`${CARD} p-5`}
           >
-            <h2 className="mb-3 font-display text-lg text-text">Ligne hiérarchique</h2>
+            <h2 className="mb-3 font-display text-lg text-text">{t('me.position.reportingLine.heading')}</h2>
             <dl className="space-y-4 text-sm">
               <div>
-                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-text-dim">Supérieur</dt>
+                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
+                  {t('me.position.reportingLine.manager')}
+                </dt>
                 <dd className="text-text">
                   {manager ? (
                     <>
@@ -347,23 +339,25 @@ export default function PositionPage() {
                       )}
                     </>
                   ) : (
-                    <span className="text-text-dim">Aucun poste supérieur visible</span>
+                    <span className="text-text-dim">{t('me.position.noManagerVisible')}</span>
                   )}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
-                  Postes rattachés ({reports.length})
+                  {t('me.position.reportingLine.directReports', { count: reports.length })}
                 </dt>
                 <dd className="text-text">
                   {reports.length === 0 ? (
-                    <span className="text-text-dim">Aucun</span>
+                    <span className="text-text-dim">{t('common.states.none')}</span>
                   ) : (
                     <ul className="mt-1 space-y-1">
                       {reports.map((report) => (
                         <li key={report.id} className="text-sm text-text-dim">
                           {report.titleFr}
-                          {report.holder ? ` — ${report.holder.displayName}` : ' — vacant'}
+                          {report.holder
+                            ? ` — ${report.holder.displayName}`
+                            : ` — ${t('me.organigram.sheet.vacant')}`}
                         </li>
                       ))}
                     </ul>
@@ -379,17 +373,17 @@ export default function PositionPage() {
             initial={initialOrNone(reduce)}
             animate="visible"
           >
-            <h2 className="mb-3 font-display text-lg text-text">Matériel attribué</h2>
+            <h2 className="mb-3 font-display text-lg text-text">{t('me.position.equipment.heading')}</h2>
             <EmptyState
-              title="Pas de registre du matériel"
-              detail="La plateforme ne tient aucun inventaire des équipements attribués : il n’existe pas de table du matériel, et en inventer une liste ici serait faux. Ce qui vous a été remis figure dans les étapes de votre parcours dont le service informatique est responsable."
+              title={t('me.position.equipment.emptyTitle')}
+              detail={t('me.position.equipment.emptyDetail')}
               muted
             />
             <Link
               to="/app/me/journey"
               className="mt-3 inline-block text-xs font-medium text-red-brand hover:underline"
             >
-              Voir les étapes de mon parcours →
+              {t('me.position.equipment.seeJourney')}
             </Link>
           </motion.section>
 
@@ -400,17 +394,13 @@ export default function PositionPage() {
             animate="visible"
             className={`${CARD} p-5`}
           >
-            <h2 className="mb-2 font-display text-lg text-text">Le dossier complet</h2>
-            <p className="text-xs leading-relaxed text-text-dim">
-              La fiche de poste détaillée — missions, tâches permanentes, responsabilités, exigences de formation
-              et d’expérience — est un document versionné tenu par les ressources humaines. Votre compte n’y donne
-              pas accès en lecture directe ; demandez-la à votre contact RH.
-            </p>
+            <h2 className="mb-2 font-display text-lg text-text">{t('me.position.fullDossier.heading')}</h2>
+            <p className="text-xs leading-relaxed text-text-dim">{t('me.position.fullDossier.detail')}</p>
             <Link
               to="/app/me/team"
               className="mt-3 inline-block text-xs font-medium text-red-brand hover:underline"
             >
-              Mon contact RH →
+              {t('me.position.fullDossier.hrContactLink')}
             </Link>
           </motion.section>
         </div>

@@ -36,7 +36,7 @@ export default function ManagerOrganigramPage() {
         setNodes(treeRes.data);
         setRecruits(recruitsRes.data);
       } catch {
-        setError(t('managerOrganigram.loadError'));
+        setError(t('manager.organigram.loadError'));
       } finally {
         setLoading(false);
       }
@@ -74,25 +74,25 @@ export default function ManagerOrganigramPage() {
     [loading, nodes],
   );
 
-  if (loading) return <PageLoading label={t('managerOrganigram.loading')} />;
+  if (loading) return <PageLoading label={t('manager.organigram.loading')} />;
   if (error) return <PageError message={error} />;
 
   return (
     <div ref={scopeRef}>
       <PageHeader
         eyebrow={t('manager.eyebrow')}
-        title={t('managerOrganigram.title')}
-        subtitle={t('managerOrganigram.subtitle')}
+        title={t('manager.organigram.title')}
+        subtitle={t('manager.organigram.subtitle')}
       />
 
       <div className="overflow-x-auto rounded-app border border-border bg-surface p-6 shadow-app">
         <OrgChart
           nodes={nodes}
-          emptyLabel={t('managerOrganigram.empty')}
+          emptyLabel={t('manager.organigram.empty')}
           toneOf={(node) => (node.isVacant ? 'vacant' : undefined)}
           badgeOf={(node) => {
             const percent = node.holder ? progressByUserId.get(node.holder.id) : undefined;
-            return percent === undefined ? undefined : t('managerOrganigram.onboardingBadge', { percent });
+            return percent === undefined ? undefined : t('manager.organigram.onboardingBadge', { percent });
           }}
         />
       </div>

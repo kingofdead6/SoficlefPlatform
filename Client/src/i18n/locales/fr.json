@@ -1354,7 +1354,15 @@
       "score": "{{score}}%",
       "noTrainingAttempts": "Aucune tentative."
     },
-    "backTo": "Retour à {{name}}"
+    "backTo": "Retour à {{name}}",
+    "organigram": {
+      "loadError": "Impossible de charger l'organigramme.",
+      "loading": "Chargement de l'organigramme…",
+      "title": "Organigramme",
+      "subtitle": "Votre équipe et sa chaîne hiérarchique, avec la progression d'intégration de chaque recrue.",
+      "empty": "Aucun poste n'est rattaché à votre compte pour le moment.",
+      "onboardingBadge": "{{percent}}% intégré"
+    }
   },
   "managerRecruits": {
     "loading": "Chargement des nouvelles recrues…",
@@ -2529,7 +2537,7 @@
       "emptyDetail": "Aucun poste n’est encore rattaché à votre compte, il n’y a donc pas de point de départ pour dessiner votre organigramme. Les RH l’activent au moment de votre affectation.",
       "emptyTitle": "Organigramme indisponible",
       "loadFailed": "Impossible de charger l’organigramme.",
-      "loading": "Chargement de l’organigramme…",
+      "loading": "Chargement de l'organigramme…",
       "noSearchMatch": "Aucun poste ne correspond à cette recherche.",
       "scopeNote": "Vous ne voyez qu’une fenêtre autour de votre poste : la profondeur affichée vers le haut et vers le bas est un paramètre de la plateforme, appliqué côté serveur.",
       "searchPlaceholder": "Rechercher un poste, une personne, une structure…",
@@ -2538,7 +2546,7 @@
         "department": "Département / structure",
         "email": "E-mail",
         "eyebrow": "Fiche de poste · consultation seule",
-        "footnote": "Cette fiche reprend ce que l’organigramme expose sur ce poste. Le détail complet d’un emploi (missions, tâches, compétences requises) relève du référentiel des fiches de poste, accessible aux RH.",
+        "footnote": "Cette fiche reprend ce que l'organigramme expose sur ce poste. Le détail complet d'un emploi (missions, tâches, compétences requises) relève du référentiel des fiches de poste, accessible aux RH.",
         "itsYou": "C’est vous",
         "noReports": "Aucun",
         "noSuperior": "Aucun poste supérieur visible",
@@ -2548,7 +2556,17 @@
         "phone": "Poste téléphonique",
         "reports": "Postes rattachés",
         "reportsTo": "Rattaché à",
-        "vacant": "vacant"
+        "vacant": "vacant",
+        "readOnlyBadge": "Fiche de poste · consultation seule",
+        "vacantPosition": "Poste vacant",
+        "noStructure": "Sans structure",
+        "thisIsYou": "C'est vous",
+        "departmentLabel": "Département / structure",
+        "extensionLabel": "Poste téléphonique",
+        "reportsToLabel": "Rattaché à",
+        "noManagerVisible": "Aucun poste supérieur visible",
+        "directReportsLabel": "Postes rattachés",
+        "occupancyLabel": "Occupation"
       },
       "subtitle": "Votre position dans l’organisation : votre chaîne hiérarchique vers le haut, vos collègues de même niveau, et les postes rattachés au vôtre.",
       "tiles": {
@@ -2559,7 +2577,17 @@
         "unassigned": "Non affecté"
       },
       "title": "Organigramme",
-      "visibleCount": "{{visible}} / {{total}} postes visibles"
+      "visibleCount": "{{visible}} / {{total}} postes visibles",
+      "loadError": "Impossible de charger l'organigramme.",
+      "unavailableTitle": "Organigramme indisponible",
+      "unavailableDetail": "Aucun poste n'est encore rattaché à votre compte, il n'y a donc pas de point de départ pour dessiner votre organigramme. Les RH l'activent au moment de votre affectation.",
+      "myPosition": "Mon poste",
+      "unassigned": "Non affecté",
+      "myManager": "Mon responsable",
+      "peers": "Collègues de même niveau",
+      "directReports": "Postes rattachés au mien",
+      "windowNote": "Vous ne voyez qu'une fenêtre autour de votre poste : la profondeur affichée vers le haut et vers le bas est un paramètre de la plateforme, appliqué côté serveur.",
+      "youBadge": "Vous"
     },
     "position": {
       "competencies": {
@@ -2588,10 +2616,12 @@
       "emptyDetail": "Aucun poste n’est encore associé à votre compte. Les RH procèdent à l’affectation, et cette fiche se remplit à ce moment-là.",
       "emptyTitle": "Aucun poste rattaché",
       "equipment": {
-        "emptyDetail": "La plateforme ne tient aucun inventaire des équipements attribués : il n’existe pas de table du matériel, et en inventer une liste ici serait faux. Ce qui vous a été remis figure dans les étapes de votre parcours dont le service informatique est responsable.",
+        "emptyDetail": "La plateforme ne tient aucun inventaire des équipements attribués : il n'existe pas de table du matériel, et en inventer une liste ici serait faux. Ce qui vous a été remis figure dans les étapes de votre parcours dont le service informatique est responsable.",
         "emptyTitle": "Pas de registre du matériel",
         "link": "Voir les étapes de mon parcours →",
-        "title": "Matériel attribué"
+        "title": "Matériel attribué",
+        "heading": "Matériel attribué",
+        "seeJourney": "Voir les étapes de mon parcours →"
       },
       "fullOrgChart": "Organigramme complet",
       "gapStatus": {
@@ -2603,8 +2633,9 @@
       "loadFailed": "Impossible de charger votre fiche de poste.",
       "loading": "Chargement de votre fiche de poste…",
       "mission": {
-        "empty": "Aucune mission n’est rédigée pour ce poste dans la plateforme. Le dossier complet de la fiche de poste (missions, tâches permanentes, responsabilités) est tenu par les ressources humaines.",
-        "title": "Mission"
+        "empty": "Aucune mission n'est rédigée pour ce poste dans la plateforme. Le dossier complet de la fiche de poste (missions, tâches permanentes, responsabilités) est tenu par les ressources humaines.",
+        "title": "Mission",
+        "heading": "Mission"
       },
       "noUnit": "Structure non renseignée",
       "reportingLine": {
@@ -2613,7 +2644,11 @@
         "reports": "Postes rattachés ({{count}})",
         "superior": "Supérieur",
         "title": "Ligne hiérarchique",
-        "vacant": "vacant"
+        "vacant": "vacant",
+        "heading": "Ligne hiérarchique",
+        "manager": "Supérieur",
+        "directReports_one": "Poste rattaché ({{count}})",
+        "directReports_other": "Postes rattachés ({{count}})"
       },
       "snippet": {
         "empty": "Votre poste n’apparaît pas encore dans l’organigramme.",
@@ -2624,9 +2659,47 @@
         "code": "Code poste",
         "reportsTo": "Rattaché à",
         "title": "Intitulé",
-        "unit": "Structure"
+        "unit": "Structure",
+        "positionCode": "Code poste",
+        "structure": "Structure"
       },
-      "title": "Ma fiche de poste"
+      "title": "Ma fiche de poste",
+      "loadError": "Impossible de charger votre fiche de poste.",
+      "unassignedTitle": "Aucun poste rattaché",
+      "unassignedDetail": "Aucun poste n'est encore associé à votre compte. Les RH procèdent à l'affectation, et cette fiche se remplit à ce moment-là.",
+      "noStructure": "Structure non renseignée",
+      "noManagerVisible": "Aucun poste supérieur visible",
+      "gap": {
+        "conforme": "Conforme",
+        "toDevelop": "À développer",
+        "critical": "Critique",
+        "notAssessed": "Non évalué"
+      },
+      "skills": {
+        "heading": "Compétences requises",
+        "subtitle": "Le niveau attendu par le poste, comparé à votre niveau évalué. Les évaluations sont saisies par votre manager.",
+        "noMatrix": "Aucun référentiel de compétences n'est rattaché à ce poste pour l'instant.",
+        "conforming": "Conformes",
+        "toDevelop": "À développer",
+        "critical": "Critiques",
+        "noRows": "Aucune compétence n'est déclarée pour ce poste.",
+        "table": {
+          "competency": "Compétence",
+          "family": "Famille",
+          "required": "Requis",
+          "attained": "Acquis"
+        }
+      },
+      "orgSnippet": {
+        "heading": "Ma place dans l'organisation",
+        "subtitle": "Votre branche : le poste dont vous dépendez, les postes de même niveau, et ceux qui vous sont rattachés.",
+        "empty": "Votre poste n'apparaît pas encore dans l'organigramme."
+      },
+      "fullDossier": {
+        "heading": "Le dossier complet",
+        "detail": "La fiche de poste détaillée — missions, tâches permanentes, responsabilités, exigences de formation et d'expérience — est un document versionné tenu par les ressources humaines. Votre compte n'y donne pas accès en lecture directe ; demandez-la à votre contact RH.",
+        "hrContactLink": "Mon contact RH →"
+      }
     },
     "surveys": {
       "answered": "Répondu",

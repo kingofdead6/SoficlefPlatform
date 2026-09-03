@@ -1354,7 +1354,15 @@
       "score": "{{score}}%",
       "noTrainingAttempts": "No attempts."
     },
-    "backTo": "Back to {{name}}"
+    "backTo": "Back to {{name}}",
+    "organigram": {
+      "loadError": "Could not load the org chart.",
+      "loading": "Loading the org chart…",
+      "title": "Org chart",
+      "subtitle": "Your team and its reporting line, with the onboarding progress of each recruit.",
+      "empty": "No position is attached to your account at the moment.",
+      "onboardingBadge": "{{percent}}% onboarded"
+    }
   },
   "managerRecruits": {
     "loading": "Loading new hires…",
@@ -2532,13 +2540,13 @@
       "loading": "Loading the org chart…",
       "noSearchMatch": "No position matches this search.",
       "scopeNote": "You only see a window around your own position: how far up and down it reaches is a platform setting, applied server-side.",
-      "searchPlaceholder": "Search a position, a person, a unit…",
+      "searchPlaceholder": "Search a position, a person, a division…",
       "sheet": {
         "close": "Close",
         "department": "Department / unit",
         "email": "Email",
         "eyebrow": "Job description · view only",
-        "footnote": "This sheet shows what the org chart holds about this position. The full detail of a role (duties, tasks, required competencies) belongs to the job description repository, which HR hold.",
+        "footnote": "This sheet reflects what the org chart exposes about this position. The full detail of a job (duties, tasks, required competencies) belongs to the job description register, accessible to HR.",
         "itsYou": "This is you",
         "noReports": "None",
         "noSuperior": "No superior position visible",
@@ -2548,9 +2556,19 @@
         "phone": "Extension",
         "reports": "Direct reports",
         "reportsTo": "Reports to",
-        "vacant": "vacant"
+        "vacant": "vacant",
+        "readOnlyBadge": "Job description · view only",
+        "vacantPosition": "Vacant position",
+        "noStructure": "No division",
+        "thisIsYou": "This is you",
+        "departmentLabel": "Department / division",
+        "extensionLabel": "Phone extension",
+        "reportsToLabel": "Reports to",
+        "noManagerVisible": "No higher position visible",
+        "directReportsLabel": "Direct reports",
+        "occupancyLabel": "Occupancy"
       },
-      "subtitle": "Your place in the organisation: your reporting line upwards, colleagues at your level, and the positions reporting to yours.",
+      "subtitle": "Your place in the organisation: your reporting line upward, your peers at the same level, and the positions attached to yours.",
       "tiles": {
         "myManager": "My manager",
         "myPosition": "My position",
@@ -2559,7 +2577,17 @@
         "unassigned": "Unassigned"
       },
       "title": "Org chart",
-      "visibleCount": "{{visible}} / {{total}} positions visible"
+      "visibleCount": "{{visible}} / {{total}} positions visible",
+      "loadError": "Could not load the org chart.",
+      "unavailableTitle": "Org chart unavailable",
+      "unavailableDetail": "No position is attached to your account yet, so there is no starting point to draw your org chart. HR activates this when you are assigned.",
+      "myPosition": "My position",
+      "unassigned": "Unassigned",
+      "myManager": "My manager",
+      "peers": "Peers at the same level",
+      "directReports": "Positions attached to mine",
+      "windowNote": "You see only a window around your position: the depth shown above and below is a platform setting, applied server-side.",
+      "youBadge": "You"
     },
     "position": {
       "competencies": {
@@ -2588,10 +2616,12 @@
       "emptyDetail": "No position is associated with your account yet. HR handle the assignment, and this sheet fills in at that point.",
       "emptyTitle": "No position assigned",
       "equipment": {
-        "emptyDetail": "The platform keeps no inventory of assigned equipment: there is no equipment table, and inventing a list here would be false. What was issued to you appears in the steps of your journey that the IT department owns.",
+        "emptyDetail": "The platform keeps no inventory of assigned equipment: no equipment table exists, and inventing a list here would be false. What you were issued appears in the journey steps IT is responsible for.",
         "emptyTitle": "No equipment register",
         "link": "See the steps of my journey →",
-        "title": "Assigned equipment"
+        "title": "Assigned equipment",
+        "heading": "Assigned equipment",
+        "seeJourney": "See my journey steps →"
       },
       "fullOrgChart": "Full org chart",
       "gapStatus": {
@@ -2603,8 +2633,9 @@
       "loadFailed": "Could not load your job description.",
       "loading": "Loading your job description…",
       "mission": {
-        "empty": "No mission statement is written for this position in the platform. The full job description dossier (duties, standing tasks, responsibilities) is held by human resources.",
-        "title": "Mission"
+        "empty": "No mission is written for this position in the platform. The full job description file (duties, permanent tasks, responsibilities) is kept by human resources.",
+        "title": "Mission",
+        "heading": "Mission"
       },
       "noUnit": "No unit recorded",
       "reportingLine": {
@@ -2613,7 +2644,11 @@
         "reports": "Direct reports ({{count}})",
         "superior": "Superior",
         "title": "Reporting line",
-        "vacant": "vacant"
+        "vacant": "vacant",
+        "heading": "Reporting line",
+        "manager": "Manager",
+        "directReports_one": "Direct report ({{count}})",
+        "directReports_other": "Direct reports ({{count}})"
       },
       "snippet": {
         "empty": "Your position does not yet appear in the org chart.",
@@ -2623,10 +2658,48 @@
       "tiles": {
         "code": "Position code",
         "reportsTo": "Reports to",
-        "title": "Job title",
-        "unit": "Unit"
+        "title": "Title",
+        "unit": "Unit",
+        "positionCode": "Position code",
+        "structure": "Division"
       },
-      "title": "My job description"
+      "title": "My job description",
+      "loadError": "Could not load your job description.",
+      "unassignedTitle": "No position attached",
+      "unassignedDetail": "No position is associated with your account yet. HR carries out the assignment, and this sheet fills in at that point.",
+      "noStructure": "Division not specified",
+      "noManagerVisible": "No higher position visible",
+      "gap": {
+        "conforme": "Conforming",
+        "toDevelop": "To develop",
+        "critical": "Critical",
+        "notAssessed": "Not assessed"
+      },
+      "skills": {
+        "heading": "Required skills",
+        "subtitle": "The level expected by the position, compared with your assessed level. Assessments are entered by your manager.",
+        "noMatrix": "No competency framework is attached to this position yet.",
+        "conforming": "Conforming",
+        "toDevelop": "To develop",
+        "critical": "Critical",
+        "noRows": "No competency is declared for this position.",
+        "table": {
+          "competency": "Competency",
+          "family": "Family",
+          "required": "Required",
+          "attained": "Attained"
+        }
+      },
+      "orgSnippet": {
+        "heading": "My place in the organisation",
+        "subtitle": "Your branch: the position you report to, positions at the same level, and those attached to yours.",
+        "empty": "Your position does not appear in the org chart yet."
+      },
+      "fullDossier": {
+        "heading": "The full dossier",
+        "detail": "The detailed job description — duties, permanent tasks, responsibilities, training and experience requirements — is a versioned document kept by human resources. Your account does not have direct read access to it; ask your HR contact for it.",
+        "hrContactLink": "My HR contact →"
+      }
     },
     "surveys": {
       "answered": "Answered",
