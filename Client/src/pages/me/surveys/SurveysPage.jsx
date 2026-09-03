@@ -50,6 +50,7 @@ const INDICATOR_LABEL_KEYS = Object.fromEntries(INDICATORS.map((entry) => [entry
  * you cannot re-read is a survey you answer carelessly the second time.
  */
 export default function SurveysPage() {
+  const { t, i18n } = useTranslation();
   const [rounds, setRounds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,11 +67,11 @@ export default function SurveysPage() {
       const { data } = await surveysApi.myRounds();
       setRounds(data);
     } catch {
-      setError('Impossible de charger vos enquêtes.');
+      setError(t('me.surveys.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
