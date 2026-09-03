@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 import { dashboardApi } from '../../../api/dashboard.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
@@ -31,6 +32,7 @@ function StatCard({ label, value, suffix = '' }) {
  * Framer Motion, which also owns card hover lift.
  */
 export default function ManagerReportsPage() {
+  const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,14 +44,14 @@ export default function ManagerReportsPage() {
         const { data } = await dashboardApi.kpis();
         setData(data);
       } catch {
-        setError('Impossible de charger les indicateurs.');
+        setError(t('managerReports.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
-  if (loading) return <PageLoading label="Chargement des indicateurs…" />;
+  if (loading) return <PageLoading label={t('managerReports.loading')} />;
   if (error) return <PageError message={error} />;
 
   const hr = data?.hr;
@@ -57,40 +59,40 @@ export default function ManagerReportsPage() {
 
   return (
     <div>
-      <PageHeader eyebrow="Manager" title="Rapports" subtitle="Indicateurs limités à votre périmètre." />
+      <PageHeader eyebrow={t('manager.eyebrow')} title={t('managerReports.title')} subtitle={t('managerReports.subtitle')} />
 
-      {!hr && !onboarding && <EmptyState detail="Aucun indicateur disponible pour votre périmètre." />}
+      {!hr && !onboarding && <EmptyState detail={t('managerReports.empty')} />}
 
       {onboarding && (
         <div className="mb-10">
-          <h2 className="mb-3 font-display text-lg text-text">Parcours en cours</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('managerReports.onboardingTitle')}</h2>
           <motion.div
             variants={staggerContainer(0.06)}
             initial={initialOrNone(reduce)}
             animate="visible"
             className="grid grid-cols-2 gap-4 sm:grid-cols-4"
           >
-            <StatCard label="Parcours actifs" value={onboarding.journeys} />
-            <StatCard label="Progression moyenne" value={onboarding.averagePercent} suffix="%" />
-            <StatCard label="Tâches en retard" value={onboarding.overdueTasks} />
-            <StatCard label="Tâches bloquées" value={onboarding.blockedTasks} />
+            <StatCard label={t('managerReports.metrics.activeJourneys')} value={onboarding.journeys} />
+            <StatCard label={t('managerReports.metrics.averageProgress')} value={onboarding.averagePercent} suffix="%" />
+            <StatCard label={t('managerReports.metrics.overdueTasks')} value={onboarding.overdueTasks} />
+            <StatCard label={t('managerReports.metrics.blockedTasks')} value={onboarding.blockedTasks} />
           </motion.div>
         </div>
       )}
 
       {hr && (
         <div>
-          <h2 className="mb-3 font-display text-lg text-text">Indicateurs RH</h2>
+          <h2 className="mb-3 font-display text-lg text-text">{t('managerReports.hrTitle')}</h2>
           <motion.div
             variants={staggerContainer(0.06)}
             initial={initialOrNone(reduce)}
             animate="visible"
             className="grid grid-cols-2 gap-4 sm:grid-cols-4"
           >
-            <StatCard label="Taux de complétion" value={hr.completionRate} suffix="%" />
-            <StatCard label="Durée moyenne d'intégration" value={hr.averageOnboardingDays} suffix=" j" />
-            <StatCard label="Taux de confirmation" value={hr.confirmationRate} suffix="%" />
-            <StatCard label="Satisfaction" value={hr.satisfaction} suffix="%" />
+            <StatCard label={t('managerReports.metrics.completion')} value={hr.completionRate} suffix="%" />
+            <StatCard label={t('managerReports.metrics.duration')} value={hr.averageOnboardingDays} suffix={` ${t('managerReports.dayShort')}`} />
+            <StatCard label={t('managerReports.metrics.confirmation')} value={hr.confirmationRate} suffix="%" />
+            <StatCard label={t('managerReports.metrics.satisfaction')} value={hr.satisfaction} suffix="%" />
           </motion.div>
         </div>
       )}
