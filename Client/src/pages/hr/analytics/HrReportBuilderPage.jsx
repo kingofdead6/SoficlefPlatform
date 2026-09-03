@@ -17,11 +17,11 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
  * nothing here is generated prose.
  */
 const SECTIONS = [
-  { id: 'indicators', labelFr: 'Indicateurs RH (Module 10)', detailFr: 'Complétion, durée, confirmation, turnover, satisfaction, formation.' },
-  { id: 'onboarding', labelFr: 'Santé des parcours', detailFr: 'Parcours actifs, étapes en retard et bloquées, avancement moyen.' },
-  { id: 'satisfaction', labelFr: 'Satisfaction par jalon', detailFr: 'Score et taux de réponse pour J+7, J+30, J+60, J+90.' },
-  { id: 'directory', labelFr: 'Répertoire des collaborateurs', detailFr: 'Nom, poste, structure, manager, état, avancement.' },
-  { id: 'quality', labelFr: 'Qualité des données', detailFr: 'Structures sans responsable, postes sans fiche de poste.' },
+  { id: 'indicators' },
+  { id: 'onboarding' },
+  { id: 'satisfaction' },
+  { id: 'directory' },
+  { id: 'quality' },
 ];
 
 /**
@@ -59,12 +59,12 @@ export default function HrReportBuilderPage() {
         setSatisfaction(satisfactionRes.data);
         setDirectory(directoryRes.data ?? []);
       } catch {
-        setError('Impossible de charger les données du rapport.');
+        setError(t('hr.reportBuilder.loadError'));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   function toggle(id) {
     setSelected((current) => {
@@ -79,71 +79,75 @@ export default function HrReportBuilderPage() {
   const rows = useMemo(() => {
     const output = [];
     const dash = (value, suffix = '') =>
-      value === null || value === undefined ? 'non mesurable' : `${value}${suffix}`;
+      value === null || value === undefined ? t('hr.reportBuilder.notMeasurable') : `${value}${suffix}`;
 
     if (selected.has('indicators') && kpis?.hr) {
       const hr = kpis.hr;
-      output.push(['Indicateurs RH', 'Taux de complétion des parcours', dash(hr.completionRate, '%')]);
-      output.push(['Indicateurs RH', 'Durée moyenne d’intégration', dash(hr.averageOnboardingDays, ' jours')]);
-      output.push(['Indicateurs RH', 'Taux de confirmation', dash(hr.confirmationRate, '%')]);
-      output.push(['Indicateurs RH', 'Turnover à six mois', dash(hr.turnoverRate, '%')]);
-      output.push(['Indicateurs RH', 'Cohorte turnover', dash(hr.turnoverCohort)]);
-      output.push(['Indicateurs RH', 'Satisfaction', dash(hr.satisfaction, '%')]);
-      output.push(['Indicateurs RH', 'Formation à jour', dash(hr.trainingRate, '%')]);
+      output.push([t('hr.reportBuilder.sections.indicators'), t('hr.reportBuilder.rows.completion'), dash(hr.completionRate, '%')]);
+      output.push([t('hr.reportBuilder.sections.indicators'), t('hr.reportBuilder.rows.duration'), dash(hr.averageOnboardingDays, ` ${t('hr.reportBuilder.days')}`)]);
+      output.push([t('hr.reportBuilder.sections.indicators'), t('hr.reportBuilder.rows.confirmation'), dash(hr.confirmationRate, '%')]);
+      output.push([t('hr.reportBuilder.sections.indicators'), t('hr.reportBuilder.rows.turnover'), dash(hr.turnoverRate, '%')]);
+      output.push([t('hr.reportBuilder.sections.indicators'), t('hr.reportBuilder.rows.cohort'), dash(hr.turnoverCohort)]);
+      output.push([t('hr.reportBuilder.sections.indicators'), t('hr.reportBuilder.rows.satisfaction'), dash(hr.satisfaction, '%')]);
+      output.push([t('hr.reportBuilder.sections.indicators'), t('hr.reportBuilder.rows.training'), dash(hr.trainingRate, '%')]);
     }
 
     if (selected.has('onboarding') && kpis?.onboarding) {
       const onboarding = kpis.onboarding;
-      output.push(['Parcours', 'Parcours actifs', dash(onboarding.journeys)]);
-      output.push(['Parcours', 'Étapes en retard', dash(onboarding.overdueTasks)]);
-      output.push(['Parcours', 'Étapes bloquées', dash(onboarding.blockedTasks)]);
-      output.push(['Parcours', 'Avancement moyen', dash(onboarding.averagePercent, '%')]);
+      output.push([t('hr.reportBuilder.sections.onboarding'), t('hr.reportBuilder.rows.activeJourneys'), dash(onboarding.journeys)]);
+      output.push([t('hr.reportBuilder.sections.onboarding'), t('hr.reportBuilder.rows.overdue'), dash(onboarding.overdueTasks)]);
+      output.push([t('hr.reportBuilder.sections.onboarding'), t('hr.reportBuilder.rows.blocked'), dash(onboarding.blockedTasks)]);
+      output.push([t('hr.reportBuilder.sections.onboarding'), t('hr.reportBuilder.rows.progress'), dash(onboarding.averagePercent, '%')]);
     }
 
     if (selected.has('satisfaction') && satisfaction) {
-      output.push(['Satisfaction', 'Score global', dash(satisfaction.score, '%')]);
-      output.push(['Satisfaction', 'Taux de réponse', dash(satisfaction.responseRate, '%')]);
+      output.push([t('hr.reportBuilder.sections.satisfaction'), t('hr.reportBuilder.rows.overall'), dash(satisfaction.score, '%')]);
+      output.push([t('hr.reportBuilder.sections.satisfaction'), t('hr.reportBuilder.rows.responseRate'), dash(satisfaction.responseRate, '%')]);
       for (const milestone of satisfaction.byMilestone ?? []) {
         output.push([
-          'Satisfaction',
-          `Score J+${milestone.dayOffset}`,
+          t('hr.reportBuilder.sections.satisfaction'),
+          t('hr.reportBuilder.rows.milestone', { day: milestone.dayOffset }),
           dash(milestone.score, '%'),
         ]);
       }
     }
 
     if (selected.has('quality') && kpis?.quality) {
-      output.push(['Qualité des données', 'Structures sans responsable', dash(kpis.quality.unitsWithoutHead)]);
-      output.push(['Qualité des données', 'Postes sans fiche de poste', dash(kpis.quality.jobsWithoutDescription)]);
+      output.push([t('hr.reportBuilder.sections.quality'), t('hr.reportBuilder.rows.units'), dash(kpis.quality.unitsWithoutHead)]);
+      output.push([t('hr.reportBuilder.sections.quality'), t('hr.reportBuilder.rows.jobs'), dash(kpis.quality.jobsWithoutDescription)]);
       if (kpis.jobDescriptions) {
-        output.push(['Qualité des données', 'Couverture des fiches de poste', dash(kpis.jobDescriptions.coverage, '%')]);
+        output.push([t('hr.reportBuilder.sections.quality'), t('hr.reportBuilder.rows.coverage'), dash(kpis.jobDescriptions.coverage, '%')]);
       }
     }
 
     if (selected.has('directory')) {
       for (const person of directory) {
         output.push([
-          'Répertoire',
+          t('hr.reportBuilder.sections.directory'),
           person.displayName,
           [
-            person.positionFr ?? person.positionTitleFr ?? 'poste non renseigné',
-            person.unitCode ?? 'sans structure',
-            person.managerName ?? 'sans manager',
-            person.onboardingPercent === null ? 'hors parcours' : `${person.onboardingPercent}%`,
+            person.positionFr ?? person.positionTitleFr ?? t('hr.reportBuilder.unknownPosition'),
+            person.unitCode ?? t('hr.reportBuilder.noStructure'),
+            person.managerName ?? t('hr.reportBuilder.noManager'),
+            person.onboardingPercent === null ? t('hr.reportBuilder.noJourney') : `${person.onboardingPercent}%`,
           ].join(' — '),
         ]);
       }
     }
 
     return output;
-  }, [selected, kpis, satisfaction, directory]);
+  }, [selected, kpis, satisfaction, directory, t]);
 
   function handleExport() {
     const escape = (value) => {
       const text = String(value ?? '');
       return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
     };
-    const header = ['Section', 'Indicateur', 'Valeur'].join(',');
+    const header = [
+      t('hr.reportBuilder.table.section'),
+      t('hr.reportBuilder.table.indicator'),
+      t('hr.reportBuilder.table.value'),
+    ].join(',');
     const body = rows.map((row) => row.map(escape).join(',')).join('\r\n');
     const csv = `﻿${header}\r\n${body}`;
 
@@ -164,7 +168,7 @@ export default function HrReportBuilderPage() {
   return (
     <div>
       <Link to="/app/hr/analytics" className="mb-4 inline-block text-sm text-red-brand hover:underline">
-        ← Retour à l’analytique
+        {t('hr.reportBuilder.back')}
       </Link>
 
       <PageHeader
@@ -178,7 +182,7 @@ export default function HrReportBuilderPage() {
             disabled={rows.length === 0}
             className="rounded-app bg-red-brand px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-light disabled:opacity-50"
           >
-            Exporter le rapport (CSV)
+            {t('hr.reportBuilder.export')}
           </button>
         }
       />
@@ -189,10 +193,10 @@ export default function HrReportBuilderPage() {
         animate="visible"
         className="mb-8"
       >
-        <h2 className="mb-3 font-display text-lg text-text">Rédaction en langage naturel</h2>
+        <h2 className="mb-3 font-display text-lg text-text">{t('hr.reportBuilder.naturalTitle')}</h2>
         <EmptyState
-          title="Non disponible"
-          detail="La rédaction automatique d’un rapport (« Agent 5 ») suppose un fournisseur de modèle de langage, dont aucun n’est raccordé à cette plateforme — c’est une décision d’architecture assumée (ADR-003), pas une panne. Aucune interface de conversation n’est donc proposée ici : elle ne produirait rien de réel. Les données ci-dessous, elles, sont celles que la plateforme calcule effectivement, et sont exportables telles quelles."
+          title={t('hr.reportBuilder.unavailable')}
+          detail={t('hr.reportBuilder.naturalDetail')}
           muted
         />
       </motion.section>
@@ -204,7 +208,7 @@ export default function HrReportBuilderPage() {
         transition={{ delay: reduce ? 0 : 0.06 }}
         className="mb-8"
       >
-        <h2 className="mb-3 font-display text-lg text-text">Sections du rapport</h2>
+        <h2 className="mb-3 font-display text-lg text-text">{t('hr.reportBuilder.sectionsTitle')}</h2>
         <motion.div
           variants={staggerContainer(0.05)}
           initial={initialOrNone(reduce)}
@@ -227,9 +231,9 @@ export default function HrReportBuilderPage() {
                 }`}
               >
                 <p className={`font-medium ${active ? 'text-red-deep' : 'text-text'}`}>
-                  {section.labelFr}
+                  {t(`hr.reportBuilder.sectionLabels.${section.id}`)}
                 </p>
-                <p className="mt-1 text-xs text-text-dim">{section.detailFr}</p>
+                <p className="mt-1 text-xs text-text-dim">{t(`hr.reportBuilder.sectionDetails.${section.id}`)}</p>
               </motion.button>
             );
           })}
@@ -243,22 +247,22 @@ export default function HrReportBuilderPage() {
         transition={{ delay: reduce ? 0 : 0.12 }}
       >
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="font-display text-lg text-text">Aperçu</h2>
+          <h2 className="font-display text-lg text-text">{t('hr.reportBuilder.preview')}</h2>
           <span className="text-sm text-text-dim">
-            {rows.length} ligne{rows.length > 1 ? 's' : ''}
+            {t('hr.reportBuilder.rowCount', { count: rows.length })}
           </span>
         </div>
 
         {rows.length === 0 ? (
-          <EmptyState detail="Sélectionnez au moins une section pour composer un rapport." muted />
+          <EmptyState detail={t('hr.reportBuilder.selectSection')} muted />
         ) : (
           <div className={`max-h-[32rem] overflow-auto ${CARD}`}>
             <table className="w-full text-sm">
               <thead className="sticky top-0">
                 <tr className="border-b border-border bg-surface-2 text-left text-text-muted">
-                  <th className="px-4 py-3 font-medium">Section</th>
-                  <th className="px-4 py-3 font-medium">Indicateur</th>
-                  <th className="px-4 py-3 font-medium">Valeur</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.reportBuilder.table.section')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.reportBuilder.table.indicator')}</th>
+                  <th className="px-4 py-3 font-medium">{t('hr.reportBuilder.table.value')}</th>
                 </tr>
               </thead>
               <tbody>
