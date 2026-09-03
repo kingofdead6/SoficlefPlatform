@@ -29,7 +29,14 @@ router.post('/login', async (req, res) => {
 router.post('/logout', requireAuth, async (req, res) => {
   const context = { ip: ipFromReq(req), userAgent: req.headers['user-agent'] ?? null };
   await logout(req.user, req.sessionId, context);
-  res.clearCookie(SESSION_COOKIE, { path: '/' });
+  /*
+   * clearCookie must be called with the same sameSite/secure attributes the cookie was set
+   * with — a browser matches a Set-Cookie deletion against those attributes, not just the
+   * name and path, so a mismatch (e.g. clearing without `secure`/`sameSite: 'none'` a cookie
+   * that was set with them) can silently fail to remove it.
+   */
+  const { httpOnly, secure, sameSite, path } = sessionCookieOptions(new Date());
+  res.clearCookie(SESSION_COOKIE, { httpOnly, secure, sameSite, path });
   return res.json({ ok: true });
 });
 
