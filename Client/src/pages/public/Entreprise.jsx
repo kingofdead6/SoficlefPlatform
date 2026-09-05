@@ -160,14 +160,11 @@ export default function Entreprise() {
           </Reveal>
 
           <RevealGroup className="mt-9 space-y-4">
-            {company.activities.map((activity, index) => (
+            {company.activities.map((activity) => (
               <RevealItem key={activity.labelFr}>
                 <article className="grid gap-5 rounded-app border border-border bg-surface p-5 shadow-app sm:grid-cols-[128px_1fr] sm:items-center">
                   <Parallax distance={22} className="h-24 sm:h-full">
-                    <HatchPanel
-                      className="h-24 sm:h-full"
-                      icon={['⚙️', '🤝', '🚚'][index] ?? '⚙️'}
-                    />
+                    <HatchPanel className="h-24 sm:h-full" />
                   </Parallax>
                   <div>
                     <h3 className="font-display text-lg text-text">{activity.labelFr}</h3>

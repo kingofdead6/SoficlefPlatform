@@ -25,9 +25,9 @@ const SECTION = 'mx-auto max-w-6xl px-6';
  * only the icon, the route and the key stems are structural.
  */
 const CAPABILITIES = [
-  { id: 'structure', icon: '🗺️', to: '/organigramme', linkKey: 'public.home.capabilities.structureLink' },
-  { id: 'journey', icon: '📈' },
-  { id: 'skills', icon: '🎯' },
+  { id: 'structure', to: '/organigramme', linkKey: 'public.home.capabilities.structureLink' },
+  { id: 'journey' },
+  { id: 'skills' },
 ];
 
 export default function Home() {
@@ -168,7 +168,7 @@ export default function Home() {
           </Reveal>
 
           <RevealGroup className="mt-10 grid gap-5 lg:grid-cols-3">
-            {company.activities.map((activity, index) => (
+            {company.activities.map((activity) => (
               <RevealItem key={activity.labelFr} className="h-full">
                 <motion.article
                   data-cursor
@@ -176,11 +176,7 @@ export default function Home() {
                   transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   className="h-full overflow-hidden rounded-app border border-border bg-surface shadow-app transition-colors hover:border-red-brand"
                 >
-                  <HatchPanel
-                    className="h-36"
-                    icon={['⚙️', '🤝', '🚚'][index] ?? '⚙️'}
-                    label={activity.labelFr}
-                  />
+                  <HatchPanel className="h-36" label={activity.labelFr} />
                   <div className="p-5">
                     <h3 className="font-display text-lg text-text">{activity.labelFr}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-text-muted">{activity.contentFr}</p>
@@ -262,8 +258,7 @@ export default function Home() {
             {CAPABILITIES.map((capability) => (
               <RevealItem key={capability.id} className="h-full">
                 <div className="flex h-full flex-col rounded-app border border-border bg-bg p-6">
-                  <span aria-hidden className="text-2xl">{capability.icon}</span>
-                  <h3 className="mt-3 font-display text-lg text-text">
+                  <h3 className="font-display text-lg text-text">
                     {t(`public.home.capabilities.${capability.id}Title`)}
                   </h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-text-muted">
