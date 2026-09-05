@@ -79,11 +79,7 @@ export default function Organigramme() {
         titleFr: unit.nameFr,
         code: unit.code,
         type: unit.type,
-        icon: unit.icon,
         descriptionFr: unit.descriptionFr,
-        // The chart shows the unit's icon in place of a person's initials: these are
-        // structures, not people, and no personal data is exposed here.
-        holder: unit.icon ? { id: unit.id, displayName: unit.icon } : null,
       })),
     [units],
   );
@@ -187,10 +183,7 @@ export default function Organigramme() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-red-brand">
                     {typeLabel(selected.type)}
                   </p>
-                  <h3 className="mt-1 font-display text-xl text-text">
-                    {selected.icon ? `${selected.icon} ` : ''}
-                    {selected.titleFr}
-                  </h3>
+                  <h3 className="mt-1 font-display text-xl text-text">{selected.titleFr}</h3>
                 </div>
                 <button
                   type="button"
@@ -238,9 +231,6 @@ export default function Organigramme() {
                     {list.map((unit) => (
                       <RevealItem key={unit.id} className="h-full">
                         <article className="flex h-full gap-4 rounded-app border border-border bg-bg p-5">
-                          <span aria-hidden className="text-2xl leading-none">
-                            {unit.icon ?? '•'}
-                          </span>
                           <div className="min-w-0">
                             <h4 className="font-medium text-text">{unit.nameFr}</h4>
                             {unit.descriptionFr && (
