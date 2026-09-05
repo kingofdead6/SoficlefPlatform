@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { authApi } from '../api/auth.js';
 import { ApiError } from '../api/client.js';
@@ -8,6 +9,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const refresh = useCallback(async () => {
     try {
@@ -36,7 +38,12 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     await authApi.logout();
     setUser(null);
-  }, []);
+    // Navigate away immediately so ProtectedRoute never re-renders on the page
+    // being left behind — that render would otherwise stash this now-abandoned
+    // URL as location.state.from, which the next login on this tab/session
+    // would blindly reuse (surfacing the previous user's last page).
+    navigate('/login', { replace: true });
+  }, [navigate]);
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>

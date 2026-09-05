@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 
 import { AuthProvider } from './auth/AuthContext.jsx';
 import { ProtectedRoute } from './auth/ProtectedRoute.jsx';
+import { NotificationsProvider } from './notifications/NotificationsContext.jsx';
 import { AppShell } from './components/shell/AppShell.jsx';
 import LoginPage from './pages/login/LoginPage.jsx';
 import PendingPage from './pages/PendingPage.jsx';
@@ -106,6 +107,7 @@ import RemarksPage from './pages/remarks/RemarksPage.jsx';
 export default function App() {
   return (
     <AuthProvider>
+      <NotificationsProvider>
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
@@ -332,6 +334,7 @@ export default function App() {
 
         <Route path="*" element={<LoginPage />} />
       </Routes>
+      </NotificationsProvider>
     </AuthProvider>
   );
 }

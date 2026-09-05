@@ -1,18 +1,21 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import { notificationsApi } from '../../api/notifications.js';
+import { useNotifications } from '../../notifications/NotificationsContext.jsx';
 import { localeOf } from '../../lib/formatDate.js';
 
 /**
  * The notification centre (CDC v0.1 §9). Ported from
  * SoficlefPlatform's notification bell, as a full page rather than a dropdown — capped
  * at 20 rows by the API, oldest unread first, matching the source ordering.
+ *
+ * Backed by the shared NotificationsContext so marking read here also clears the
+ * top-bar bell's badge immediately, and vice versa.
  */
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { notifications, loading, error, unreadCount, markRead, markAllRead } = useNotifications();
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
   const formatDate = useCallback(
@@ -26,42 +29,10 @@ export default function NotificationsPage() {
     [i18n],
   );
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { data } = await notificationsApi.list();
-      setNotifications(data ?? []);
-    } catch {
-      setError('load');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  const markRead = async (id) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    try {
-      await notificationsApi.markRead(id);
-    } catch {
-      load();
-    }
+  const openNotification = (notification) => {
+    if (!notification.read) markRead(notification.id);
+    if (notification.href) navigate(notification.href);
   };
-
-  const markAllRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    try {
-      await notificationsApi.markRead();
-    } catch {
-      load();
-    }
-  };
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="space-y-6">
@@ -83,7 +54,7 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {loading ? (
+      {loading && notifications.length === 0 ? (
         <p className="text-text-dim text-sm">{t('common.states.loading')}</p>
       ) : error ? (
         <p className="text-sm text-red-brand">{t('notifications.loadFailed')}</p>
@@ -105,9 +76,13 @@ export default function NotificationsPage() {
                 )}
                 <p className="text-text-muted mt-1 text-xs">{formatDate(notification.createdAt)}</p>
                 {notification.href && (
-                  <a href={notification.href} className="text-red-strong mt-1 inline-block text-xs font-medium">
+                  <button
+                    type="button"
+                    onClick={() => openNotification(notification)}
+                    className="text-red-strong mt-1 inline-block text-xs font-medium hover:underline"
+                  >
                     {t('notifications.open')}
-                  </a>
+                  </button>
                 )}
               </div>
               {!notification.read && (

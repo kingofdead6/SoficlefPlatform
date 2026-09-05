@@ -32,9 +32,16 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const reduce = useReducedMotion();
 
+  // Only ever honor a same-session deep-link capture (ProtectedRoute redirecting
+  // an unauthenticated visit) — never a path left over from someone else's
+  // session on this tab, and never the login page itself.
+  const redirectTarget =
+    location.state?.from?.pathname && location.state.from.pathname !== '/login'
+      ? location.state.from.pathname
+      : '/app/me';
+
   if (user) {
-    const to = location.state?.from?.pathname ?? '/app/me';
-    return <Navigate to={to} replace />;
+    return <Navigate to={redirectTarget} replace />;
   }
 
   async function handleSubmit(event) {
@@ -43,7 +50,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, password);
-      navigate(location.state?.from?.pathname ?? '/app/me', { replace: true });
+      navigate(redirectTarget, { replace: true });
     } catch (err) {
       /*
        * `invalidCredentials` deliberately does not say which half was wrong: telling a

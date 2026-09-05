@@ -1,28 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import { notificationsApi } from '../../api/notifications.js';
+import { useNotifications } from '../../notifications/NotificationsContext.jsx';
 
-/** Small top-bar bell + dropdown, polling the same endpoint the full page reads. */
+/** Small top-bar bell + dropdown, backed by the shared NotificationsContext (polled). */
 export function NotificationBell() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const { notifications, unreadCount, markRead } = useNotifications();
   const ref = useRef(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    notificationsApi
-      .list()
-      .then(({ data }) => {
-        if (!cancelled) setNotifications(data ?? []);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     function onClickOutside(event) {
@@ -32,7 +20,11 @@ export function NotificationBell() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const handleSelect = (notification) => {
+    if (!notification.read) markRead(notification.id);
+    setOpen(false);
+    if (notification.href) navigate(notification.href);
+  };
 
   return (
     <div ref={ref} className="relative">
@@ -60,22 +52,33 @@ export function NotificationBell() {
           ) : (
             <ul className="divide-border max-h-80 divide-y overflow-y-auto">
               {notifications.slice(0, 8).map((notification) => (
-                <li key={notification.id} className={`px-3 py-2 ${notification.read ? '' : 'bg-red-brand/5'}`}>
-                  <p className="text-text text-xs font-medium">{notification.titleFr}</p>
-                  {notification.bodyFr && (
-                    <p className="text-text-dim mt-0.5 text-xs">{notification.bodyFr}</p>
-                  )}
+                <li key={notification.id}>
+                  <button
+                    type="button"
+                    onClick={() => handleSelect(notification)}
+                    className={`block w-full px-3 py-2 text-start transition-colors hover:bg-surface-2 ${
+                      notification.read ? '' : 'bg-red-brand/5'
+                    }`}
+                  >
+                    <p className="text-text text-xs font-medium">{notification.titleFr}</p>
+                    {notification.bodyFr && (
+                      <p className="text-text-dim mt-0.5 text-xs">{notification.bodyFr}</p>
+                    )}
+                  </button>
                 </li>
               ))}
             </ul>
           )}
-          <Link
-            to="/app/notifications"
-            onClick={() => setOpen(false)}
-            className="text-red-strong border-border block border-t px-3 py-2 text-center text-xs font-medium"
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              navigate('/app/notifications');
+            }}
+            className="text-red-strong border-border block w-full border-t px-3 py-2 text-center text-xs font-medium"
           >
             {t('common.notifications.seeAll')}
-          </Link>
+          </button>
         </div>
       )}
     </div>
