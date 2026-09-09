@@ -38,6 +38,18 @@ const TYPE_META = {
 const TYPE_ORDER = ['DIRECTION', 'STRUCTURE', 'UNITE_PRODUCTION', 'CELLULE'];
 
 /**
+ * Maps a unit's stored `type` onto OrgChart's `variant="unit"` colour tones. The apex
+ * (Direction Générale, the one node with no parent) is coloured separately as
+ * 'direction-general' rather than through this table — see the `toneOf` call below.
+ */
+const UNIT_TONE_BY_TYPE = {
+  DIRECTION: 'direction',
+  STRUCTURE: 'structure',
+  UNITE_PRODUCTION: 'structure',
+  CELLULE: 'cellule',
+};
+
+/**
  * /organigramme — the public organisation chart, replacing the former Carrières page.
  *
  * It renders the same shared OrgChart component the internal portals use, so the public
@@ -166,7 +178,9 @@ export default function Organigramme() {
             ) : (
               <OrgChart
                 nodes={nodes}
+                variant="unit"
                 emptyLabel={t('public.org.notPublished')}
+                toneOf={(node) => (node.parentPositionId ? UNIT_TONE_BY_TYPE[node.type] : 'direction-general')}
                 subtitleOf={(node) => typeLabel(node.type)}
                 onSelect={(node) => setSelected(node)}
               />

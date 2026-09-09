@@ -56,7 +56,7 @@ const PersonIcon = () => (
  * One card. `tone` drives the accent: 'vacant' for an empty post, 'flagged' for an
  * anomaly, 'root' for the top of the chart.
  */
-const OrgNodeCard = memo(function OrgNodeCard({ node, tone, subtitle, badge, onSelect, reduce }) {
+const OrgNodeCard = memo(function OrgNodeCard({ node, tone, subtitle, badge, onSelect, reduce, variant }) {
   const { t } = useTranslation();
   const holderName = node.holder?.displayName ?? null;
   const initials = initialsOf(holderName);
@@ -72,6 +72,45 @@ const OrgNodeCard = memo(function OrgNodeCard({ node, tone, subtitle, badge, onS
 
   const interactive = typeof onSelect === 'function';
   const Tag = interactive ? 'button' : 'div';
+
+  /*
+   * `variant="unit"` is the flat, solid-block look of the printed SOFICLEF organigramme:
+   * one colour per organisational level (direction générale / direction / structure /
+   * cellule) instead of the card-with-avatar shape the staffing charts use. It is opt-in
+   * so the positions-based charts elsewhere (HR, manager, "me", admin) are untouched.
+   */
+  if (variant === 'unit') {
+    const block = UNIT_TONE[tone] ?? UNIT_TONE.structure;
+
+    return (
+      <motion.div
+        whileHover={reduce || !interactive ? undefined : { y: -2 }}
+        transition={{ duration: 0.18 }}
+        data-org-card
+      >
+        <Tag
+          {...(interactive ? { type: 'button', onClick: () => onSelect(node) } : {})}
+          className={`flex w-[196px] flex-col items-center gap-1 rounded-md px-3 py-3 text-center shadow-app transition-transform ${block.shell} ${
+            interactive ? 'cursor-pointer hover:scale-[1.02]' : ''
+          }`}
+        >
+          <span className="w-full text-[13px] font-bold uppercase leading-snug tracking-tight">
+            {node.titleFr}
+          </span>
+          {subtitle && (
+            <span className={`w-full truncate text-[10px] uppercase tracking-wide ${block.subtitle}`}>
+              {subtitle}
+            </span>
+          )}
+          {badge && (
+            <span className="mt-0.5 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-medium text-text">
+              {badge}
+            </span>
+          )}
+        </Tag>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -111,15 +150,26 @@ const OrgNodeCard = memo(function OrgNodeCard({ node, tone, subtitle, badge, onS
   );
 });
 
+/**
+ * Solid block colours for `variant="unit"`, matching the printed organigramme: a red
+ * "Direction Générale" apex, olive-green directions, peach structures, grey cellules.
+ */
+const UNIT_TONE = {
+  'direction-general': { shell: 'bg-[#a01824] text-white', subtitle: 'text-white/75' },
+  direction: { shell: 'bg-[#7a8b3f] text-white', subtitle: 'text-white/75' },
+  structure: { shell: 'bg-[#f5c9a0] text-[#5c3a1e]', subtitle: 'text-[#5c3a1e]/70' },
+  cellule: { shell: 'bg-[#d9d9d9] text-[#3a3a3a]', subtitle: 'text-[#3a3a3a]/70' },
+};
+
 function Branch({ node, depth, ...shared }) {
-  const { toneOf, subtitleOf, badgeOf, onSelect, reduce } = shared;
+  const { toneOf, subtitleOf, badgeOf, onSelect, reduce, variant, line } = shared;
   const children = node.children ?? [];
   const hasChildren = children.length > 0;
 
   return (
     <li className="relative flex flex-col items-center" data-org-depth={depth}>
       {/* riser into this card, drawn for every node except the root row */}
-      {depth > 0 && <span className={`h-5 w-px border-l ${LINE}`} aria-hidden />}
+      {depth > 0 && <span className={`h-5 w-px border-l ${line}`} aria-hidden />}
 
       <OrgNodeCard
         node={node}
@@ -128,12 +178,13 @@ function Branch({ node, depth, ...shared }) {
         badge={badgeOf?.(node)}
         onSelect={onSelect}
         reduce={reduce}
+        variant={variant}
       />
 
       {hasChildren && (
         <>
           {/* stem out of this card */}
-          <span className={`h-5 w-px border-l ${LINE}`} aria-hidden />
+          <span className={`h-5 w-px border-l ${line}`} aria-hidden />
           <ul className="flex items-start justify-center">
             {children.map((child, index) => {
               const isFirst = index === 0;
@@ -151,7 +202,7 @@ function Branch({ node, depth, ...shared }) {
                   {!isOnly && (
                     <span
                       aria-hidden
-                      className={`absolute top-0 h-px border-t ${LINE} ${
+                      className={`absolute top-0 h-px border-t ${line} ${
                         isFirst ? 'left-1/2 right-0' : isLast ? 'left-0 right-1/2' : 'left-0 right-0'
                       }`}
                     />
@@ -170,11 +221,15 @@ function Branch({ node, depth, ...shared }) {
 /**
  * @param {object[]} nodes      flat node list ({ id, parentPositionId, titleFr, holder, … })
  * @param {(n) => string} toneOf      optional: 'vacant' | 'flagged' | 'root' | undefined
+ *                                    ('direction-general' | 'direction' | 'structure' |
+ *                                    'cellule' when `variant="unit"`)
  * @param {(n) => string} subtitleOf  optional small caps line (unit code, etc.)
  * @param {(n) => string} badgeOf     optional pill (e.g. "Intégration 60 %")
  * @param {(n) => void}   onSelect    optional: makes cards clickable
+ * @param {string}        variant     'card' (default, staffing charts) | 'unit' (flat
+ *                                    solid-colour blocks, the printed organigramme look)
  */
-export default function OrgChart({ nodes, toneOf, subtitleOf, badgeOf, onSelect, emptyLabel }) {
+export default function OrgChart({ nodes, toneOf, subtitleOf, badgeOf, onSelect, emptyLabel, variant = 'card' }) {
   const reduce = useReducedMotion();
   const roots = useMemo(() => buildOrgTree(nodes ?? []), [nodes]);
 
@@ -186,7 +241,10 @@ export default function OrgChart({ nodes, toneOf, subtitleOf, badgeOf, onSelect,
     );
   }
 
-  const shared = { toneOf, subtitleOf, badgeOf, onSelect, reduce };
+  // The printed organigramme's connectors read as warm orange/teal, not the neutral
+  // border colour the staffing cards use — kept to the 'unit' variant only.
+  const line = variant === 'unit' ? 'border-[#d98c3a]/70' : LINE;
+  const shared = { toneOf, subtitleOf, badgeOf, onSelect, reduce, variant, line };
 
   return (
     // The chart is as wide as the widest level; the scroll container is the caller's.
