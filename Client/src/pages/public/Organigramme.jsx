@@ -12,6 +12,7 @@ import {
   RevealGroup,
   RevealItem,
 } from '../../components/public/Visuals.jsx';
+import { localizedField, useLocalizedField } from '../../lib/localized.js';
 
 const SECTION = 'mx-auto max-w-6xl px-6';
 
@@ -59,11 +60,18 @@ const UNIT_TONE_BY_TYPE = {
  * how the company is organised, not where it is short-handed.
  */
 export default function Organigramme() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // Database content: the reader's language where it exists, French where it does not.
+  const text = useLocalizedField();
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
-  const [selected, setSelected] = useState(null);
+  /*
+   * The selected node is held by id, not as the node object. The node objects are rebuilt
+   * whenever the language changes, so holding one would pin the detail panel to the language
+   * it was opened in while the chart behind it switched.
+   */
+  const [selectedId, setSelectedId] = useState(null);
 
   /*
    * An unmapped type still falls back to its raw stored value rather than disappearing, so
@@ -82,19 +90,29 @@ export default function Organigramme() {
   /**
    * OrgChart keys on `parentPositionId` / `titleFr`, so the units are mapped onto that
    * shape rather than the component being forked for a second data source.
+   *
+   * The labels are resolved here rather than inside OrgChart, which is why the language is
+   * a dependency of this memo: without it the chart would keep the language it first
+   * rendered in. `localizedField` is used in place of the `text()` helper for exactly that
+   * reason — it takes the language as an argument, so the dependency is visible to the
+   * memo instead of hidden inside a closure rebuilt on every render.
    */
   const nodes = useMemo(
     () =>
       units.map((unit) => ({
         id: unit.id,
         parentPositionId: unit.parentId,
-        titleFr: unit.nameFr,
+        // OrgChart's own field name, carrying whichever language this reader gets.
+        titleFr: localizedField(unit, 'name', i18n.language),
         code: unit.code,
         type: unit.type,
-        descriptionFr: unit.descriptionFr,
+        descriptionFr: localizedField(unit, 'description', i18n.language),
       })),
-    [units],
+    [units, i18n.language],
   );
+
+  /** Derived, never stored: the panel follows both the selection and the language. */
+  const selected = nodes.find((node) => node.id === selectedId) ?? null;
 
   /*
    * Grouped and ordered top-down. The API sorts by `type` alphabetically, which would put
@@ -182,7 +200,7 @@ export default function Organigramme() {
                 emptyLabel={t('public.org.notPublished')}
                 toneOf={(node) => (node.parentPositionId ? UNIT_TONE_BY_TYPE[node.type] : 'direction-general')}
                 subtitleOf={(node) => typeLabel(node.type)}
-                onSelect={(node) => setSelected(node)}
+                onSelect={(node) => setSelectedId(node.id)}
               />
             )}
           </div>
@@ -201,7 +219,7 @@ export default function Organigramme() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setSelected(null)}
+                  onClick={() => setSelectedId(null)}
                   className="rounded-app border border-border bg-surface px-2.5 py-1 text-xs text-text-dim hover:text-red-brand"
                 >
                   {t('common.actions.close')}
@@ -246,10 +264,10 @@ export default function Organigramme() {
                       <RevealItem key={unit.id} className="h-full">
                         <article className="flex h-full gap-4 rounded-app border border-border bg-bg p-5">
                           <div className="min-w-0">
-                            <h4 className="font-medium text-text">{unit.nameFr}</h4>
+                            <h4 className="font-medium text-text">{text(unit, 'name')}</h4>
                             {unit.descriptionFr && (
                               <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
-                                {unit.descriptionFr}
+                                {text(unit, 'description')}
                               </p>
                             )}
                           </div>

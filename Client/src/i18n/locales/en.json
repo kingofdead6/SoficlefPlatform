@@ -216,6 +216,8 @@
       "askButton": "Ask",
       "asking": "Searching…",
       "askFailed": "The search failed. Please try again in a moment.",
+      "agentDisabled": "This agent has been switched off by the administration and no longer answers. Please take your question to HR or to your manager.",
+      "unknownAgent": "This agent does not exist on this platform. Reload the page — the list of agents may have changed.",
       "defaultEmptyDetail": "Ask a question, or pick one of the suggestions above.",
       "defaultPlaceholder": "Ask your question…",
       "degraded": {
@@ -997,6 +999,7 @@
         "published": "Published documents"
       },
       "operational": "Operational",
+      "disabled": "Switched off by the administration",
       "outOfScope": "Outside your access",
       "reads": "Reads",
       "resources": {
@@ -1568,7 +1571,7 @@
       "loadError": "Unable to load the AI configuration.",
       "eyebrow": "Administration",
       "title": "AI configuration",
-      "subtitle": "Provider, model, quota, agents and prompt templates — saved durably, awaiting a provider to be connected.",
+      "subtitle": "Provider, model, quota, agents and prompt templates. The agents and prompts drive the assistant; the provider is described here and wired in the server environment.",
       "tiles": {
         "declared": "Declared agents",
         "enabled": "Enabled agents",
@@ -1602,7 +1605,7 @@
       },
       "agents": {
         "title": "Agents",
-        "description": "An agent reads with the permissions of whoever queries it: it can never surface a row the person could not open themselves. Enabling an agent records the intent; agents marked \"operational\" already answer, by searching the platform's own data, with no language model at all.",
+        "description": "An agent reads with the permissions of whoever queries it: it can never surface a row the person could not open themselves. Switching an agent off stops it for everyone — it no longer answers and no longer queries the database. A prompt entered here is added to the agent’s built-in instructions; it does not replace them, so the rules against inventing anything and for citing sources always remain in force.",
         "empty": "No agents declared",
         "emptyDetail": "The agent catalogue is empty.",
         "operationalReformulated": "Operational · rephrased",
@@ -1616,7 +1619,7 @@
         "promptPlaceholder": "Instruction given to the agent. The rule that already applies without a provider: every answer cites its source, or admits it found nothing.",
         "savePrompt": "Save the prompt"
       },
-      "footnote": "The settings on this form are saved but do not yet drive the assistant: it reads its configuration from the server's environment (HF_API_KEY, HF_MODEL, HF_BASE_URL), not from this table. The {{count}} agent(s) marked \"operational\" answer by searching the platform's own data, with the permissions of the person asking{{tail}}",
+      "footnote": "The agents and prompts on this form drive the assistant. The provider, endpoint and model, however, are read from the server’s environment (HF_API_KEY, HF_MODEL, HF_BASE_URL) and not from this table: what is entered above describes them rather than replacing them. The {{count}} agent(s) marked \"operational\" answer by searching the platform’s own data, with the permissions of the person asking{{tail}}",
       "footnoteTailConnected": ", then have that answer rephrased by the connected model.",
       "footnoteTailNone": ", with no call to a language model."
     },
@@ -2315,7 +2318,30 @@
   "assistant": {
     "agents": {
       "available": "Available",
+      "disabled": "Switched off by the administration",
       "unavailable": "Outside your permissions"
+    },
+    "agentLabels": {
+      "orientation": {
+        "title": "Agent 1 · Orientation",
+        "purpose": "“Who do I talk to about…”, from the org chart you can see and the directory."
+      },
+      "documents": {
+        "title": "Agent 2 · Documents",
+        "purpose": "Find a procedure in the part of the document library that is open to you."
+      },
+      "onboarding": {
+        "title": "Agent 3 · Journey",
+        "purpose": "Answers about how your own onboarding journey is progressing."
+      },
+      "training": {
+        "title": "Agent 4 · Training",
+        "purpose": "Mandatory modules in the catalogue, and your own results."
+      },
+      "competencies": {
+        "title": "Agent 5 · Competencies",
+        "purpose": "The competencies a post expects, and the gaps recorded against them."
+      }
     },
     "empty": {
       "detail": "Your account has read access to none of the resources these agents query.",

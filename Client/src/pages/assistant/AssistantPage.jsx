@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { assistantApi } from '../../api/assistant.js';
 import AssistantChat, { ProviderNote } from '../../components/assistant/AssistantChat.jsx';
 import { PageLoading, EmptyState } from '../../components/manager/PageStates.jsx';
+import { useAgentLabels } from '../../lib/assistantLabels.js';
+import { isAgentUsable } from '../../lib/assistantAgents.js';
 import { cn } from '../../lib/cn.js';
 
 /**
@@ -22,6 +24,7 @@ export default function AssistantPage() {
   const [loading, setLoading] = useState(true);
   // Hooks run before the loading guard below, or the hook order changes between renders.
   const { t } = useTranslation();
+  const labelsOf = useAgentLabels();
 
   useEffect(() => {
     assistantApi
@@ -35,7 +38,7 @@ export default function AssistantPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const usable = useMemo(() => agents.filter((agent) => agent.available !== false), [agents]);
+  const usable = useMemo(() => agents.filter(isAgentUsable), [agents]);
   const active = usable.find((agent) => agent.id === activeId) ?? usable[0] ?? null;
 
   if (loading) return <PageLoading label={t('assistant.loading')} />;
@@ -67,7 +70,7 @@ export default function AssistantPage() {
                     : 'border-border text-text-dim hover:border-red-brand hover:text-red-brand',
                 )}
               >
-                {agent.titleFr}
+                {labelsOf(agent).title}
               </button>
             ))}
           </div>
@@ -76,8 +79,8 @@ export default function AssistantPage() {
             <AssistantChat
               key={active.id}
               agentId={active.id}
-              titleFr={active.titleFr}
-              purposeFr={active.purposeFr}
+              title={labelsOf(active).title}
+              purpose={labelsOf(active).purpose}
               provider={provider}
               modelName={modelName}
             />
@@ -92,8 +95,8 @@ export default function AssistantPage() {
             <li key={agent.id} className="rounded-app border border-border bg-surface p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-text">{agent.titleFr}</p>
-                  <p className="mt-1 text-sm text-text-dim">{agent.purposeFr}</p>
+                  <p className="text-sm font-medium text-text">{labelsOf(agent).title}</p>
+                  <p className="mt-1 text-sm text-text-dim">{labelsOf(agent).purpose}</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {agent.reads.map((resource) => (
                       <span
@@ -108,14 +111,16 @@ export default function AssistantPage() {
                 <span
                   className={cn(
                     'shrink-0 rounded-app px-2 py-0.5 text-xs font-medium',
-                    agent.available !== false
+                    isAgentUsable(agent)
                       ? 'bg-green-600/10 text-green-700'
                       : 'bg-text-dim/10 text-text-dim',
                   )}
                 >
-                  {agent.available !== false
+                  {isAgentUsable(agent)
                     ? t('assistant.agents.available')
-                    : t('assistant.agents.unavailable')}
+                    : agent.enabled === false
+                      ? t('assistant.agents.disabled')
+                      : t('assistant.agents.unavailable')}
                 </span>
               </div>
             </li>

@@ -56,6 +56,8 @@ model OrganizationUnit {
 
   icon           String?
   descriptionFr  String?
+  descriptionAr  String?
+  descriptionEn  String?
   headOccupancy  Occupancy?
   headLabelFr    String?
   criticalNoteFr String?
@@ -245,7 +247,11 @@ model Company {
   status         String
   website        String
   visionFr       String
+  visionAr       String?
+  visionEn       String?
   missionFr      String
+  missionAr      String?
+  missionEn      String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -260,7 +266,11 @@ model CompanyActivity {
   companyId String  @db.Uuid
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   labelFr   String
+  labelAr   String?
+  labelEn   String?
   contentFr String  @db.Text
+  contentAr String? @db.Text
+  contentEn String? @db.Text
   order     Int
 
   @@index([companyId])
@@ -282,7 +292,11 @@ model Strategy {
   id                String   @id @default(uuid()) @db.Uuid
   slug              String   @unique
   planFr            String
+  planAr            String?
+  planEn            String?
   globalObjectiveFr String   @db.Text
+  globalObjectiveAr String?  @db.Text
+  globalObjectiveEn String?  @db.Text
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -299,7 +313,11 @@ model MarketObjective {
   strategyId          String   @db.Uuid
   strategy            Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
   marketFr            String
+  marketAr            String?
+  marketEn            String?
   strategyFr          String   @db.Text
+  strategyAr          String?  @db.Text
+  strategyEn          String?  @db.Text
   marketShareTargetFr String
   revenueTargetFr     String
   order               Int
@@ -314,7 +332,11 @@ model StrategicProject {
   strategyId    String   @db.Uuid
   strategy      Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
   titleFr       String
+  titleAr       String?
+  titleEn       String?
   descriptionFr String   @db.Text
+  descriptionAr String?  @db.Text
+  descriptionEn String?  @db.Text
   order         Int
 
   @@index([strategyId])

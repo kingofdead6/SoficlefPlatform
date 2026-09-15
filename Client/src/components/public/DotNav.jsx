@@ -66,7 +66,7 @@ export default function DotNav() {
             ))}
           </nav>
 
-          <div className="ml-auto hidden items-center gap-3 lg:flex">
+          <div className="ms-auto hidden items-center gap-3 lg:flex">
             <LanguageSwitcher />
             <Link
               to="/login"
@@ -81,7 +81,7 @@ export default function DotNav() {
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-label={t(open ? 'nav.public.closeMenu' : 'nav.public.openMenu')}
-            className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-muted hover:bg-surface-2 hover:text-text lg:hidden"
+            className="ms-auto grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-muted hover:bg-surface-2 hover:text-text lg:hidden"
           >
             <BurgerIcon open={open} />
           </button>

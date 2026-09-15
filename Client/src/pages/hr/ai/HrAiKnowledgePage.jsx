@@ -10,6 +10,8 @@ import PageHeader from '../../../components/manager/PageHeader.jsx';
 import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { sectionVariants, staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { useAgentLabels } from '../../../lib/assistantLabels.js';
+import { isAgentUsable } from '../../../lib/assistantAgents.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
 
@@ -43,6 +45,7 @@ const RESOURCE_LABELS = {
  */
 export default function HrAiKnowledgePage() {
   const { t } = useTranslation();
+  const labelsOf = useAgentLabels();
   const [agents, setAgents] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +80,8 @@ export default function HrAiKnowledgePage() {
   );
 
   const liveAgents = agents.filter((agent) => agent.live);
-  const testableAgents = agents.filter((agent) => agent.available !== false);
+  // Only agents this HR user could actually get an answer out of are worth a test bench.
+  const testableAgents = agents.filter(isAgentUsable);
   const testAgent =
     testableAgents.find((agent) => agent.id === testAgentId) ?? testableAgents[0] ?? null;
 
@@ -144,18 +148,25 @@ export default function HrAiKnowledgePage() {
           {agents.map((agent) => (
             <motion.div key={agent.id} variants={staggerItem} className={`${CARD} p-5`}>
               <div className="flex items-start justify-between gap-2">
-                <p className="font-display text-lg text-text">{agent.titleFr}</p>
+                <p className="font-display text-lg text-text">{labelsOf(agent).title}</p>
                 <span
                   className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                    agent.available !== false
+                    isAgentUsable(agent)
                       ? 'bg-status-green/10 text-status-green'
                       : 'bg-surface-2 text-text-dim'
                   }`}
                 >
-                  {agent.available !== false ? t('hr.knowledge.operational') : t('hr.knowledge.outOfScope')}
+                  {/* Three states, not two: "out of your scope" and "switched off for
+                      everyone" are different facts, and HR is exactly the reader who needs
+                      to tell them apart before reporting an agent as broken. */}
+                  {isAgentUsable(agent)
+                    ? t('hr.knowledge.operational')
+                    : agent.enabled === false
+                      ? t('hr.knowledge.disabled')
+                      : t('hr.knowledge.outOfScope')}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-text-dim">{agent.purposeFr}</p>
+              <p className="mt-1 text-sm text-text-dim">{labelsOf(agent).purpose}</p>
 
               <div className="mt-4 border-t border-border pt-3">
                 <p className="mb-2 text-xs font-medium uppercase tracking-[0.08em] text-text-dim">
@@ -212,7 +223,7 @@ export default function HrAiKnowledgePage() {
                       : 'border-border text-text-dim hover:border-red-brand hover:text-red-brand'
                   }`}
                 >
-                  {agent.titleFr}
+                  {labelsOf(agent).title}
                 </button>
               ))}
             </div>
@@ -221,10 +232,10 @@ export default function HrAiKnowledgePage() {
               <AssistantChat
                 key={testAgent.id}
                 agentId={testAgent.id}
-                purposeFr={testAgent.purposeFr}
+                purpose={labelsOf(testAgent).purpose}
                 provider={provider}
                 modelName={modelName}
-                emptyDetailFr={t('hr.knowledge.test.emptyChat')}
+                emptyDetail={t('hr.knowledge.test.emptyChat')}
               />
             )}
           </>

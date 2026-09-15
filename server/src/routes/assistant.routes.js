@@ -7,6 +7,8 @@ import { AGENTS, AGENT_IDS } from '../domain/assistant/agents.js';
 import { canAnyScope } from '../domain/auth/authorization.js';
 import { isConfigured, modelName } from '../infrastructure/ai/huggingface.js';
 import { rateLimiter } from '../infrastructure/security/rate-limit.js';
+import { ASSISTANT_LANGUAGES } from '../application/assistant/language.js';
+import { isAgentEnabled } from '../application/assistant/config.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -19,27 +21,24 @@ router.use(requireAuth);
  * nothing more. With no key the endpoints behave identically minus the rephrasing, so the
  * feature does not depend on an external service being reachable.
  */
+/**
+ * How each agent is announced to a reader.
+ *
+ * Catalogue *keys*, not sentences. This used to hold French `titleFr`/`purposeFr` strings,
+ * which meant the one part of the assistant that names what it does stayed French on the
+ * English and Arabic interfaces — the agent picker read "Agent 3 · Parcours" next to an
+ * otherwise fully translated page. The server has no business choosing that wording anyway:
+ * it knows which agents exist, the client knows which language the reader is in.
+ *
+ * `order` travels with them because "Agent 1 … Agent 5" is a numbering the copy refers to,
+ * and a client sorting agents itself would have to duplicate it.
+ */
 const AGENT_LABELS = {
-  orientation: {
-    titleFr: 'Agent 1 · Accueil',
-    purposeFr: '« À qui m’adresser pour… », depuis l’organigramme visible et l’annuaire.',
-  },
-  documents: {
-    titleFr: 'Agent 2 · Documents',
-    purposeFr: 'Retrouver une procédure dans la bibliothèque documentaire qui vous est ouverte.',
-  },
-  onboarding: {
-    titleFr: 'Agent 3 · Parcours',
-    purposeFr: 'Répondre sur l’avancement de votre propre parcours d’intégration.',
-  },
-  training: {
-    titleFr: 'Agent 4 · Formation',
-    purposeFr: 'Modules obligatoires du catalogue et vos propres résultats.',
-  },
-  competencies: {
-    titleFr: 'Agent 5 · Compétences',
-    purposeFr: 'Compétences attendues d’un poste et écarts constatés.',
-  },
+  orientation: { labelKey: 'assistant.agentLabels.orientation', order: 1 },
+  documents: { labelKey: 'assistant.agentLabels.documents', order: 2 },
+  onboarding: { labelKey: 'assistant.agentLabels.onboarding', order: 3 },
+  training: { labelKey: 'assistant.agentLabels.training', order: 4 },
+  competencies: { labelKey: 'assistant.agentLabels.competencies', order: 5 },
 };
 
 /**
@@ -50,32 +49,60 @@ const AGENT_LABELS = {
  * *actual* environment state so the UI can tell the reader whether a model phrased the
  * answer or the platform listed the rows itself — neither claim should be hardcoded in a
  * page.
+ *
+ * Three different "can I use this?" facts travel separately rather than being collapsed into
+ * one boolean, because a reader who cannot use an agent deserves to know which of them is the
+ * reason:
+ *   - `live`      — the platform has a retriever for it at all.
+ *   - `available` — this caller's permissions reach what it reads.
+ *   - `enabled`   — an administrator has not switched it off.
  */
-router.get('/agents', (req, res) => {
+router.get('/agents', async (req, res, next) => {
+  try {
   const configured = isConfigured();
 
-  const data = AGENT_IDS.map((id) => ({
-    id,
-    ...AGENTS[id],
-    ...AGENT_LABELS[id],
-    live: true,
-    /*
-     * Whether *this* caller can use the agent, derived from the agent's own declared `reads`
-     * and the caller's permissions — never from their role name. A page that hardcoded
-     * "managers get these three" would drift from the permission catalogue the moment a role
-     * changed; this cannot, because it asks the same `canAnyScope` the retrievers ask.
-     */
-    available: AGENTS[id].reads.some((resource) => canAnyScope(req.user, 'read', resource)),
-  }));
+  const data = await Promise.all(
+    AGENT_IDS.map(async (id) => ({
+      id,
+      ...AGENTS[id],
+      ...AGENT_LABELS[id],
+      live: true,
+      /*
+       * Whether *this* caller can use the agent, derived from the agent's own declared
+       * `reads` and the caller's permissions — never from their role name. A page that
+       * hardcoded "managers get these three" would drift from the permission catalogue the
+       * moment a role changed; this cannot, because it asks the same `canAnyScope` the
+       * retrievers ask.
+       */
+      available: AGENTS[id].reads.some((resource) => canAnyScope(req.user, 'read', resource)),
+      /** The administrator's switch (/admin/ai). Absent means on. */
+      enabled: await isAgentEnabled(id),
+    })),
+  );
 
   res.json({
     data,
     provider: configured ? 'huggingface' : null,
     modelName: modelName(),
+    /** Which languages an answer can be requested in, so the client need not hardcode them. */
+    languages: ASSISTANT_LANGUAGES,
   });
+  } catch (error) {
+    next(error);
+  }
 });
 
-const Ask = z.object({ question: z.string().trim().min(2).max(300) });
+/**
+ * `language` is optional and unconstrained beyond being a short string: the application layer
+ * narrows it (`assistantLanguage`) and falls back to French. Validating it against the
+ * supported list *here* would turn "this deployment does not speak Tamazight yet" into a 422
+ * with no answer at all, where falling back gives the reader their answer in French — the
+ * lesser of the two failures by a wide margin.
+ */
+const Ask = z.object({
+  question: z.string().trim().min(2).max(300),
+  language: z.string().trim().max(16).optional(),
+});
 
 /**
  * Per-user rate limit on the model-backed endpoints.
@@ -96,11 +123,13 @@ async function askLimited(req, res) {
   );
 
   if (!allowed) {
-    res.status(429).json({
-      error: 'rate-limited',
-      message: 'Trop de questions en peu de temps. Réessayez dans un instant.',
-      retryAt: resetAt,
-    });
+    /*
+     * No prose in the body. The client already renders its own translated sentence for a 429
+     * (`public.assistant.tooManyQuestions`), so a French `message` here is either ignored or,
+     * worse, shown to an Arabic reader. The status code and `retryAt` are the facts; the
+     * wording belongs to whoever is displaying it.
+     */
+    res.status(429).json({ error: 'rate-limited', retryAt: resetAt });
     return false;
   }
   return true;
@@ -118,7 +147,9 @@ router.post('/orientation/ask', async (req, res, next) => {
     }
     if (!(await askLimited(req, res))) return;
 
-    res.json(await answerWithAgent(req.user, 'orientation', parsed.data.question));
+    res.json(
+      await answerWithAgent(req.user, 'orientation', parsed.data.question, parsed.data.language),
+    );
   } catch (error) {
     next(error);
   }
@@ -138,7 +169,9 @@ router.post('/:agentId/ask', async (req, res, next) => {
     }
     if (!(await askLimited(req, res))) return;
 
-    res.json(await answerWithAgent(req.user, agentId, parsed.data.question));
+    res.json(
+      await answerWithAgent(req.user, agentId, parsed.data.question, parsed.data.language),
+    );
   } catch (error) {
     next(error);
   }

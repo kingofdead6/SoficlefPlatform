@@ -12,11 +12,14 @@ import {
   RevealGroup,
   RevealItem,
 } from '../../components/public/Visuals.jsx';
+import { useLocalizedField } from '../../lib/localized.js';
 
 const SECTION = 'mx-auto max-w-6xl px-6';
 
 export default function Strategie() {
   const { t } = useTranslation();
+  // Database content: the reader's language where it exists, French where it does not.
+  const text = useLocalizedField();
   const [strategy, setStrategy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -35,8 +38,9 @@ export default function Strategie() {
       <section data-flock className="relative flex min-h-[60svh] flex-col justify-center overflow-hidden border-b border-border">
         <MeshBackdrop />
         <div className={`${SECTION} relative pb-16 pt-28 lg:pb-20 lg:pt-28`}>
-          {/* planFr is database content; only the fallback is ours to translate. */}
-          <Eyebrow>{strategy?.planFr ?? t('public.strategy.eyebrowFallback')}</Eyebrow>
+          {/* The plan's name is database content; the fallback covers there being no
+              strategy row at all, which is not the same as an untranslated one. */}
+          <Eyebrow>{strategy ? text(strategy, 'plan') : t('public.strategy.eyebrowFallback')}</Eyebrow>
           <h1
             className="max-w-3xl font-display text-4xl leading-[1.1] text-text sm:text-5xl"
             style={{ textWrap: 'balance' }}
@@ -47,7 +51,7 @@ export default function Strategie() {
           </h1>
           {strategy?.globalObjectiveFr && (
             <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-text-muted">
-              {strategy.globalObjectiveFr}
+              {text(strategy, 'globalObjective')}
             </p>
           )}
         </div>
@@ -83,11 +87,11 @@ export default function Strategie() {
 
           <RevealGroup className="mt-9 grid gap-5 lg:grid-cols-2">
             {strategy.markets.map((market) => (
-              <RevealItem key={market.marketFr} className="h-full">
+              <RevealItem key={market.slug ?? market.marketFr} className="h-full">
                 <article className="flex h-full flex-col rounded-app border border-border bg-surface p-6 shadow-app">
-                  <h3 className="font-display text-xl text-red-deep">{market.marketFr}</h3>
+                  <h3 className="font-display text-xl text-red-deep">{text(market, 'market')}</h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-text-muted">
-                    {market.strategyFr}
+                    {text(market, 'strategy')}
                   </p>
 
                   <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-border pt-4">
@@ -134,9 +138,9 @@ export default function Strategie() {
                 <RevealItem key={project.code} className="h-full">
                   <article className="flex h-full flex-col rounded-app border border-border bg-surface p-5 shadow-app">
                     <span className="font-mono text-xs text-red-brand">{project.code}</span>
-                    <h3 className="mt-1.5 font-medium text-text">{project.titleFr}</h3>
+                    <h3 className="mt-1.5 font-medium text-text">{text(project, 'title')}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-text-muted">
-                      {project.descriptionFr}
+                      {text(project, 'description')}
                     </p>
                   </article>
                 </RevealItem>

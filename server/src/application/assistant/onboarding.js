@@ -1,6 +1,7 @@
 import { canAnyScope } from '../../domain/auth/authorization.js';
 import { loadJourney } from '../onboarding/journey.js';
 import { score, terms, topMatches } from './matching.js';
+import { everyLanguage, formatDate, partSeparator, vocabulary } from './language.js';
 
 /**
  * Agent 3 — "what is left on my checklist".
@@ -14,22 +15,21 @@ import { score, terms, topMatches } from './matching.js';
  * Declared `reads` (domain/assistant/agents.js): onboarding_instance, onboarding_task.
  */
 
-const STATUS_FR = {
-  TODO: 'à faire',
-  IN_PROGRESS: 'en cours',
-  DONE: 'terminée',
-  BLOCKED: 'bloquée',
-  VALIDATED: 'validée',
-};
+/**
+ * Every language's word for each task status, so a question matches whichever one the reader
+ * happened to type. Built once at module load — the table is constant.
+ */
+const STATUS_ALIASES = Object.fromEntries(
+  ['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED', 'VALIDATED'].map((status) => [
+    status,
+    everyLanguage((words) => words.taskStatus[status]),
+  ]),
+);
 
-function frenchDate(value) {
-  if (!value) return null;
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString('fr-FR');
-}
+export async function retrieveOnboarding(user, question, language) {
+  const words = vocabulary(language);
+  const separator = partSeparator(language);
 
-export async function retrieveOnboarding(user, question) {
   if (!canAnyScope(user, 'read', 'onboarding_task')) return { snippets: [], sources: [] };
 
   const questionTerms = terms(question);
@@ -41,25 +41,32 @@ export async function retrieveOnboarding(user, question) {
   const candidates = [];
 
   for (const task of journey.tasks) {
+    /*
+     * The status is matched in every language, not only the one being answered in: someone
+     * reading the Arabic interface still types "en retard" or "blocked" as often as not, and
+     * a status word that only matches in the active language would drop their question.
+     */
+    const statusWord = words.taskStatus[task.status] ?? task.status;
+    const statusAliases = STATUS_ALIASES[task.status] ?? '';
+
     const weight = score(
-      `${task.titleFr} ${task.detailFr ?? ''} ${task.dayLabelFr ?? ''} ${task.phase ?? ''} ${
-        STATUS_FR[task.status] ?? task.status
-      }`,
+      `${task.titleFr} ${task.detailFr ?? ''} ${task.dayLabelFr ?? ''} ${task.phase ?? ''} ${statusAliases}`,
       questionTerms,
     );
     if (weight === 0) continue;
 
-    const due = frenchDate(task.dueDate);
+    const due = formatDate(task.dueDate, language);
+    const timing = task.overdue ? words.overdue : task.dueSoon ? words.dueSoon : null;
     const parts = [
-      `${task.titleFr} — ${STATUS_FR[task.status] ?? task.status}`,
-      due ? `échéance ${due}${task.overdue ? ' (en retard)' : task.dueSoon ? ' (bientôt)' : ''}` : null,
-      task.phase ? `phase ${task.phase}` : null,
+      `${task.titleFr} — ${statusWord}`,
+      due ? `${words.due(due)}${timing ? ` (${timing})` : ''}` : null,
+      task.phase ? words.phase(task.phase) : null,
       task.detailFr ? task.detailFr : null,
     ].filter(Boolean);
 
     candidates.push({
       score: weight,
-      detail: parts.join(' · '),
+      detail: parts.join(separator),
       source: {
         kind: 'onboarding_task',
         id: task.milestoneId,

@@ -180,7 +180,7 @@ export default function Takeover() {
           <figure
             data-art-left
             aria-hidden
-            className="pointer-events-none absolute hidden origin-top will-change-transform md:left-[3vw] md:top-[30%] md:block md:w-[16vw] md:max-w-[190px]"
+            className="pointer-events-none absolute hidden origin-top will-change-transform md:start-[3vw] md:top-[30%] md:block md:w-[16vw] md:max-w-[190px]"
           >
             <svg viewBox="0 0 120 260" className="w-full">
               <circle cx="60" cy="46" r="34" fill="none" stroke="#f2879a" strokeWidth="11" />
@@ -193,7 +193,7 @@ export default function Takeover() {
           <figure
             data-art-right
             aria-hidden
-            className="pointer-events-none absolute hidden origin-top will-change-transform md:right-[3vw] md:top-[30%] md:block md:w-[14vw] md:max-w-[170px]"
+            className="pointer-events-none absolute hidden origin-top will-change-transform md:end-[3vw] md:top-[30%] md:block md:w-[14vw] md:max-w-[170px]"
           >
             <svg viewBox="0 0 120 200" className="w-full">
               <rect x="14" y="78" width="92" height="110" rx="14" fill="none" stroke="#f2879a" strokeWidth="10" />
@@ -203,8 +203,8 @@ export default function Takeover() {
             </svg>
           </figure>
 
-          <div className="relative z-10 w-full self-start px-6 pt-48 md:ml-auto md:px-10 md:pt-[26vh] xl:px-16">
-            <div className="w-full max-w-[520px] md:ml-auto md:mr-[14vw]">
+          <div className="relative z-10 w-full self-start px-6 pt-48 md:ms-auto md:px-10 md:pt-[26vh] xl:px-16">
+            <div className="w-full max-w-[520px] md:ms-auto md:me-[14vw]">
               <span data-rule aria-hidden className="mb-5 block h-px w-full bg-red-accent/60 md:mb-6" />
               <p
                 data-sub

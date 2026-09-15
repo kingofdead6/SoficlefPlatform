@@ -77,6 +77,33 @@ async function seedPermissionsAndRoles() {
   }
 }
 
+/**
+ * The one Scope row for a scope type that hangs off no organizational unit.
+ *
+ * `findFirst`-then-`create` rather than `upsert`, because Scope's unique key is the compound
+ * `(type, organizationUnitId)` and this is exactly the case where the second half is NULL.
+ * Prisma will not address a compound unique containing a null — the seed used to pass one
+ * anyway and died on `Argument \`organizationUnitId\` must not be null`, which meant a fresh
+ * database ended with permissions and roles but *no demo account able to log in*: the failure
+ * happened between creating the users and granting them their roles.
+ *
+ * src/application/auth/assign-role.js already works around the same limitation the same way;
+ * this is that workaround applied to the one place that had missed it.
+ *
+ * Not racy in practice: the seed is a single sequential process. Postgres would not protect
+ * against a concurrent one here in any case, since a unique index treats two NULLs as
+ * distinct values and would happily accept both rows.
+ */
+async function unscopedScope(type) {
+  const existing = await prisma.scope.findFirst({
+    where: { type, organizationUnitId: null },
+    select: { id: true },
+  });
+  if (existing) return existing;
+
+  return prisma.scope.create({ data: { type }, select: { id: true } });
+}
+
 async function seedDemoUsers() {
   const passwordHash = await argon2.hash(DEMO_PASSWORD, { type: argon2.argon2id });
 
@@ -100,28 +127,14 @@ async function seedDemoUsers() {
       select: { id: true },
     });
 
-    let scopeId = null;
-    if (ROLES[demo.role].naturalScope === 'ORGANIZATION_UNIT') {
-      // No organizational skeleton seeded in this minimal pass, so a MANAGER demo
-      // account is granted GLOBAL for now rather than an unscoped (and therefore
-      // empty) ORGANIZATION_UNIT assignment. Note in the report: revisit once real
-      // org units exist.
-      const scope = await prisma.scope.upsert({
-        where: { type_organizationUnitId: { type: 'GLOBAL', organizationUnitId: null } },
-        create: { type: 'GLOBAL' },
-        update: {},
-        select: { id: true },
-      });
-      scopeId = scope.id;
-    } else {
-      const scope = await prisma.scope.upsert({
-        where: { type_organizationUnitId: { type: ROLES[demo.role].naturalScope, organizationUnitId: null } },
-        create: { type: ROLES[demo.role].naturalScope },
-        update: {},
-        select: { id: true },
-      });
-      scopeId = scope.id;
-    }
+    /*
+     * No organizational skeleton is seeded in this minimal pass, so a MANAGER demo account
+     * is granted GLOBAL rather than an unscoped — and therefore empty — ORGANIZATION_UNIT
+     * assignment. Note in the report: revisit once real org units exist.
+     */
+    const naturalScope = ROLES[demo.role].naturalScope;
+    const scopeType = naturalScope === 'ORGANIZATION_UNIT' ? 'GLOBAL' : naturalScope;
+    const { id: scopeId } = await unscopedScope(scopeType);
 
     const existing = await prisma.userRole.findFirst({
       where: { userId: user.id, roleId: role.id },

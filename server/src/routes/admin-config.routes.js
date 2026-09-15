@@ -9,6 +9,7 @@ import { prisma } from '../infrastructure/db/client.js';
 import { ALL_PERMISSIONS, parsePermission } from '../domain/auth/permissions.js';
 import { CONNECTOR_IDS, CONNECTORS, connectorStatuses } from '../domain/admin/connectors.js';
 import { AGENT_IDS } from '../domain/assistant/agents.js';
+import { invalidateAssistantConfig } from '../application/assistant/config.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -401,7 +402,17 @@ router.post('/connectors/:key/test', async (req, res) => {
 });
 
 /* ========================================================================================
- * AI configuration (/admin/ai). Stored, never consumed — ADR-003.
+ * AI configuration (/admin/ai).
+ *
+ * Two of these fields now *drive* the assistant rather than only recording an intention:
+ * `agentsEnabled` decides whether an agent answers at all, and `promptTemplates` is appended
+ * to the built-in system prompt for that agent. Both are read in
+ * application/assistant/config.js, which also states the limits — an absent entry means
+ * enabled, and a template adds to the grounding rules rather than replacing them.
+ *
+ * `provider` / `endpoint` / `model` / `monthlyQuota` remain descriptive: the model call reads
+ * the server environment (HF_*), because an endpoint and a credential editable from a web
+ * form is a different security decision from a feature toggle, and not one this table makes.
  * ======================================================================================== */
 
 const AI_CONFIG_ROW = 'singleton';
@@ -482,6 +493,13 @@ router.patch('/ai', async (req, res) => {
         before: existing,
         after,
       });
+
+      /*
+       * The assistant caches this row for a few seconds; without this, an administrator
+       * toggling an agent off would watch it keep answering until the cache expired and
+       * reasonably conclude the switch was broken.
+       */
+      invalidateAssistantConfig();
 
       return after;
     },
