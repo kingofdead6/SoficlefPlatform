@@ -59,6 +59,10 @@ export default function Takeover() {
       const descLayer = query('[data-desc-layer]');
       const leftArt = query('[data-art-left]');
       const rightArt = query('[data-art-right]');
+      const keyOutline = query('[data-key-outline]');
+      const keyHole = query('[data-key-hole]');
+      const keyLayer = query('[data-key-layer]');
+      const keyPaths = [keyOutline, keyHole].filter(Boolean);
 
       if (!word || !sub) return;
 
@@ -75,6 +79,22 @@ export default function Takeover() {
       if (rightArt) gsap.set(rightArt, { opacity: 0, rotate: swing, transformOrigin: '50% -140%' });
 
       /*
+       * The key is drawn by dashing each stroke to its own length and hiding it by exactly
+       * that much: tweening the offset back to zero walks the dash along the path, which is
+       * what reads as a pen drawing it. Measured with getTotalLength() rather than declared
+       * with the `pathLength` attribute — one call per path at setup, and no dependence on
+       * a normalisation some engines have been inconsistent about.
+       */
+      const dash = (path) => {
+        if (!path) return;
+        const length = path.getTotalLength();
+        gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
+      };
+      keyPaths.forEach(dash);
+
+      if (keyLayer) gsap.set(keyLayer, { opacity: 1 });
+
+      /*
        * Reduced motion: lay the finished composition out and stop. Nothing pins, nothing
        * scrubs — the section is a normal, readable block of content.
        */
@@ -86,6 +106,10 @@ export default function Takeover() {
         gsap.set(word, { scale: 0.32 });
         if (descLayer) gsap.set(descLayer, { opacity: 1 });
         [leftArt, rightArt].forEach((el) => el && gsap.set(el, { rotate: 0, opacity: 1 }));
+        // The key is shown finished rather than half-drawn: with no scrub to complete it,
+        // any other offset would freeze it as a broken shape.
+        keyPaths.forEach((el) => gsap.set(el, { strokeDashoffset: 0 }));
+        if (keyLayer) gsap.set(keyLayer, { opacity: 0.22 });
         return;
       }
 
@@ -110,6 +134,30 @@ export default function Takeover() {
           scrub: 1,
         },
       });
+
+      /*
+       * The key, cut across the first two thirds of the band.
+       *
+       * `ease: 'none'` throughout: this timeline is scrubbed, so the ease *is* the reader's
+       * scrolling. Any curve here would make the pen speed up and slow down under a steady
+       * scroll, which reads as a stutter rather than as intent.
+       */
+      if (keyOutline) {
+        relay.to(keyOutline, { strokeDashoffset: 0, ease: 'none', duration: 0.48 }, 0.10);
+      }
+      // The bow's hole last, as the short flourish that closes the shape.
+      if (keyHole) {
+        relay.to(keyHole, { strokeDashoffset: 0, ease: 'none', duration: 0.06 }, 0.58);
+      }
+      /*
+       * Then it recedes. The key is the only thing in the frame for the first half and is
+       * drawn at full strength for it; once the wordmark collapses and the description takes
+       * the frame at 0.66, a full-strength line through the paragraph would be competing with
+       * the text rather than backing it.
+       */
+      if (keyLayer) {
+        relay.to(keyLayer, { opacity: 0.22, ease: 'power2.out', duration: 0.1 }, 0.66);
+      }
 
       // The wordmark breathes while the veil climbs over it…
       relay.fromTo(word, { scale: 1, y: 0 }, { scale: 1.04, y: -18, ease: 'none', duration: 0.62 }, 0);
@@ -160,13 +208,41 @@ export default function Takeover() {
       <div data-cursor-invert="dark" className="sticky top-0 h-screen overflow-hidden">
         <LiquidVeil onProgress={handleProgress} palette="dark" z={0} />
 
+        {/* ----------------------------------------------------- the key, drawn on scroll */}
+        {/*
+          Its own layer at z-5: above the veil it is drawn onto, below the wordmark and the
+          description at z-10, so it runs behind them rather than competing with them.
+
+          Centred, and tall enough to stand well clear of the wordmark above and below it.
+          An earlier version offset it to the start side, which at desktop widths landed it
+          directly behind the first letter of "soficlef." — a collision rather than a
+          composition. Centred and full height it reads as the band's spine instead, with the
+          wordmark crossing it.
+        */}
+        <div
+          data-key-layer
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center"
+        >
+          <DrawnKey className="h-[78vh] max-h-[680px] w-auto" />
+        </div>
+
         {/* ------------------------------------------------------------ wordmark */}
         <div
           data-title-layer
           className="pointer-events-none absolute inset-0 z-10 flex items-start justify-center px-5 will-change-transform"
         >
+          {/*
+            dir="ltr" is load-bearing, not tidiness. `splitChars` replaces this text with one
+            inline-block span per character so each glyph can be animated on its own, and
+            inline-blocks lay out along the *document* direction — so under Arabic the
+            wordmark rendered as ".felcifos", the company's name spelled backwards. The name
+            is a Latin proper noun and reads left to right in every language the site speaks,
+            whatever the paragraph around it does.
+          */}
           <h2
             data-word
+            dir="ltr"
             className="origin-top text-center font-display text-[22vw] font-bold leading-[0.82] tracking-tight text-surface will-change-transform sm:text-[18vw]"
             style={{ textShadow: '0 2px 60px rgba(23, 19, 20, 0.35)' }}
           >
@@ -217,5 +293,54 @@ export default function Takeover() {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * The key itself, as line art in one continuous stroke.
+ *
+ * Two paths, and the split is what makes the drawing read correctly rather than being a
+ * modelling detail: the outline is a single unbroken pen stroke — around the bow, down the
+ * shank, out and back through each tooth of the bit, to the tip — so tweening one dash
+ * offset draws the whole key in the order a hand would cut it. The bow's hole cannot be part
+ * of that stroke without a visible jump across the shape, so it is its own path, drawn last.
+ *
+ * `red-deep` rather than the pale accent the flanking figures use, because the background
+ * under this key is not one colour: the veil pours upward past it, so at any moment part of
+ * the key is on white and part is on brand red. A tween between two colours cannot fix that —
+ * the bow and the tip are over different backgrounds at the same instant — so the stroke is
+ * one tone dark enough to read on the white and distinct enough to read on the red.
+ *
+ * Decorative, so the layer around it carries the aria-hidden.
+ */
+function DrawnKey({ className = '' }) {
+  return (
+    <svg
+      viewBox="0 0 140 500"
+      className={className}
+      fill="none"
+      stroke="#7f0a1d"
+      strokeWidth="7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/*
+        Each circle is two explicit half arcs rather than one near-360° arc, and that is a
+        correctness fix, not a style preference. An arc whose endpoints nearly coincide does
+        not describe one circle: two circles of the given radius pass through both points, and
+        the flags choose between them. The first version wrote the bow as a single sweep back
+        onto its own start, and the renderer picked the *other* candidate — putting the bow a
+        full diameter below where it belonged, with the shank drawn straight through it.
+
+        A semicircle has no such ambiguity: the chord is the diameter, so the centre can only
+        be its midpoint. Two of them, both sweeping clockwise, close the circle deterministically
+        and leave the pen at the bottom of the bow, where the shank carries on.
+      */}
+      <path
+        data-key-outline
+        d="M70 128 A46 46 0 0 1 70 36 A46 46 0 0 1 70 128 L70 300 L104 300 L104 328 L70 328 L70 356 L96 356 L96 384 L70 384 L70 468"
+      />
+      <path data-key-hole strokeWidth="6" d="M70 62 A20 20 0 0 1 70 102 A20 20 0 0 1 70 62" />
+    </svg>
   );
 }
