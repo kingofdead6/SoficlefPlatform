@@ -34,6 +34,23 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+/**
+ * A nullable translated field.
+ *
+ * Unlike its French counterpart, which must always hold text, a translation has a third
+ * legitimate state — "cleared" — because clearing it is how an editor makes the public page
+ * fall back to French again. So null is accepted, and an empty string is *normalised to*
+ * null rather than rejected: a stored "" is not a translation, it is a paragraph that
+ * renders blank, and the difference would only surface on the live page.
+ */
+const translation = () =>
+  z
+    .string()
+    .trim()
+    .nullable()
+    .optional()
+    .transform((value) => (value === '' ? null : value));
+
 const UpdateCompany = z.object({
   id: z.string().uuid(),
   legalName: z.string().trim().min(1).optional(),
@@ -47,6 +64,12 @@ const UpdateCompany = z.object({
   website: z.string().trim().min(1).optional(),
   visionFr: z.string().trim().min(1).optional(),
   missionFr: z.string().trim().min(1).optional(),
+
+  // The Arabic and English vision/mission the public pages fall back from.
+  visionAr: translation(),
+  visionEn: translation(),
+  missionAr: translation(),
+  missionEn: translation(),
 });
 
 router.patch('/:id', async (req, res, next) => {

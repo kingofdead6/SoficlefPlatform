@@ -1,6 +1,7 @@
 import { canAnyScope } from '../../domain/auth/authorization.js';
 import { loadCatalogue } from '../training/catalogue.js';
 import { score, terms, topMatches } from './matching.js';
+import { everyLanguage, partSeparator, vocabulary } from './language.js';
 
 /**
  * Agent 4 — "what training must I complete".
@@ -12,7 +13,20 @@ import { score, terms, topMatches } from './matching.js';
  *
  * Declared `reads` (domain/assistant/agents.js): training.
  */
-export async function retrieveTraining(user, question) {
+/**
+ * "obligatoire / mandatory / إجبارية" and its opposite, in one searchable string each.
+ *
+ * Matched in every language for the same reason the task statuses are: "which training is
+ * mandatory?" is asked in whichever language the asker thinks in, not the one the interface
+ * is set to.
+ */
+const MANDATORY_ALIASES = everyLanguage((words) => words.mandatoryKeyword);
+const OPTIONAL_ALIASES = everyLanguage((words) => words.optionalKeyword);
+
+export async function retrieveTraining(user, question, language) {
+  const words = vocabulary(language);
+  const separator = partSeparator(language);
+
   if (!canAnyScope(user, 'read', 'training')) return { snippets: [], sources: [] };
 
   const questionTerms = terms(question);
@@ -26,27 +40,27 @@ export async function retrieveTraining(user, question) {
   for (const entry of catalogue.entries) {
     const weight = score(
       `${entry.titleFr} ${entry.summaryFr ?? ''} ${entry.code ?? ''} ${
-        entry.isMandatory ? 'obligatoire' : 'facultatif'
+        entry.isMandatory ? MANDATORY_ALIASES : OPTIONAL_ALIASES
       }`,
       questionTerms,
     );
     if (weight === 0) continue;
 
     const status = entry.best
-      ? `votre meilleur score : ${entry.best.score} % — ${entry.best.passed ? 'validé' : 'non validé'}`
-      : 'aucune tentative de votre part';
+      ? words.bestScore(entry.best.score, entry.best.passed)
+      : words.noAttempt;
 
     const parts = [
       `${entry.titleFr} (${entry.code})`,
-      entry.isMandatory ? 'module obligatoire' : 'module facultatif',
-      `seuil de réussite ${entry.passingScore} %`,
+      entry.isMandatory ? words.mandatoryModule : words.optionalModule,
+      words.passingScore(entry.passingScore),
       status,
       entry.summaryFr ? entry.summaryFr : null,
     ].filter(Boolean);
 
     candidates.push({
       score: weight,
-      detail: parts.join(' · '),
+      detail: parts.join(separator),
       source: {
         kind: 'training',
         id: entry.id,

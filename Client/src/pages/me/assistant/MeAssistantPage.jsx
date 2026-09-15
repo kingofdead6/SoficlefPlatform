@@ -8,6 +8,8 @@ import AssistantChat, { ProviderNote } from '../../../components/assistant/Assis
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { sectionVariants, initialOrNone } from '../../../lib/motion/variants.js';
+import { useAgentLabels } from '../../../lib/assistantLabels.js';
+import { isAgentUsable } from '../../../lib/assistantAgents.js';
 import { cn } from '../../../lib/cn.js';
 
 const CARD = 'rounded-app border border-border bg-surface shadow-app';
@@ -55,6 +57,7 @@ export default function MeAssistantPage() {
   const reduce = useReducedMotion();
   // Hooks run before the loading guard below, or the hook order changes between renders.
   const { t } = useTranslation();
+  const labelsOf = useAgentLabels();
 
   useEffect(() => {
     (async () => {
@@ -77,9 +80,7 @@ export default function MeAssistantPage() {
 
   const usable = useMemo(
     () =>
-      PAGE_AGENTS.map((id) => agents.find((agent) => agent.id === id)).filter(
-        (agent) => agent && agent.available !== false,
-      ),
+      PAGE_AGENTS.map((id) => agents.find((agent) => agent.id === id)).filter(isAgentUsable),
     [agents],
   );
 
@@ -126,7 +127,7 @@ export default function MeAssistantPage() {
                         : 'border-border text-text-dim hover:border-red-brand hover:text-red-brand',
                     )}
                   >
-                    {agent.titleFr}
+                    {labelsOf(agent).title}
                   </button>
                 ))}
               </div>
@@ -135,8 +136,8 @@ export default function MeAssistantPage() {
                 <AssistantChat
                   key={active.id}
                   agentId={active.id}
-                  titleFr={active.titleFr}
-                  purposeFr={active.purposeFr}
+                  title={labelsOf(active).title}
+                  purpose={labelsOf(active).purpose}
                   provider={provider}
                   modelName={modelName}
                   suggestions={suggestions}
@@ -187,21 +188,23 @@ export default function MeAssistantPage() {
               {agents.map((agent) => (
                 <li key={agent.id}>
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-sm font-medium text-text">{agent.titleFr}</span>
+                    <span className="text-sm font-medium text-text">{labelsOf(agent).title}</span>
                     <span
                       className={cn(
                         'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium',
-                        agent.available !== false
+                        isAgentUsable(agent)
                           ? 'bg-status-green/10 text-status-green'
                           : 'bg-surface-2 text-text-dim',
                       )}
                     >
-                      {agent.available !== false
+                      {isAgentUsable(agent)
                         ? t('assistant.agents.available')
-                        : t('assistant.agents.unavailable')}
+                        : agent.enabled === false
+                          ? t('assistant.agents.disabled')
+                          : t('assistant.agents.unavailable')}
                     </span>
                   </div>
-                  <p className="text-xs text-text-dim">{agent.purposeFr}</p>
+                  <p className="text-xs text-text-dim">{labelsOf(agent).purpose}</p>
                 </li>
               ))}
             </ul>

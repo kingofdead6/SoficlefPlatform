@@ -36,23 +36,38 @@ const DEGRADED_KEYS = {
   not_configured: null,
 };
 
+/**
+ * Why there is no answer at all.
+ *
+ * Distinct from DEGRADED_KEYS above, which explains a *plainer* answer. Here there is none,
+ * and "I found nothing matching your question" would be a lie when the truth is that an
+ * administrator switched the agent off — the reader would rephrase their question forever.
+ */
+const NO_ANSWER_KEYS = {
+  'agent-disabled': 'public.assistant.agentDisabled',
+  'unknown-agent': 'public.assistant.unknownAgent',
+};
+
 export default function AssistantChat({
   agentId,
-  titleFr,
-  purposeFr,
+  /*
+   * `title` and `purpose` arrive already translated, from the caller's `useAgentLabels()`.
+   * They were `titleFr`/`purposeFr` and carried French strings the server had hardcoded,
+   * which is how the agent picker stayed French on the English and Arabic interfaces.
+   */
+  title,
+  purpose,
   provider,
   modelName,
   suggestions = [],
   placeholder,
   /*
-   * Kept as `emptyDetailFr` rather than renamed: pages outside this slice still pass it by
-   * that name, and it carries whatever text the caller supplies. Defaults are resolved in
-   * the body, not in the signature — a default here would be frozen at module load and
-   * would not follow a language change.
+   * Defaults are resolved in the body, not in the signature — a default here would be
+   * frozen at module load and would not follow a language change.
    */
-  emptyDetailFr,
+  emptyDetail,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
   const [exchanges, setExchanges] = useState([]);
@@ -68,7 +83,8 @@ export default function AssistantChat({
     setAsking(true);
     setAskError(null);
     try {
-      const result = await assistantApi.ask(agentId, text);
+      // The answer is written in the language this reader is reading the platform in.
+      const result = await assistantApi.ask(agentId, text, i18n.language);
       setExchanges((current) => [
         { id: `${agentId}-${Date.now()}`, question: text, ...result },
         ...current,
@@ -88,10 +104,10 @@ export default function AssistantChat({
 
   return (
     <section>
-      {(titleFr || purposeFr) && (
+      {(title || purpose) && (
         <div className="mb-3">
-          {titleFr && <h3 className="font-display text-lg text-text">{titleFr}</h3>}
-          {purposeFr && <p className="mt-1 text-sm text-text-dim">{purposeFr}</p>}
+          {title && <h3 className="font-display text-lg text-text">{title}</h3>}
+          {purpose && <p className="mt-1 text-sm text-text-dim">{purpose}</p>}
         </div>
       )}
 
@@ -212,7 +228,9 @@ export default function AssistantChat({
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-text-dim">{t('public.assistant.noAnswer')}</p>
+                    <p className="text-sm text-text-dim">
+                      {t(NO_ANSWER_KEYS[exchange.reason] ?? 'public.assistant.noAnswer')}
+                    </p>
                   )}
                 </div>
               </motion.li>
@@ -223,7 +241,7 @@ export default function AssistantChat({
 
       {exchanges.length === 0 && (
         <div className="mt-6">
-          <EmptyState detail={emptyDetailFr ?? t('public.assistant.defaultEmptyDetail')} muted />
+          <EmptyState detail={emptyDetail ?? t('public.assistant.defaultEmptyDetail')} muted />
         </div>
       )}
     </section>
@@ -236,18 +254,20 @@ export default function AssistantChat({
  * component's decision to make.
  */
 export function ProviderNote({ provider, modelName }) {
+  const { t } = useTranslation();
+
+  // Both sentences already existed in the catalogues; this component was rendering French
+  // literals past them, which is why the note stayed French in every language.
   if (provider) {
     return (
       <span className="text-xs text-text-dim">
-        Réponses formulées par {modelName ?? 'un modèle de langage'} ({provider}), à partir des
-        seules données que vous pouvez déjà consulter.
+        {t('public.assistant.providerNote', {
+          model: modelName ?? t('public.assistant.providerNoteFallbackModel'),
+          provider,
+        })}
       </span>
     );
   }
-  return (
-    <span className="text-xs text-text-dim">
-      Aucun modèle de langage n’est raccordé : l’assistant répond par recherche dans vos données
-      visibles, et cite ce qu’il a trouvé.
-    </span>
-  );
+
+  return <span className="text-xs text-text-dim">{t('public.assistant.providerNone')}</span>;
 }

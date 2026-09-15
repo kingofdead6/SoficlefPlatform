@@ -1,6 +1,7 @@
 import { getVisibleTree } from '../../infrastructure/repositories/position-repository.js';
 import { prisma } from '../../infrastructure/db/client.js';
 import { score, terms, topMatches } from './matching.js';
+import { vocabulary } from './language.js';
 
 /**
  * Agent 1 — "who do I talk to about X".
@@ -18,8 +19,14 @@ import { score, terms, topMatches } from './matching.js';
  * answer, since the nearest relevant person beats the most senior one.
  *
  * Declared `reads` (domain/assistant/agents.js): position, assignment, organization_unit.
+ *
+ * `language` selects the words *this function* adds around the rows — "vacant post", the
+ * extension prefix. The rows' own text (a post's title, a colleague's name) is stored in one
+ * language and rendered as stored: translating a job title on the fly would produce a label
+ * that appears nowhere on the page this answer links to.
  */
-export async function retrieveOrientation(user, question) {
+export async function retrieveOrientation(user, question, language) {
+  const words = vocabulary(language);
   const questionTerms = terms(question);
 
   // Nothing to search on: say so rather than returning the org chart's first row.
@@ -42,7 +49,7 @@ export async function retrieveOrientation(user, question) {
   for (const node of tree) {
     // A vacant seat is a real answer to "who handles X" — "nobody, the post is open" is
     // more useful than silence, and it is what the occupancy note is for.
-    const holder = node.holder?.displayName ?? node.occupancyFr ?? 'Poste vacant';
+    const holder = node.holder?.displayName ?? node.occupancyFr ?? words.vacantPost;
     const weight = score(`${node.titleFr} ${holder}`, questionTerms);
     if (weight === 0) continue;
 
@@ -50,7 +57,7 @@ export async function retrieveOrientation(user, question) {
       score: weight,
       detail: node.holder
         ? `${node.holder.displayName} — ${node.titleFr}`
-        : `${node.titleFr} — ${node.occupancyFr ?? 'poste vacant'}`,
+        : `${node.titleFr} — ${node.occupancyFr ?? words.vacantPost}`,
       source: { kind: 'position', id: node.id, label: node.titleFr, href: '/organization' },
     });
   }
@@ -61,7 +68,7 @@ export async function retrieveOrientation(user, question) {
 
     candidates.push({
       score: weight,
-      detail: `${contact.nameFr} — ${contact.roleFr} (poste ${contact.extension})`,
+      detail: `${contact.nameFr} — ${contact.roleFr} (${words.extension(contact.extension)})`,
       source: {
         kind: 'contact',
         id: contact.id,
@@ -83,8 +90,8 @@ export async function retrieveOrientation(user, question) {
  * failure mode that costs the user more than saying nothing: they act on it, and it was
  * invented.
  */
-export async function answerOrientation(user, question) {
-  const { snippets, sources } = await retrieveOrientation(user, question);
+export async function answerOrientation(user, question, language) {
+  const { snippets, sources } = await retrieveOrientation(user, question, language);
   if (snippets.length === 0) return { agent: 'orientation', answer: null, sources: [] };
 
   return {

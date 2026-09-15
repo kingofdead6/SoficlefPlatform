@@ -2,6 +2,7 @@ import { canAnyScope } from '../../domain/auth/authorization.js';
 import { prisma } from '../../infrastructure/db/client.js';
 import { audienceFilter } from '../documents/audience.js';
 import { score, terms, topMatches } from './matching.js';
+import { vocabulary } from './language.js';
 
 /**
  * Agent 2 — "where do I find the leave policy".
@@ -13,7 +14,9 @@ import { score, terms, topMatches } from './matching.js';
  *
  * Declared `reads` (domain/assistant/agents.js): document. Nothing else is queried.
  */
-export async function retrieveDocuments(user, question) {
+export async function retrieveDocuments(user, question, language) {
+  const words = vocabulary(language);
+
   // Gated the same way as GET /documents. Silence rather than a throw: the pipeline above
   // treats "no permission" and "no match" alike — neither produces an answer.
   if (!canAnyScope(user, 'read', 'document')) return { snippets: [], sources: [] };
@@ -48,12 +51,12 @@ export async function retrieveDocuments(user, question) {
     // a file that is not there yet.
     const state =
       doc.availability === 'AVAILABLE'
-        ? (doc.fileName ?? 'document disponible')
-        : 'en attente de publication';
+        ? (doc.fileName ?? words.documentAvailable)
+        : words.awaitingPublication;
 
     candidates.push({
       score: weight,
-      detail: `${doc.titleFr} — ${doc.detailFr ?? 'Aucun détail renseigné'} (${state})`,
+      detail: `${doc.titleFr} — ${doc.detailFr ?? words.noDetail} (${state})`,
       source: { kind: 'document', id: doc.id, label: doc.titleFr, href: '/documents' },
     });
   }

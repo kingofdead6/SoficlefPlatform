@@ -216,6 +216,8 @@
       "askButton": "Demander",
       "asking": "Recherche…",
       "askFailed": "La recherche a échoué. Réessayez dans un instant.",
+      "agentDisabled": "Cet agent a été désactivé par l’administration : il ne répond plus. Adressez-vous aux RH ou à votre responsable pour la question posée.",
+      "unknownAgent": "Cet agent n’existe pas sur cette plateforme. Rechargez la page : la liste des agents a peut-être changé.",
       "defaultEmptyDetail": "Posez une question, ou choisissez l’une des suggestions ci-dessus.",
       "defaultPlaceholder": "Posez votre question…",
       "degraded": {
@@ -997,6 +999,7 @@
         "published": "Documents publiés"
       },
       "operational": "Opérationnel",
+      "disabled": "Désactivé par l’administration",
       "outOfScope": "Hors de vos droits",
       "reads": "Lit",
       "resources": {
@@ -1568,7 +1571,7 @@
       "loadError": "Impossible de charger la configuration IA.",
       "eyebrow": "Administration",
       "title": "Configuration IA",
-      "subtitle": "Fournisseur, modèle, quota, agents et modèles de prompts — enregistrés durablement, en attente d’un fournisseur à brancher.",
+      "subtitle": "Fournisseur, modèle, quota, agents et modèles de prompts. Les agents et les prompts pilotent l’assistant ; le fournisseur reste décrit ici et branché dans l’environnement du serveur.",
       "tiles": {
         "declared": "Agents déclarés",
         "enabled": "Agents activés",
@@ -1602,7 +1605,7 @@
       },
       "agents": {
         "title": "Agents",
-        "description": "Un agent lit avec les droits de celui qui l’interroge : il ne peut jamais faire remonter une ligne que la personne ne pourrait pas ouvrir elle-même. Activer un agent enregistre l’intention ; les agents marqués « opérationnel » répondent déjà, par recherche dans les données de la plateforme, sans aucun modèle de langage.",
+        "description": "Un agent lit avec les droits de celui qui l’interroge : il ne peut jamais faire remonter une ligne que la personne ne pourrait pas ouvrir elle-même. Désactiver un agent l’arrête pour tout le monde — il cesse de répondre et n’interroge plus la base. Un prompt saisi ici s’ajoute aux consignes internes de l’agent ; il ne les remplace pas, les règles de non-invention et de citation des sources restant toujours en vigueur.",
         "empty": "Aucun agent déclaré",
         "emptyDetail": "Le catalogue des agents est vide.",
         "operationalReformulated": "Opérationnel · reformulé",
@@ -1616,7 +1619,7 @@
         "promptPlaceholder": "Consigne donnée à l’agent. La règle qui vaut déjà, sans fournisseur : toute réponse cite sa source, ou reconnaît n’avoir rien trouvé.",
         "savePrompt": "Enregistrer le prompt"
       },
-      "footnote": "Les réglages de ce formulaire sont enregistrés mais ne pilotent pas encore l’assistant : celui-ci lit sa configuration dans l’environnement du serveur (HF_API_KEY, HF_MODEL, HF_BASE_URL), pas dans cette table. Les {{count}} agent(s) marqué(s) « opérationnel » répondent par recherche dans les données de la plateforme, avec les droits de la personne qui pose la question{{tail}}",
+      "footnote": "Les agents et les prompts de ce formulaire pilotent l’assistant. Le fournisseur, l’adresse et le modèle sont en revanche lus dans l’environnement du serveur (HF_API_KEY, HF_MODEL, HF_BASE_URL) et non dans cette table : ce qui est saisi ci-dessus les décrit, sans les remplacer. Les {{count}} agent(s) marqué(s) « opérationnel » répondent par recherche dans les données de la plateforme, avec les droits de la personne qui pose la question{{tail}}",
       "footnoteTailConnected": ", puis font reformuler cette réponse par le modèle raccordé.",
       "footnoteTailNone": ", sans aucun appel à un modèle de langage."
     },
@@ -2315,7 +2318,30 @@
   "assistant": {
     "agents": {
       "available": "Disponible",
+      "disabled": "Désactivé par l’administration",
       "unavailable": "Hors de vos droits"
+    },
+    "agentLabels": {
+      "orientation": {
+        "title": "Agent 1 · Accueil",
+        "purpose": "« À qui m’adresser pour… », depuis l’organigramme visible et l’annuaire."
+      },
+      "documents": {
+        "title": "Agent 2 · Documents",
+        "purpose": "Retrouver une procédure dans la bibliothèque documentaire qui vous est ouverte."
+      },
+      "onboarding": {
+        "title": "Agent 3 · Parcours",
+        "purpose": "Répondre sur l’avancement de votre propre parcours d’intégration."
+      },
+      "training": {
+        "title": "Agent 4 · Formation",
+        "purpose": "Modules obligatoires du catalogue et vos propres résultats."
+      },
+      "competencies": {
+        "title": "Agent 5 · Compétences",
+        "purpose": "Compétences attendues d’un poste et écarts constatés."
+      }
     },
     "empty": {
       "detail": "Votre compte ne dispose des droits de lecture d’aucune des ressources que ces agents interrogent.",

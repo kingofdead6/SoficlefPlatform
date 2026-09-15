@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { adminApi } from '../../../api/admin.js';
 import { assistantApi } from '../../../api/assistant.js';
+import { useAgentLabels } from '../../../lib/assistantLabels.js';
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import CountUp from '../../../components/manager/CountUp.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
@@ -34,6 +35,7 @@ const FIELD =
  */
 export default function AiConfigPage() {
   const { t, i18n } = useTranslation();
+  const labelsOf = useAgentLabels();
   const [config, setConfig] = useState(null);
   const [meta, setMeta] = useState(null);
   const [status, setStatus] = useState(null);
@@ -273,13 +275,19 @@ export default function AiConfigPage() {
               const on = Boolean(enabled[agentId]);
               const promptOpen = openPrompt === agentId;
               const promptValue = prompts[agentId] ?? '';
+              /*
+               * The raw id is the fallback rather than a placeholder sentence: an agent the
+               * server knows about but this build has no label for should read as the thing
+               * it is, so the gap is obvious to whoever added it.
+               */
+              const agentName = labelsOf(agent).title || agentId;
 
               return (
                 <motion.article key={agentId} variants={staggerItem} className={`${CARD} p-5`}>
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-medium text-text">{agent?.titleFr ?? agentId}</h3>
+                        <h3 className="font-medium text-text">{agentName}</h3>
                         <span
                           className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                             agent?.live
@@ -294,7 +302,9 @@ export default function AiConfigPage() {
                             : t('admin.ai.agents.noAnswerStep')}
                         </span>
                       </div>
-                      {agent?.purposeFr && <p className="mt-1 text-sm text-text-dim">{agent.purposeFr}</p>}
+                      {labelsOf(agent).purpose && (
+                        <p className="mt-1 text-sm text-text-dim">{labelsOf(agent).purpose}</p>
+                      )}
                       {agent?.reads?.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {agent.reads.map((resource) => (
@@ -315,7 +325,7 @@ export default function AiConfigPage() {
                         checked={on}
                         disabled={saving}
                         onChange={() => handleToggleAgent(agentId)}
-                        label={t('admin.ai.agents.toggleLabel', { name: agent?.titleFr ?? agentId })}
+                        label={t('admin.ai.agents.toggleLabel', { name: agentName })}
                       />
                       <button
                         type="button"

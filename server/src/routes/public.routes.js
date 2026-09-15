@@ -15,6 +15,13 @@ const router = Router();
  * columns explicitly, so widening an authenticated read can never silently widen what an
  * anonymous visitor sees. Nothing below touches a table carrying personal data: no user,
  * no assessment, no remark, no onboarding row, no audit entry, no contact directory.
+ *
+ * Every text column is selected as its three language variants (`<field>Fr`, `<field>Ar`,
+ * `<field>En`) rather than as French alone. The translated columns are nullable and nothing
+ * backfills them, so the client resolves the active language and falls back to French — that
+ * is deliberately the client's job rather than this file's: the page knows which language is
+ * displayed, a cacheable anonymous endpoint does not, and serving a different body per
+ * `Accept-Language` would make the same URL mean three different things.
  */
 
 router.get('/company', async (req, res, next) => {
@@ -30,8 +37,23 @@ router.get('/company', async (req, res, next) => {
         status: true,
         website: true,
         visionFr: true,
+        visionAr: true,
+        visionEn: true,
         missionFr: true,
-        activities: { orderBy: { order: 'asc' }, select: { labelFr: true, contentFr: true } },
+        missionAr: true,
+        missionEn: true,
+        activities: {
+          orderBy: { order: 'asc' },
+          select: {
+            slug: true,
+            labelFr: true,
+            labelAr: true,
+            labelEn: true,
+            contentFr: true,
+            contentAr: true,
+            contentEn: true,
+          },
+        },
       },
     });
     res.json({ data: company });
@@ -45,7 +67,7 @@ router.get('/values', async (req, res, next) => {
   try {
     const values = await prisma.companyValue.findMany({
       orderBy: { rank: 'asc' },
-      select: { rank: true, nameFr: true, nameAr: true, nameEn: true },
+      select: { slug: true, rank: true, nameFr: true, nameAr: true, nameEn: true },
     });
     res.json({ data: values });
   } catch (error) {
@@ -58,19 +80,36 @@ router.get('/strategy', async (req, res, next) => {
     const strategy = await prisma.strategy.findFirst({
       select: {
         planFr: true,
+        planAr: true,
+        planEn: true,
         globalObjectiveFr: true,
+        globalObjectiveAr: true,
+        globalObjectiveEn: true,
         markets: {
           orderBy: { order: 'asc' },
           select: {
+            slug: true,
             marketFr: true,
+            marketAr: true,
+            marketEn: true,
             strategyFr: true,
+            strategyAr: true,
+            strategyEn: true,
             marketShareTargetFr: true,
             revenueTargetFr: true,
           },
         },
         projects: {
           orderBy: { order: 'asc' },
-          select: { code: true, titleFr: true, descriptionFr: true },
+          select: {
+            code: true,
+            titleFr: true,
+            titleAr: true,
+            titleEn: true,
+            descriptionFr: true,
+            descriptionAr: true,
+            descriptionEn: true,
+          },
         },
       },
     });
@@ -120,10 +159,14 @@ router.get('/organization', async (req, res, next) => {
         id: true,
         code: true,
         nameFr: true,
+        nameAr: true,
+        nameEn: true,
         type: true,
         parentId: true,
         icon: true,
         descriptionFr: true,
+        descriptionAr: true,
+        descriptionEn: true,
       },
     });
 

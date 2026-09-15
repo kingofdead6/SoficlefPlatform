@@ -1,6 +1,7 @@
 import { canAnyScope } from '../../domain/auth/authorization.js';
 import { listPositionsWithMatrix, loadPositionMatrix } from '../competency/matrix.js';
 import { score, terms, topMatches } from './matching.js';
+import { partSeparator, vocabulary } from './language.js';
 
 /**
  * Agent 5 — "what does this job require".
@@ -17,17 +18,13 @@ import { score, terms, topMatches } from './matching.js';
  * Declared `reads` (domain/assistant/agents.js): competency, job_description.
  */
 
-const GAP_FR = {
-  conforme: 'conforme',
-  'a-developper': 'à développer',
-  critique: 'écart critique',
-  'non-evalue': 'non évaluée',
-};
-
 /** How many matched positions are worth opening. Each is one more matrix query. */
 const MAX_POSITIONS = 3;
 
-export async function retrieveCompetencies(user, question) {
+export async function retrieveCompetencies(user, question, language) {
+  const words = vocabulary(language);
+  const separator = partSeparator(language);
+
   if (!canAnyScope(user, 'read', 'competency')) return { snippets: [], sources: [] };
 
   const questionTerms = terms(question);
@@ -87,15 +84,15 @@ export async function retrieveCompetencies(user, question) {
 
       const parts = [
         `${matrix.positionTitleFr} — ${row.nameFr}`,
-        `niveau requis ${row.requiredLevel}/${matrix.maxLevel}`,
-        row.mandatory ? 'compétence obligatoire' : 'compétence optionnelle',
-        `état : ${GAP_FR[row.gap.status] ?? row.gap.status}`,
-        row.familyFr ? `famille ${row.familyFr}` : null,
+        words.requiredLevel(row.requiredLevel, matrix.maxLevel),
+        row.mandatory ? words.mandatoryCompetency : words.optionalCompetency,
+        words.state(words.gapStatus[row.gap.status] ?? row.gap.status),
+        row.familyFr ? words.family(row.familyFr) : null,
       ].filter(Boolean);
 
       candidates.push({
         score: weight,
-        detail: parts.join(' · '),
+        detail: parts.join(separator),
         source: {
           kind: 'competency',
           id: row.competencyId,

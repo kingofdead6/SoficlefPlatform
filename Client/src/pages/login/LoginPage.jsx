@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { ApiError } from '../../api/client.js';
 import { LockKeyMark, MeshBackdrop, ParticleField } from '../../components/public/Visuals.jsx';
+import { LanguageSwitcher } from '../../i18n/LanguageSwitcher.jsx';
+import { RTL_LANGUAGES } from '../../i18n/index.js';
 
 const FIELD =
   'w-full rounded-app border border-border bg-surface px-3 py-2.5 text-sm text-text outline-none transition-colors placeholder:text-text-dim/70 focus:border-red-brand';
@@ -21,7 +23,7 @@ const HIGHLIGHT_KEYS = [
 ];
 
 export default function LoginPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,6 +33,12 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const reduce = useReducedMotion();
+  /*
+   * Which way the brand panel's list slides in from. Under Arabic the text begins on the
+   * right, so an entrance travelling rightwards moves *away* from where the eye starts
+   * reading; the sign is flipped rather than the animation being dropped.
+   */
+  const enterFrom = RTL_LANGUAGES.includes(i18n.language) ? 10 : -10;
 
   // Only ever honor a same-session deep-link capture (ProtectedRoute redirecting
   // an unauthenticated visit) — never a path left over from someone else's
@@ -71,7 +79,9 @@ export default function LoginPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
       {/* ------------------------------------------------------------ brand panel */}
-      <aside className="relative hidden overflow-hidden border-r border-border bg-surface lg:flex lg:flex-col lg:justify-between">
+      {/* border-e, not border-r: under Arabic this panel sits on the right of the split,
+          so the rule belongs on its inline end rather than always on its right. */}
+      <aside className="relative hidden overflow-hidden border-e border-border bg-surface lg:flex lg:flex-col lg:justify-between">
         <MeshBackdrop />
         <div aria-hidden className="absolute inset-0 opacity-50">
           <ParticleField density={26} />
@@ -115,7 +125,7 @@ export default function LoginPage() {
             {HIGHLIGHT_KEYS.map((itemKey, index) => (
               <motion.li
                 key={itemKey}
-                initial={reduce ? false : { opacity: 0, x: -10 }}
+                initial={reduce ? false : { opacity: 0, x: enterFrom }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{
                   duration: 0.5,
@@ -141,6 +151,16 @@ export default function LoginPage() {
         >
           <span aria-hidden className="rtl:-scale-x-100">←</span> {t('auth.login.backToSite')}
         </Link>
+
+        {/*
+          The language switcher belongs on this page, not only on the public bar: signing in
+          is the one screen someone reaches directly from a bookmark or a session timeout,
+          with no navigation above it. Without this, a reader whose browser reports a
+          language the app does not have would meet the French form and no way out of it.
+        */}
+        <div className="absolute end-5 top-6">
+          <LanguageSwitcher />
+        </div>
 
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 18 }}

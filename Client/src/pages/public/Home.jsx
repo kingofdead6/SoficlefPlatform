@@ -17,6 +17,7 @@ import {
 } from '../../components/public/Visuals.jsx';
 import KeyStage from '../../components/public/KeyStage.jsx';
 import Takeover from '../../components/public/Takeover.jsx';
+import { useLocalizedField } from '../../lib/localized.js';
 
 const SECTION = 'mx-auto max-w-6xl px-6';
 
@@ -32,6 +33,8 @@ const CAPABILITIES = [
 
 export default function Home() {
   const { t } = useTranslation();
+  // Database content: the reader's language where it exists, French where it does not.
+  const text = useLocalizedField();
   const [company, setCompany] = useState(null);
   const [values, setValues] = useState([]);
   const reduce = useReducedMotion();
@@ -80,9 +83,11 @@ export default function Home() {
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
               className="mt-5 max-w-xl text-[15px] leading-relaxed text-text-muted"
             >
-              {/* missionFr is database content and renders as-is in both languages; only
-                  the fallback sentence is ours to translate. */}
-              {company?.missionFr ?? t('public.home.heroLedeFallback')}
+              {/* Database content, so it is read through `text()`: the Arabic or English
+                  mission when the company has entered one, the French one otherwise. The
+                  fallback sentence below covers the case where there is no company row at
+                  all — a different thing from an untranslated one. */}
+              {company ? text(company, 'mission') : t('public.home.heroLedeFallback')}
             </motion.p>
 
             <motion.div
@@ -169,17 +174,19 @@ export default function Home() {
 
           <RevealGroup className="mt-10 grid gap-5 lg:grid-cols-3">
             {company.activities.map((activity) => (
-              <RevealItem key={activity.labelFr} className="h-full">
+              <RevealItem key={activity.slug ?? activity.labelFr} className="h-full">
                 <motion.article
                   data-cursor
                   whileHover={reduce ? undefined : { y: -4 }}
                   transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   className="h-full overflow-hidden rounded-app border border-border bg-surface shadow-app transition-colors hover:border-red-brand"
                 >
-                  <HatchPanel className="h-36" label={activity.labelFr} />
+                  <HatchPanel className="h-36" label={text(activity, 'label')} />
                   <div className="p-5">
-                    <h3 className="font-display text-lg text-text">{activity.labelFr}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-text-muted">{activity.contentFr}</p>
+                    <h3 className="font-display text-lg text-text">{text(activity, 'label')}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-text-muted">
+                      {text(activity, 'content')}
+                    </p>
                   </div>
                 </motion.article>
               </RevealItem>
@@ -201,7 +208,7 @@ export default function Home() {
               {/* The quotation marks belong to the language, not the layout: French uses
                   guillemets with non-breaking spaces, English plain curly quotes. */}
               {t('public.home.visionQuote', {
-                vision: company?.visionFr ?? t('public.home.visionFallback'),
+                vision: company ? text(company, 'vision') : t('public.home.visionFallback'),
               })}
             </p>
             {company?.generalManager && (
@@ -225,14 +232,23 @@ export default function Home() {
 
           <RevealGroup stagger={0.06} className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {values.map((value, index) => (
-              <RevealItem key={value.nameFr} className="h-full">
+              <RevealItem key={value.slug ?? value.nameFr} className="h-full">
                 <div className="flex h-full items-start gap-4 rounded-app border border-border bg-surface p-5 shadow-app">
                   <span className="font-display text-2xl text-red-brand/40">
                     {String(value.rank ?? index + 1).padStart(2, '0')}
                   </span>
                   <div>
-                    <p className="font-medium text-text">{value.nameFr}</p>
-                    {value.nameAr && <p className="mt-0.5 text-sm text-text-dim">{value.nameAr}</p>}
+                    <p className="font-medium text-text">{text(value, 'name')}</p>
+                    {/*
+                      The Charte de Management's pillars are the one content the company
+                      publishes bilingually on purpose, so the Arabic name is shown under the
+                      other two languages as a second line rather than replacing them. Under
+                      Arabic itself that line *is* the title, so it would be the same text
+                      twice — hence the comparison rather than an unconditional render.
+                    */}
+                    {value.nameAr && value.nameAr !== text(value, 'name') && (
+                      <p className="mt-0.5 text-sm text-text-dim">{value.nameAr}</p>
+                    )}
                   </div>
                 </div>
               </RevealItem>

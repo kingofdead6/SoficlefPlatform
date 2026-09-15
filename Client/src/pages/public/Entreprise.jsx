@@ -14,6 +14,7 @@ import {
   RevealGroup,
   RevealItem,
 } from '../../components/public/Visuals.jsx';
+import { useLocalizedField } from '../../lib/localized.js';
 
 const SECTION = 'mx-auto max-w-6xl px-6';
 
@@ -42,6 +43,8 @@ const IDENTITY_FIELDS = [
 
 export default function Entreprise() {
   const { t } = useTranslation();
+  // Database content: the reader's language where it exists, French where it does not.
+  const text = useLocalizedField();
   const [company, setCompany] = useState(null);
   const [failed, setFailed] = useState(false);
 
@@ -56,7 +59,12 @@ export default function Entreprise() {
     ? IDENTITY_FIELDS.map(({ id, field }) => ({
         id,
         label: t(`public.company.identity.${id}`),
-        // The values are database content and render as-is in both languages.
+        /*
+         * Proper nouns and registry facts — the legal name, the town, the ISO reference,
+         * the general manager. These are not translated anywhere, in any language, so they
+         * render as stored rather than going through `text()`: there is no `legalNameEn`
+         * column and there should not be one.
+         */
         value: String(company[field] ?? ''),
       }))
     : [];
@@ -97,7 +105,9 @@ export default function Entreprise() {
             <Reveal>
               <article className="flex h-full flex-col rounded-app border border-border bg-surface p-7 shadow-app">
                 <Eyebrow>{t('public.company.mission')}</Eyebrow>
-                <p className="font-display text-xl leading-snug text-text">{company.missionFr}</p>
+                <p className="font-display text-xl leading-snug text-text">
+                  {text(company, 'mission')}
+                </p>
               </article>
             </Reveal>
             <Reveal delay={0.08}>
@@ -107,7 +117,9 @@ export default function Entreprise() {
                 </div>
                 <div className="relative">
                   <Eyebrow>{t('public.company.vision')}</Eyebrow>
-                  <p className="font-display text-xl leading-snug text-text">{company.visionFr}</p>
+                  <p className="font-display text-xl leading-snug text-text">
+                    {text(company, 'vision')}
+                  </p>
                 </div>
               </article>
             </Reveal>
@@ -161,15 +173,15 @@ export default function Entreprise() {
 
           <RevealGroup className="mt-9 space-y-4">
             {company.activities.map((activity) => (
-              <RevealItem key={activity.labelFr}>
+              <RevealItem key={activity.slug ?? activity.labelFr}>
                 <article className="grid gap-5 rounded-app border border-border bg-surface p-5 shadow-app sm:grid-cols-[128px_1fr] sm:items-center">
                   <Parallax distance={22} className="h-24 sm:h-full">
                     <HatchPanel className="h-24 sm:h-full" />
                   </Parallax>
                   <div>
-                    <h3 className="font-display text-lg text-text">{activity.labelFr}</h3>
+                    <h3 className="font-display text-lg text-text">{text(activity, 'label')}</h3>
                     <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
-                      {activity.contentFr}
+                      {text(activity, 'content')}
                     </p>
                   </div>
                 </article>

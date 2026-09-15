@@ -9,6 +9,8 @@ import AssistantChat, { ProviderNote } from '../../../components/assistant/Assis
 import PageHeader from '../../../components/manager/PageHeader.jsx';
 import { PageLoading, PageError, EmptyState } from '../../../components/manager/PageStates.jsx';
 import { sectionVariants, staggerContainer, staggerItem, initialOrNone } from '../../../lib/motion/variants.js';
+import { useAgentLabels } from '../../../lib/assistantLabels.js';
+import { isAgentUsable } from '../../../lib/assistantAgents.js';
 import { cn } from '../../../lib/cn.js';
 
 /**
@@ -62,6 +64,7 @@ const PAGE_AGENTS = ['orientation', 'onboarding', 'documents', 'competencies'];
 
 export default function ManagerAssistantPage() {
   const { t } = useTranslation();
+  const labelsOf = useAgentLabels();
   const [recruits, setRecruits] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -94,9 +97,7 @@ export default function ManagerAssistantPage() {
 
   const usable = useMemo(
     () =>
-      PAGE_AGENTS.map((id) => agents.find((agent) => agent.id === id)).filter(
-        (agent) => agent && agent.available !== false,
-      ),
+      PAGE_AGENTS.map((id) => agents.find((agent) => agent.id === id)).filter(isAgentUsable),
     [agents],
   );
 
@@ -139,7 +140,7 @@ export default function ManagerAssistantPage() {
                         : 'border-border text-text-dim hover:border-red-brand hover:text-red-brand',
                     )}
                   >
-                    {agent.titleFr}
+                    {labelsOf(agent).title}
                   </button>
                 ))}
               </div>
@@ -148,8 +149,8 @@ export default function ManagerAssistantPage() {
                 <AssistantChat
                   key={active.id}
                   agentId={active.id}
-                  titleFr={active.titleFr}
-                  purposeFr={active.purposeFr}
+                  title={labelsOf(active).title}
+                  purpose={labelsOf(active).purpose}
                   provider={provider}
                   modelName={modelName}
                   suggestions={(SUGGESTION_KEYS[active.id] ?? []).map((key) => t(key))}
