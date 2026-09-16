@@ -76,7 +76,14 @@ router.get('/agents', async (req, res, next) => {
      * step. `buildSuggestions` already swallows per-agent failures, so a slow loader costs
      * that agent its chips and nothing else.
      */
-    const suggestions = await buildSuggestions(req.user).catch(() => ({}));
+    /*
+     * `?lang=` first, then Accept-Language. The query parameter is what the client actually
+     * sends, because the UI language is an in-app preference that need not match the
+     * browser's — a reader can switch the interface to Arabic without touching their browser
+     * settings, and the chips have to follow the interface.
+     */
+    const lang = req.query.lang ?? req.headers['accept-language'];
+    const suggestions = await buildSuggestions(req.user, lang).catch(() => ({}));
 
     res.json({
       data,

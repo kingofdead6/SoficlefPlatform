@@ -101,7 +101,9 @@ export const KNOWLEDGE = [
     titleFr: 'Direction Production',
     keywords: [
       'production', 'fabrication', 'maintenance', 'controle qualite', 'atelier',
-      'etudes', 'methodes', 'manufacturing',
+      // No bare 'manufacturing': it is the whole industry, not this entry, and it grounded
+      // general questions like "explain lean manufacturing" on the Production paragraph.
+      'etudes', 'methodes',
       'الإنتاج', 'التصنيع', 'الصيانة', 'مراقبة',
     ],
     detail:
@@ -166,7 +168,9 @@ export const KNOWLEDGE = [
     keywords: [
       'integration', 'onboarding', 'parcours', 'nouveau', 'nouvelle', 'arrivant',
       'checklist', 'etapes', 'jalons', 'milestone', 'premier jour', 'first day',
-      'periode essai', 'probation', 'essai',
+      // Not bare 'probation': "what is a probation period" is a general-HR question this
+      // entry cannot answer, and matching it here suppressed the general-knowledge reply.
+      'periode essai', 'essai',
       'الإدماج', 'مسار', 'جديد', 'مراحل', 'قائمة', 'التجربة',
     ],
     detail:

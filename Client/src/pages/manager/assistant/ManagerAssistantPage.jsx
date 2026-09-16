@@ -65,7 +65,7 @@ const PLACEHOLDER_KEYS = {
 const PAGE_AGENTS = ['orientation', 'onboarding', 'documents', 'competencies'];
 
 export default function ManagerAssistantPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [recruits, setRecruits] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -82,7 +82,7 @@ export default function ManagerAssistantPage() {
       try {
         const [recruitsRes, agentsRes] = await Promise.all([
           onboardingApi.managerRecruits(false),
-          assistantApi.agents().catch(() => ({ data: [] })),
+          assistantApi.agents(i18n.language).catch(() => ({ data: [] })),
         ]);
         setRecruits(recruitsRes.data);
         setAlerts(recruitsRes.alerts);
@@ -96,7 +96,10 @@ export default function ManagerAssistantPage() {
         setLoading(false);
       }
     })();
-  }, [t]);
+    // i18n.language is listed explicitly rather than relying on `t` changing identity: the
+    // suggestion chips are phrased server-side around real row titles, so a language switch
+    // has to re-fetch them, and that dependency should be visible rather than incidental.
+  }, [t, i18n.language]);
 
   const usable = useMemo(
     () =>

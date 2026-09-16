@@ -19,13 +19,83 @@ import { getVisibleTree } from '../../infrastructure/repositories/position-repos
  * it asks about exists and the asker may see it; when nothing qualifies, the agent simply
  * gets no chips rather than a plausible-looking guess.
  *
- * The questions are phrased in French because the retrievers match against French rows. The
- * *answer* follows the language of the question (see answer.js) — a reader can equally type
- * their own question in English or Arabic.
+ * The chips are phrased in the reader's UI language (`lang`), while the row label inside them
+ * — a document title, a post, a module — stays in French, because that is what the record
+ * actually says and what retrieval will match when the chip is clicked. A chip reading
+ * "Where can I find « Règlement intérieur SOFICLEF »?" is the honest shape: the question is
+ * the reader's, the name is the platform's.
  */
 
 /** How many chips one agent is worth. More than three reads as a menu, not as a hint. */
 const PER_AGENT = 3;
+
+/** The three UI languages. Anything else falls back to French, as the rest of the app does. */
+const LANGUAGES = ['fr', 'en', 'ar'];
+
+/**
+ * Chip phrasings, one per language.
+ *
+ * Kept here rather than in the client catalogues because the sentence and the row it is built
+ * around are assembled together: splitting them would mean shipping "{{title}}" placeholders
+ * to three JSON files and reassembling them in the page, which is how the previous generic
+ * chips drifted out of step with the data in the first place.
+ *
+ * Every interpolated name is quoted, without exception. The record names stay French inside a
+ * non-French sentence, and `detectLanguage` (answer.js) strips quoted spans before deciding
+ * what language the question is in — so an unquoted « ... de la plateforme » in an English
+ * chip would read as French and be answered in French. The quotes are what keep a clicked
+ * chip answering in the language it was displayed in.
+ */
+const PHRASES = {
+  fr: {
+    whoHolds: (title) => `Qui occupe le poste de « ${title} » ?`,
+    whoToAsk: (role) => `À qui m'adresser pour « ${role} » ?`,
+    whereIsDoc: (title) => `Où trouver « ${title} » ?`,
+    journeyRemaining: 'Que me reste-t-il à faire dans mon parcours ?',
+    journeyOverdue: 'Qu’est-ce qui est en retard ?',
+    journeyTask: (title) => `Où en est « ${title} » ?`,
+    mandatoryModules: 'Quels modules de formation sont obligatoires ?',
+    passingScore: (title) => `Quel est le seuil de réussite de « ${title} » ?`,
+    myTrainingProgress: 'Où en suis-je dans mes formations ?',
+    whatIsModule: (title) => `En quoi consiste « ${title} » ?`,
+    skillsForPost: (title) => `Quelles compétences demande le poste de « ${title} » ?`,
+    mySkillGaps: 'Quels sont mes écarts de compétences ?',
+  },
+  en: {
+    whoHolds: (title) => `Who holds the position of “${title}”?`,
+    whoToAsk: (role) => `Who should I contact about “${role}”?`,
+    whereIsDoc: (title) => `Where can I find “${title}”?`,
+    journeyRemaining: 'What is left to do in my onboarding journey?',
+    journeyOverdue: 'What is overdue?',
+    journeyTask: (title) => `What is the status of “${title}”?`,
+    mandatoryModules: 'Which training modules are mandatory?',
+    passingScore: (title) => `What is the passing score for “${title}”?`,
+    myTrainingProgress: 'How far along am I in my training?',
+    whatIsModule: (title) => `What does “${title}” cover?`,
+    skillsForPost: (title) => `Which skills does the position of “${title}” require?`,
+    mySkillGaps: 'What are my competency gaps?',
+  },
+  ar: {
+    whoHolds: (title) => `من يشغل منصب «${title}»؟`,
+    whoToAsk: (role) => `بمن أتصل بخصوص «${role}»؟`,
+    whereIsDoc: (title) => `أين أجد «${title}»؟`,
+    journeyRemaining: 'ما الذي تبقى لي في مسار الإدماج؟',
+    journeyOverdue: 'ما هي المهام المتأخرة؟',
+    journeyTask: (title) => `ما هي حالة «${title}»؟`,
+    mandatoryModules: 'ما هي الدورات التكوينية الإجبارية؟',
+    passingScore: (title) => `ما هي درجة النجاح في «${title}»؟`,
+    myTrainingProgress: 'ما هو تقدمي في التكوين؟',
+    whatIsModule: (title) => `ماذا تتضمن «${title}»؟`,
+    skillsForPost: (title) => `ما هي الكفاءات التي يتطلبها منصب «${title}»؟`,
+    mySkillGaps: 'ما هي فجوات الكفاءات لدي؟',
+  },
+};
+
+/** Resolves an arbitrary caller-supplied tag ("en-GB", "AR", null) onto a supported set. */
+export function resolveLanguage(lang) {
+  const code = String(lang ?? '').trim().toLowerCase().slice(0, 2);
+  return LANGUAGES.includes(code) ? code : 'fr';
+}
 
 /** Trims a label so a chip stays a chip: long titles are cut on a word boundary. */
 function shorten(value, max = 48) {
@@ -36,7 +106,7 @@ function shorten(value, max = 48) {
   return `${(lastSpace > 20 ? cut.slice(0, lastSpace) : cut).trim()}…`;
 }
 
-async function orientationSuggestions(user) {
+async function orientationSuggestions(user, phrases) {
   const [tree, contacts] = await Promise.all([
     getVisibleTree(user).catch(() => []),
     prisma.contact
@@ -53,19 +123,19 @@ async function orientationSuggestions(user) {
    */
   for (const node of tree) {
     if (!node.holder) continue;
-    questions.push(`Qui occupe le poste de ${shorten(node.titleFr)} ?`);
+    questions.push(phrases.whoHolds(shorten(node.titleFr)));
     if (questions.length >= 2) break;
   }
 
   for (const contact of contacts) {
     if (questions.length >= PER_AGENT) break;
-    questions.push(`À qui m'adresser pour ${shorten(contact.roleFr)} ?`);
+    questions.push(phrases.whoToAsk(shorten(contact.roleFr)));
   }
 
   return questions.slice(0, PER_AGENT);
 }
 
-async function documentSuggestions(user) {
+async function documentSuggestions(user, phrases) {
   if (!canAnyScope(user, 'read', 'document')) return [];
 
   const scoped = audienceFilter(user);
@@ -80,10 +150,10 @@ async function documentSuggestions(user) {
     })
     .catch(() => []);
 
-  return documents.map((document) => `Où trouver « ${shorten(document.titleFr)} » ?`);
+  return documents.map((document) => phrases.whereIsDoc(shorten(document.titleFr)));
 }
 
-async function onboardingSuggestions(user) {
+async function onboardingSuggestions(user, phrases) {
   if (!canAnyScope(user, 'read', 'onboarding_task')) return [];
 
   const journey = await loadJourney(user).catch(() => null);
@@ -92,14 +162,14 @@ async function onboardingSuggestions(user) {
   const questions = [];
   const pending = journey.tasks.filter((task) => task.status !== 'DONE' && task.status !== 'VALIDATED');
 
-  if (pending.length > 0) questions.push('Que me reste-t-il à faire dans mon parcours ?');
-  if (journey.tasks.some((task) => task.overdue)) questions.push('Qu’est-ce qui est en retard ?');
-  if (pending[0]) questions.push(`Où en est « ${shorten(pending[0].titleFr)} » ?`);
+  if (pending.length > 0) questions.push(phrases.journeyRemaining);
+  if (journey.tasks.some((task) => task.overdue)) questions.push(phrases.journeyOverdue);
+  if (pending[0]) questions.push(phrases.journeyTask(shorten(pending[0].titleFr)));
 
   return questions.slice(0, PER_AGENT);
 }
 
-async function trainingSuggestions(user) {
+async function trainingSuggestions(user, phrases) {
   if (!canAnyScope(user, 'read', 'training')) return [];
 
   const catalogue = await loadCatalogue(user).catch(() => null);
@@ -108,20 +178,20 @@ async function trainingSuggestions(user) {
   const questions = [];
   const mandatory = catalogue.entries.filter((entry) => entry.isMandatory);
 
-  if (mandatory.length > 0) questions.push('Quels modules de formation sont obligatoires ?');
+  if (mandatory.length > 0) questions.push(phrases.mandatoryModules);
   if (mandatory[0]) {
-    questions.push(`Quel est le seuil de réussite de « ${shorten(mandatory[0].titleFr)} » ?`);
+    questions.push(phrases.passingScore(shorten(mandatory[0].titleFr)));
   }
   if (catalogue.entries.some((entry) => entry.best)) {
-    questions.push('Où en suis-je dans mes formations ?');
+    questions.push(phrases.myTrainingProgress);
   } else if (catalogue.entries[1]) {
-    questions.push(`En quoi consiste « ${shorten(catalogue.entries[1].titleFr)} » ?`);
+    questions.push(phrases.whatIsModule(shorten(catalogue.entries[1].titleFr)));
   }
 
   return questions.slice(0, PER_AGENT);
 }
 
-async function competencySuggestions(user) {
+async function competencySuggestions(user, phrases) {
   if (!canAnyScope(user, 'read', 'competency')) return [];
 
   /*
@@ -140,9 +210,9 @@ async function competencySuggestions(user) {
   const questions = withCompetencies
     .map((row) => row.position?.titleFr)
     .filter(Boolean)
-    .map((title) => `Quelles compétences demande le poste de ${shorten(title)} ?`);
+    .map((title) => phrases.skillsForPost(shorten(title)));
 
-  if (questions.length > 0) questions.push('Quels sont mes écarts de compétences ?');
+  if (questions.length > 0) questions.push(phrases.mySkillGaps);
   return questions.slice(0, PER_AGENT);
 }
 
@@ -155,15 +225,17 @@ const BUILDERS = {
 };
 
 /**
- * Suggestions for every agent, as `{ [agentId]: string[] }`.
+ * Suggestions for every agent, as `{ [agentId]: string[] }`, phrased in `lang`.
  *
  * Built concurrently and defensively: one agent's loader failing costs that agent its chips,
  * not the whole panel. An agent with nothing to suggest is simply absent from the map.
  */
-export async function buildSuggestions(user) {
+export async function buildSuggestions(user, lang) {
+  const phrases = PHRASES[resolveLanguage(lang)];
+
   const entries = await Promise.all(
     Object.entries(BUILDERS).map(async ([agentId, build]) => {
-      const questions = await build(user).catch(() => []);
+      const questions = await build(user, phrases).catch(() => []);
       return [agentId, questions];
     }),
   );

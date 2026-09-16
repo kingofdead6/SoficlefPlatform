@@ -106,6 +106,6 @@ export async function retrieveCompetencies(user, question) {
     }
   }
 
-  const best = topMatches(candidates);
+  const best = topMatches(candidates, 3, questionTerms);
   return { snippets: best, sources: best.map((candidate) => candidate.source) };
 }

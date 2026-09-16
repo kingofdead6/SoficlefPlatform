@@ -37,6 +37,19 @@ export async function retrieveKnowledge(_user, question) {
 
     candidates.push({
       score: weight,
+      /*
+       * The relevance floor is judged on the unboosted score, not on `weight`. The 4×
+       * keyword boost exists to order entries against each other; feeding it to a threshold
+       * that means "how much of the question did this actually cover" would pass almost
+       * anything — one incidental keyword hit would clear the bar four times over.
+       *
+       * A prose-only match counts for half. Keywords are curated to say what an entry
+       * answers; the prose merely mentions things in passing, and one passing mention is not
+       * an answer — "comment fonctionne la retraite en Algérie" hit the site entry purely
+       * because « Algérie » appears in its address. Halving lets a prose match still support
+       * a question that also hits a keyword, while stopping it from grounding one on its own.
+       */
+      relevanceScore: Math.max(keyworded, prose / 2),
       detail: entry.detail,
       source: {
         kind: 'knowledge',
@@ -47,6 +60,6 @@ export async function retrieveKnowledge(_user, question) {
     });
   }
 
-  const best = topMatches(candidates, 2);
+  const best = topMatches(candidates, 2, questionTerms);
   return { snippets: best, sources: best.map((candidate) => candidate.source) };
 }

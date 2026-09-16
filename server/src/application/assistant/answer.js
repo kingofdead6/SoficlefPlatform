@@ -44,9 +44,18 @@ const RETRIEVERS = {
  * on the scale for any of the three UI languages, so it is followed rather than absorbed.
  */
 
-/** ISO-ish label for the script/language we detect, used to name the target explicitly. */
+/**
+ * ISO-ish label for the script/language we detect, used to name the target explicitly.
+ *
+ * Quoted spans are removed before anything is judged. The suggestion chips embed a record's
+ * real French name inside the reader's own sentence — `Where can I find "Plan Stratégique
+ * 2024–2026"?` — and the accents in that title used to make the whole chip look French, so
+ * clicking an English chip produced a French answer. The name is data quoted inside the
+ * question, not the language the reader is speaking.
+ */
 function detectLanguage(question) {
-  const text = String(question ?? '');
+  const text = String(question ?? '').replace(/[«"“”'']([^«»"“”'']*)[»"“”'']/g, ' ');
+
   // Script first: it is unambiguous where word lists are not.
   if (/\p{Script=Arabic}/u.test(text)) return 'Arabic (العربية)';
 
@@ -88,7 +97,15 @@ function languageRule(question) {
 function systemPrompt(question) {
   return [
     "You are the internal assistant of SOFICLEF's HR platform. Answer ONLY from the numbered context you are given.",
-    'If the context does not contain the answer, say so plainly. Do not guess and do not offer a hypothesis.',
+    /*
+     * The "use what is there" half is as load-bearing as the "invent nothing" half. Asked who
+     * holds a post, with the holder's name sitting in the context, the model would reply that
+     * it did not have enough information — reading the rule as a reason to hedge rather than
+     * as a limit on inventing. An assistant that refuses to state what it was handed is no
+     * more useful than one that makes things up.
+     */
+    'If the context answers the question, answer it directly and state the facts it contains. Do not hedge and do not ask for more information you have already been given.',
+    'Only if the context genuinely does not contain the answer, say so plainly. Do not guess and do not offer a hypothesis.',
     'Never invent a name, a number, a date, a policy or a procedure: nothing that is not in the context.',
     'Cite the numbers of the sources you use, as [1], [2].',
     'Be concise: 2 to 4 sentences maximum.',

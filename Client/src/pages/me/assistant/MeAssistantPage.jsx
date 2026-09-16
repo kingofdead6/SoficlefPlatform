@@ -59,13 +59,18 @@ export default function MeAssistantPage() {
   const [activeId, setActiveId] = useState(null);
   const reduce = useReducedMotion();
   // Hooks run before the loading guard below, or the hook order changes between renders.
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
+  /*
+   * Re-fetched on a language change, because the suggestion chips are phrased server-side:
+   * they are built around real row titles, so they cannot be translated in the catalogue and
+   * have to be asked for again in the new language.
+   */
   useEffect(() => {
     (async () => {
       try {
         const [agentsRes, overviewRes] = await Promise.all([
-          assistantApi.agents(),
+          assistantApi.agents(i18n.language),
           onboardingApi.meOverview().catch(() => ({ data: null })),
         ]);
         setAgents(agentsRes.data ?? []);
@@ -79,7 +84,7 @@ export default function MeAssistantPage() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [i18n.language]);
 
   const usable = useMemo(
     () =>

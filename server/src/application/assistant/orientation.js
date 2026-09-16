@@ -46,11 +46,20 @@ export async function retrieveOrientation(user, question) {
     const weight = score(`${node.titleFr} ${holder}`, questionTerms);
     if (weight === 0) continue;
 
+    /*
+     * Phrased as a sentence rather than as "Name — Title".
+     *
+     * The dash form left the relationship implicit, and a language model reading
+     * "BENALI Yacine — Agent de maintenance" as context for "who holds this post?" answered
+     * that it did not have enough information: it could see a name and a title but nothing
+     * saying one *held* the other. Spelling out the verb costs nothing and is what makes the
+     * row usable as an answer.
+     */
     candidates.push({
       score: weight,
       detail: node.holder
-        ? `${node.holder.displayName} — ${node.titleFr}`
-        : `${node.titleFr} — ${node.occupancyFr ?? 'poste vacant'}`,
+        ? `Le poste « ${node.titleFr} » est occupé par ${node.holder.displayName}.`
+        : `Le poste « ${node.titleFr} » est vacant (${node.occupancyFr ?? 'poste vacant'}).`,
       source: { kind: 'position', id: node.id, label: node.titleFr, href: '/organization' },
     });
   }
@@ -61,7 +70,7 @@ export async function retrieveOrientation(user, question) {
 
     candidates.push({
       score: weight,
-      detail: `${contact.nameFr} — ${contact.roleFr} (poste ${contact.extension})`,
+      detail: `Pour « ${contact.roleFr} », le contact est ${contact.nameFr} (poste téléphonique ${contact.extension}).`,
       source: {
         kind: 'contact',
         id: contact.id,
@@ -71,7 +80,7 @@ export async function retrieveOrientation(user, question) {
     });
   }
 
-  const best = topMatches(candidates);
+  const best = topMatches(candidates, 3, questionTerms);
   return { snippets: best, sources: best.map((candidate) => candidate.source) };
 }
 
