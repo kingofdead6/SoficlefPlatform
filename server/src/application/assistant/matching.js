@@ -21,21 +21,47 @@ const STOP_WORDS = new Set([
  *
  * Accent-stripping is not cosmetic here — "compétences" and "competences" must match, and
  * users type both.
+ *
+ * What is kept is "any letter or digit, in any script" rather than `a-z0-9`. The earlier
+ * class silently deleted every Arabic character, so an Arabic question normalised to the
+ * empty string, produced no terms, and every retriever returned nothing before the model was
+ * ever reached — the assistant appeared to have no Arabic support when in fact the question
+ * never survived this function.
+ *
+ * Only *Latin* combining marks are stripped (U+0300–U+036F). A blanket `\p{Diacritic}` also
+ * matches the hamza carried by Arabic letters such as ؤ, which decomposes and then loses its
+ * mark — splitting المسؤول into two fragments that match nothing. Arabic marks are part of
+ * the letter, not decoration on it.
  */
 export function normalise(value) {
   return String(value ?? '')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
+    // `\p{M}` is kept alongside letters and digits: after NFD an Arabic hamza is a combining
+    // mark, and dropping it here would break المسؤول into two fragments that match nothing.
+    // The Latin marks that would otherwise survive were already removed above.
+    .replace(/[^\p{L}\p{N}\p{M}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .normalize('NFC')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/**
+ * The minimum term length is 3 for Latin script but 2 otherwise: Arabic words are short and
+ * dense — "من" (who), "ما" (what) are two characters and a three-character floor would drop
+ * most of a short question. Latin keeps its floor so "de"/"la" style noise stays out.
+ */
+function longEnough(word) {
+  if (word.length > 2) return true;
+  return word.length === 2 && !/^[a-z0-9]+$/.test(word);
 }
 
 export function terms(question) {
   return normalise(question)
     .split(' ')
-    .filter((word) => word.length > 2 && !STOP_WORDS.has(word));
+    .filter((word) => longEnough(word) && !STOP_WORDS.has(word));
 }
 
 /**

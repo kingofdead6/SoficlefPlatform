@@ -30,8 +30,12 @@ const CARD = 'rounded-app border border-border bg-surface shadow-app';
  */
 
 /**
- * Openers per agent, showing what each can really answer rather than inviting free chat.
- * Held as catalogue keys, resolved inside the component so they follow a language switch.
+ * Fallback openers, used only when the server has no real suggestion for an agent.
+ *
+ * The chips shown in practice are built server-side from rows that actually exist under this
+ * caller's scope (application/assistant/suggestions.js) — a suggestion is a promise that the
+ * question can be answered, and these generic ones cannot keep it. They remain for the case
+ * where an agent genuinely has nothing to point at yet, so the panel is never bare.
  */
 const SUGGESTION_KEYS = {
   orientation: ['orientation1', 'orientation2', 'orientation3'],
@@ -46,6 +50,7 @@ const PAGE_AGENTS = ['orientation', 'onboarding', 'training', 'documents', 'comp
 
 export default function MeAssistantPage() {
   const [agents, setAgents] = useState([]);
+  const [serverSuggestions, setServerSuggestions] = useState({});
   const [provider, setProvider] = useState(null);
   const [modelName, setModelName] = useState(null);
   const [overview, setOverview] = useState(null);
@@ -64,6 +69,7 @@ export default function MeAssistantPage() {
           onboardingApi.meOverview().catch(() => ({ data: null })),
         ]);
         setAgents(agentsRes.data ?? []);
+        setServerSuggestions(agentsRes.suggestions ?? {});
         setProvider(agentsRes.provider ?? null);
         setModelName(agentsRes.modelName ?? null);
         setOverview(overviewRes.data);
@@ -88,9 +94,12 @@ export default function MeAssistantPage() {
   if (loading) return <PageLoading label={t('assistant.loading')} />;
   if (error) return <PageError message={t('assistant.loadFailed')} />;
 
-  const suggestions = (SUGGESTION_KEYS[active?.id] ?? []).map((key) =>
-    t(`me.assistant.suggestions.${key}`),
-  );
+  // Server suggestions name real rows, so they win; the catalogue keys only cover an agent
+  // the server found nothing for.
+  const suggestions =
+    serverSuggestions[active?.id]?.length > 0
+      ? serverSuggestions[active.id]
+      : (SUGGESTION_KEYS[active?.id] ?? []).map((key) => t(`me.assistant.suggestions.${key}`));
   const placeholder = active?.id
     ? t(`me.assistant.placeholders.${active.id}`, { defaultValue: t('me.assistant.placeholders.default') })
     : t('me.assistant.placeholders.default');

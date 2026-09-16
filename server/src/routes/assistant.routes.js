@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { requireAuth } from '../infrastructure/middleware/auth.js';
 import { answerWithAgent } from '../application/assistant/answer.js';
+import { buildSuggestions } from '../application/assistant/suggestions.js';
 import { AGENTS, AGENT_IDS } from '../domain/assistant/agents.js';
 import { canAnyScope } from '../domain/auth/authorization.js';
 import { isConfigured, modelName } from '../infrastructure/ai/huggingface.js';
@@ -51,28 +52,41 @@ const AGENT_LABELS = {
  * answer or the platform listed the rows itself — neither claim should be hardcoded in a
  * page.
  */
-router.get('/agents', (req, res) => {
-  const configured = isConfigured();
+router.get('/agents', async (req, res, next) => {
+  try {
+    const configured = isConfigured();
 
-  const data = AGENT_IDS.map((id) => ({
-    id,
-    ...AGENTS[id],
-    ...AGENT_LABELS[id],
-    live: true,
+    const data = AGENT_IDS.map((id) => ({
+      id,
+      ...AGENTS[id],
+      ...AGENT_LABELS[id],
+      live: true,
+      /*
+       * Whether *this* caller can use the agent, derived from the agent's own declared `reads`
+       * and the caller's permissions — never from their role name. A page that hardcoded
+       * "managers get these three" would drift from the permission catalogue the moment a role
+       * changed; this cannot, because it asks the same `canAnyScope` the retrievers ask.
+       */
+      available: AGENTS[id].reads.some((resource) => canAnyScope(req.user, 'read', resource)),
+    }));
+
     /*
-     * Whether *this* caller can use the agent, derived from the agent's own declared `reads`
-     * and the caller's permissions — never from their role name. A page that hardcoded
-     * "managers get these three" would drift from the permission catalogue the moment a role
-     * changed; this cannot, because it asks the same `canAnyScope` the retrievers ask.
+     * Served here rather than from their own endpoint: every page that renders the agents
+     * also renders their chips, and a second round-trip would only let the two arrive out of
+     * step. `buildSuggestions` already swallows per-agent failures, so a slow loader costs
+     * that agent its chips and nothing else.
      */
-    available: AGENTS[id].reads.some((resource) => canAnyScope(req.user, 'read', resource)),
-  }));
+    const suggestions = await buildSuggestions(req.user).catch(() => ({}));
 
-  res.json({
-    data,
-    provider: configured ? 'huggingface' : null,
-    modelName: modelName(),
-  });
+    res.json({
+      data,
+      suggestions,
+      provider: configured ? 'huggingface' : null,
+      modelName: modelName(),
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 const Ask = z.object({ question: z.string().trim().min(2).max(300) });

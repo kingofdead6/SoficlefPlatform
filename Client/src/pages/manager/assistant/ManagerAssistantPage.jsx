@@ -29,7 +29,11 @@ import { cn } from '../../../lib/cn.js';
  * "Qu'est-ce qui bloque ?" list below and the recruit's own page.
  */
 
-/** Suggestion chips, three per agent at most — resolved through i18n at render time. */
+/**
+ * Fallback suggestion chips, used only for an agent the server had nothing real to suggest
+ * for. The chips normally shown are built server-side from rows that exist under this
+ * manager's own scope (application/assistant/suggestions.js).
+ */
 const SUGGESTION_KEYS = {
   orientation: [
     'managerAssistant.suggestions.orientation.1',
@@ -65,6 +69,7 @@ export default function ManagerAssistantPage() {
   const [recruits, setRecruits] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [agents, setAgents] = useState([]);
+  const [serverSuggestions, setServerSuggestions] = useState({});
   const [provider, setProvider] = useState(null);
   const [modelName, setModelName] = useState(null);
   const [activeId, setActiveId] = useState(null);
@@ -82,6 +87,7 @@ export default function ManagerAssistantPage() {
         setRecruits(recruitsRes.data);
         setAlerts(recruitsRes.alerts);
         setAgents(agentsRes.data ?? []);
+        setServerSuggestions(agentsRes.suggestions ?? {});
         setProvider(agentsRes.provider ?? null);
         setModelName(agentsRes.modelName ?? null);
       } catch {
@@ -152,7 +158,11 @@ export default function ManagerAssistantPage() {
                   purposeFr={active.purposeFr}
                   provider={provider}
                   modelName={modelName}
-                  suggestions={(SUGGESTION_KEYS[active.id] ?? []).map((key) => t(key))}
+                  suggestions={
+                    serverSuggestions[active.id]?.length > 0
+                      ? serverSuggestions[active.id]
+                      : (SUGGESTION_KEYS[active.id] ?? []).map((key) => t(key))
+                  }
                   placeholder={
                     PLACEHOLDER_KEYS[active.id]
                       ? t(PLACEHOLDER_KEYS[active.id])
