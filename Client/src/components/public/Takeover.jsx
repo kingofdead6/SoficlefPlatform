@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { splitChars } from '../../lib/text.js';
 import LiquidVeil from './LiquidVeil.jsx';
+import SafeDraw from './SafeDraw.jsx';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -59,6 +60,10 @@ export default function Takeover() {
       const descLayer = query('[data-desc-layer]');
       const leftArt = query('[data-art-left]');
       const rightArt = query('[data-art-right]');
+      // Every stroke of the safe, in the order SafeDraw declares them — which is the order
+      // a hand would draw it, so a stagger over this list reads as drawing rather than as
+      // parts appearing at random.
+      const safeStrokes = root.current.querySelectorAll('[data-safe] [data-draw]');
 
       if (!word || !sub) return;
 
@@ -75,6 +80,16 @@ export default function Takeover() {
       if (rightArt) gsap.set(rightArt, { opacity: 0, rotate: swing, transformOrigin: '50% -140%' });
 
       /*
+       * The undrawn state. `pathLength="100"` in SafeDraw normalises every path to the same
+       * length regardless of its real geometry, so a dash array of 100 is exactly one full
+       * stroke and an offset of 100 hides it — no getTotalLength() per path, and nothing to
+       * re-measure on resize.
+       */
+      if (safeStrokes.length) {
+        gsap.set(safeStrokes, { strokeDasharray: 100, strokeDashoffset: 100, opacity: 1 });
+      }
+
+      /*
        * Reduced motion: lay the finished composition out and stop. Nothing pins, nothing
        * scrubs — the section is a normal, readable block of content.
        */
@@ -86,6 +101,9 @@ export default function Takeover() {
         gsap.set(word, { scale: 0.32 });
         if (descLayer) gsap.set(descLayer, { opacity: 1 });
         [leftArt, rightArt].forEach((el) => el && gsap.set(el, { rotate: 0, opacity: 1 }));
+        // Drawn, not drawing: the finished line art is the content, the pen stroke was only
+        // the motion.
+        if (safeStrokes.length) gsap.set(safeStrokes, { strokeDashoffset: 0 });
         return;
       }
 
@@ -130,6 +148,36 @@ export default function Takeover() {
         if (!el) return;
         relay.to(el, { rotate: 0, opacity: 1, ease: 'power3.out', duration: 0.22 }, at);
       });
+
+      /*
+       * The safe draws itself stroke by stroke, scrubbed like everything else in this
+       * section — scrolling back un-draws it.
+       *
+       * `ease: 'none'` on the stroke itself: the pen should move at the reader's scroll
+       * speed, and an eased stroke reads as the line accelerating on its own. The stagger is
+       * what gives the sequence its rhythm instead.
+       *
+       * It sits *below* the paragraph now, so it draws after the copy has landed: the
+       * sentence is read first and the drawing closes the section, which is the order the eye
+       * travels down the block anyway.
+       *
+       * 0.7 rather than a number closer to the copy's own 0.76. These positions are timeline
+       * fractions, not scroll fractions, and the pinned tail compresses them: measured at
+       * full scrub settle, a start of 0.76 did not begin drawing until ~0.90 of the scroll
+       * and finished exactly as the section unpinned, leaving no margin at all.
+       */
+      if (safeStrokes.length) {
+        relay.to(
+          safeStrokes,
+          {
+            strokeDashoffset: 0,
+            ease: 'none',
+            duration: 0.06,
+            stagger: { each: 0.004, from: 'start' },
+          },
+          0.7,
+        );
+      }
 
       if (rule) relay.to(rule, { scaleX: 1, ease: 'expo.out', duration: 0.12 }, 0.72);
       relay.to(sub, { opacity: 1, y: 0, ease: 'expo.out', duration: 0.14 }, 0.76);
@@ -212,6 +260,16 @@ export default function Takeover() {
               >
                 {translate('public.takeover.body')}
               </p>
+
+              {/*
+                The safe draws itself once the copy has settled, so the sentence is read first
+                and the drawing closes the section rather than competing with it. It sits in
+                the flow rather than being absolutely positioned like the flanking art, which
+                is what lets it survive a narrow screen — the key and the lock are md:-only.
+              */}
+              <figure data-safe aria-hidden className="mt-8 w-28 md:mt-10 md:w-36">
+                <SafeDraw className="h-auto w-full" />
+              </figure>
             </div>
           </div>
         </div>
